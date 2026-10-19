@@ -12,6 +12,7 @@ export class AiService {
       contentType: file.mimetype,
     });
 
+    
     try {
       const { data } = await axios.post(
         'http://127.0.0.1:8000/upload-image',
@@ -21,7 +22,7 @@ export class AiService {
           timeout: 120_000,
         },
       );
-
+      
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
