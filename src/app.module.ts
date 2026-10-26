@@ -2,13 +2,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ConfigModule } from '@nestjs/config';
-import { databaseConnection, DatabaseModule } from './core/database/database.connection.js';
+import {  DatabaseModule } from './core/database/database.connection.js';
 import configuration from './core/configuration/configuration.js';
-import { CacheModule } from '@nestjs/cache-manager';
 import { RedisModule } from './common/service/redis/redis.module.js';
 import { MailModule } from './common/service/mail/mail.module.js';
 import { SecurityModule } from './common/service/security/security.module.js';
-
 import { MessageModule } from './module/message/message.module.js';
 import { AuthenticationModule } from './module/authentication/authentication.module.js';
 import { DoctorModule } from './module/doctor/doctor.module.js';
