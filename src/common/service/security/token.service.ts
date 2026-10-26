@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
-import type { JwtPayload } from 'jsonwebtoken';
 import { HydratedDocument, Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { UserRole } from '../../../common/enum/schema.enum.js';
@@ -14,19 +13,8 @@ import { User, UserDocument } from '../../../core/database/model/user.model.js';
 import { UserRepository } from '../../../core/database/repository/user.repository.js';
 import { RedisKeys } from '../redis/redis.keys.js';
 import { RedisService } from '../redis/redis.service.js';
-
-export enum TokenType {
-  ACCESS = 'access',
-  REFRESH = 'refresh',
-}
-
-interface DecodedToken extends JwtPayload {
-  sub?: string;
-  aud?: string | string[];
-  jti?: string;
-  iat?: number;
-  exp?: number;
-}
+import  type {DecodedToken } from './interface/security.type.js';
+import { TokenType } from '../../enum/security.enum.js';
 
 @Injectable()
 export class TokenService {
