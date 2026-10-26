@@ -31,6 +31,19 @@
 $ npm install
 ```
 
+## Redis
+
+Redis is connected by the global `RedisModule`. Set `REDIS_URI` to use a Redis
+connection URL, or configure `REDIS_HOST` and `REDIS_PORT` (defaulting to
+`127.0.0.1:6379`).
+
+## Email
+
+The global `MailModule` provides `MailService.sendMail()` using SMTP. Configure
+`SMTP_HOST` and `MAIL_FROM`; optionally set `SMTP_PORT` (default `587`),
+`SMTP_SECURE` (`true` or `false`), and the paired `SMTP_USER` and
+`SMTP_PASSWORD` values when the server requires authentication.
+
 ## Compile and run the project
 
 ```bash
@@ -55,6 +68,29 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+```
+
+## Test the chat WebSocket
+
+Start the application in one terminal:
+
+```bash
+npm run start:dev
+```
+
+Then, in another terminal, send a test message and verify that the server
+broadcasts it back:
+
+```bash
+npm run test:socket
+```
+
+The client connects to `http://localhost:3000` by default. Set `PORT` if the
+application uses another port, or set `SOCKET_URL` to specify the full server
+URL:
+
+```bash
+SOCKET_URL=http://localhost:4000 npm run test:socket
 ```
 
 ## Deployment
@@ -85,7 +121,15 @@ In production applications, observability is essential for understanding how you
 - **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
 - **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
 
-This project is already instrumented. Create a free account at [observe.nestjs.com](https://observe.nestjs.com), add an application, and paste the generated app key and secret into the `ObserveModule.forRoot()` call in `src/app.module.ts`.
+This project is already instrumented. To connect it, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
+
+```bash
+$ npx @nestjs/observe link
+```
+
+It writes the app key and secret into `.env` and makes every `nest start` script (`start`, `start:dev`, `start:debug`) load it. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
+
+Or do it by hand: create an application and an API key at [observe.nestjs.com](https://observe.nestjs.com), and set the pair as `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment the app runs in.
 
 The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
 

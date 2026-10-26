@@ -1,22 +1,41 @@
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule, ObserveInstrument } from './app.module.js';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module.js';
+import { LoggerService } from './common/service/log/logger.service.js';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    instrument: ObserveInstrument,});
-  const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
-    .setVersion('1.0')
-    .addTag('cats')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
-  app.enableCors({
-      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-      origin : "http://localhost:5173",
-  });
-  await app.listen(process.env.PORT ?? 3000);
+class Server {
+  public async run() {
+    const app = await NestFactory.create(AppModule, {
+      logger: new LoggerService(),
+
+    });
+    const config = app.get(ConfigService);
+    const logger = app.get(LoggerService);
+    
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+
+    app.enableCors({
+      origin: config.get<string>(
+        'app.corsOrigin',
+        'http://localhost:3000',
+      ),
+      credentials: true,
+    });
+
+    app.enableShutdownHooks();
+
+    const port = config.get<number>('app.port', 3000);
+    await app.listen(port);
+    logger.log(`Server running on ${await app.getUrl()}`);
+  }
 }
-await bootstrap();
+
+const server = new Server();
+server.run();

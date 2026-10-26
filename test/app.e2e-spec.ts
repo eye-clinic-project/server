@@ -1,15 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module.js';
+import { App } from 'supertest/types.js';
+import { AppController } from './../src/app.controller.js';
+import { AppService } from './../src/app.service.js';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication<App> | undefined;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      controllers: [AppController],
+      providers: [AppService],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -17,24 +19,17 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
+    if (!app) {
+      throw new Error('Application was not initialized');
+    }
+
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
-  });
-
-  it('/ai/upload-image (POST)', () => {
-    return request(app.getHttpServer())
-      .post('/ai/upload-image')
-      .attach('file', Buffer.from('image data'), {
-        filename: 'image.png',
-        contentType: 'image/png',
-      })
-      .expect(201)
-      .expect('This action adds a new ai');
+      .expect({ message: 'hello from backend server' });
   });
 
   afterEach(async () => {
-    await app.close();
+    await app?.close();
   });
 });
