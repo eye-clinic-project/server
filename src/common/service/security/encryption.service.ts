@@ -16,7 +16,7 @@ export class EncryptionService {
   private readonly key: Buffer;
 
   constructor(private readonly configService: ConfigService) {
-    const key = this.configService.get<string>('ENCRYPTION_KEY');
+    const key = this.configService.get<string>('encryption.key');
 
     if (!key) {
       throw new InternalServerErrorException( 'ENCRYPTION_KEY is missing');

@@ -7,6 +7,7 @@ import configuration from './core/configuration/configuration.js';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisModule } from './common/service/redis/redis.module.js';
 import { MailModule } from './common/service/mail/mail.module.js';
+import { SecurityModule } from './common/service/security/security.module.js';
 
 import { MessageModule } from './module/message/message.module.js';
 import { AuthenticationModule } from './module/authentication/authentication.module.js';
@@ -35,6 +36,7 @@ import { LanguageInterceptor } from './common/interceptor/language.interceptor.j
     SchemasModule,
     RedisModule,
     MailModule,
+    SecurityModule,
     MessageModule,
     AuthenticationModule,
     DoctorModule,

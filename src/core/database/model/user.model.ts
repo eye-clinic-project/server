@@ -8,7 +8,11 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
+  @Prop({ type: String, enum: UserRole, required: true })
+  role: UserRole;
 
+  @Prop({ type: Date })
+  changeCredentialsTime?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
