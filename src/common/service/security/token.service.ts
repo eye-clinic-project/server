@@ -6,14 +6,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
-import { HydratedDocument, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { UserRole } from '../../../common/enum/schema.enum.js';
 import { User, UserDocument } from '../../../core/database/model/user.model.js';
 import { UserRepository } from '../../../core/database/repository/user.repository.js';
 import { RedisKeys } from '../redis/redis.keys.js';
 import { RedisService } from '../redis/redis.service.js';
-import  type {DecodedToken } from './interface/security.type.js';
+import type { DecodedToken, JwtType, VerifyJwt } from './interface/security.type.js';
 import { TokenType } from '../../enum/security.enum.js';
 
 @Injectable()
@@ -56,21 +56,14 @@ export class TokenService {
     payload,
     secret = this.accessUserTokenSignature,
     options,
-  }: {
-    payload: object;
-    secret?: string;
-    options?: JwtSignOptions;
-  }): Promise<string> {
+  }: JwtType ): Promise<string> {
     return this.jwtService.signAsync(payload, { ...options, secret });
   }
 
   async verify({
     token,
     secret = this.accessUserTokenSignature,
-  }: {
-    token: string;
-    secret?: string;
-  }): Promise<DecodedToken> {
+  }:VerifyJwt): Promise<DecodedToken> {
     return this.jwtService.verifyAsync<DecodedToken>(token, { secret });
   }
 
@@ -122,10 +115,10 @@ export class TokenService {
       throw new BadRequestException('Invalid token claims');
     }
 
-    const revoked = await this.redis.getCache<string>({
-      key: RedisKeys.tokenRevocation(verifiedData.sub, verifiedData.jti),
+    const activeTokenType = await this.redis.getCache<TokenType>({
+      key: RedisKeys.userToken(verifiedData.sub, verifiedData.jti),
     });
-    if (revoked) {
+    if (activeTokenType !== tokenType) {
       throw new UnauthorizedException('Invalid login session');
     }
 
@@ -150,10 +143,12 @@ export class TokenService {
   }
 
   async createLoginCredentials(
-    user: HydratedDocument<User>,
+    user: Pick<User, 'role'> & { _id: Types.ObjectId },
     issuer: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const subject = user._id.toString();
+    const accessJti = randomUUID();
+    const refreshJti = randomUUID();
     const commonOptions = {
       issuer,
       audience: [TokenType.ACCESS, user.role],
@@ -166,7 +161,7 @@ export class TokenService {
         options: {
           ...commonOptions,
           expiresIn: this.accessTokenExpiresIn,
-          jwtid: randomUUID(),
+          jwtid: accessJti,
         },
       }),
       this.sign({
@@ -176,31 +171,30 @@ export class TokenService {
           ...commonOptions,
           audience: [TokenType.REFRESH, user.role],
           expiresIn: this.refreshTokenExpiresIn,
-          jwtid: randomUUID(),
+          jwtid: refreshJti,
         },
+      }),
+    ]);
+
+    await Promise.all([
+      this.redis.setCache({
+        key: RedisKeys.userToken(subject, accessJti),
+        value: TokenType.ACCESS,
+        options: { EX: this.accessTokenExpiresIn },
+      }),
+      this.redis.setCache({
+        key: RedisKeys.userToken(subject, refreshJti),
+        value: TokenType.REFRESH,
+        options: { EX: this.refreshTokenExpiresIn },
       }),
     ]);
 
     return { access_token, refresh_token };
   }
 
-  async createRevokeToken({
-    userId,
-    jti,
-    ttl,
-  }: {
-    userId: Types.ObjectId | string;
-    jti: string;
-    ttl: number;
-  }): Promise<void> {
-    if (!Number.isFinite(ttl) || ttl <= 0) {
-      return;
-    }
-
-    await this.redis.setCache({
-      key: RedisKeys.tokenRevocation(userId.toString(), jti),
-      value: 'revoked',
-      options: { EX: Math.ceil(ttl) },
+  async logout(userId: Types.ObjectId | string): Promise<number> {
+    return this.redis.deleteByPattern({
+      pattern: RedisKeys.userTokens(userId.toString()),
     });
   }
 
@@ -225,14 +219,12 @@ export class TokenService {
       throw new UnauthorizedException('Refresh token expired');
     }
 
-    const claimed = await this.redis.setCache({
-      key: RedisKeys.tokenRevocation(decoded.sub, decoded.jti),
-      value: 'rotated',
-      options: { EX: ttl, NX: true },
+    const activeTokenType = await this.redis.getAndDelete<TokenType>({
+      key: RedisKeys.userToken(decoded.sub, decoded.jti),
     });
-    if (!claimed) {
+    if (activeTokenType !== TokenType.REFRESH) {
       throw new UnauthorizedException(
-        'Refresh token already used or revoked',
+        'Refresh token already used or no longer active',
       );
     }
 

@@ -1,3 +1,4 @@
+import { JwtSignOptions } from '@nestjs/jwt';
 import type { JwtPayload } from 'jsonwebtoken';
 
 export interface DecodedToken extends JwtPayload {
@@ -7,3 +8,12 @@ export interface DecodedToken extends JwtPayload {
   iat?: number;
   exp?: number;
 }
+export interface JwtType {
+    payload: object;
+    secret?: string;
+    options?: JwtSignOptions;
+  }
+  export interface VerifyJwt{
+    token: string;
+    secret?: string;
+  }
