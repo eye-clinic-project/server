@@ -8,6 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
@@ -17,6 +18,7 @@ import { NotificationQueryDto } from './dto/notification-query.dto.js';
 import { NotificationService } from './notification.service.js';
 
 @Controller('notification')
+@ApiTags('Notifications')
 @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}

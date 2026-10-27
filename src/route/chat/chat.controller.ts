@@ -7,6 +7,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
@@ -17,6 +18,7 @@ import { MessageHistoryQueryDto } from './dto/message-history-query.dto.js';
 import { StartConversationDto } from './dto/start-conversation.dto.js';
 
 @Controller('chat')
+@ApiTags('Chat')
 @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
 export class ChatController {
   constructor(private readonly chat: ChatService) {}

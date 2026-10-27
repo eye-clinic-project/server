@@ -4,6 +4,7 @@ import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import { AppointmentService } from './appointment.service.js';
 import { CreateAppointmentDto } from './dto/create-appointment.dto.js';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto.js';
@@ -14,11 +15,14 @@ export class AppointmentResolver {
 
   @Mutation(() => GraphQLJSON)
   @Auth([UserRoleEnum.PATIENT])
-  createAppointment(
+  async createAppointment(
     @User() user: HUserDocument,
     @Args('input', { type: () => GraphQLJSON }) input: CreateAppointmentDto,
   ) {
-    return this.appointments.create(user._id.toString(), input);
+    return this.appointments.create(
+      user._id.toString(),
+      await validateGraphqlInput(input, CreateAppointmentDto),
+    );
   }
 
   @Query(() => GraphQLJSON, { name: 'myAppointments' })
@@ -44,7 +48,7 @@ export class AppointmentResolver {
 
   @Mutation(() => GraphQLJSON)
   @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
-  rescheduleAppointment(
+  async rescheduleAppointment(
     @User() user: HUserDocument,
     @Args('appointmentId', { type: () => ID }) appointmentId: string,
     @Args('input', { type: () => GraphQLJSON }) input: UpdateAppointmentDto,
@@ -52,7 +56,7 @@ export class AppointmentResolver {
     return this.appointments.reschedule(
       user._id.toString(),
       appointmentId,
-      input,
+      await validateGraphqlInput(input, UpdateAppointmentDto),
     );
   }
 

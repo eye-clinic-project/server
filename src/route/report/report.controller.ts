@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
@@ -16,6 +17,7 @@ import { UpdateReportDto } from './dto/update-report.dto.js';
 import { ReportService } from './report.service.js';
 
 @Controller('report')
+@ApiTags('Reports')
 @Auth([UserRoleEnum.DOCTOR])
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
@@ -25,10 +27,7 @@ export class ReportController {
     @User() user: HUserDocument,
     @Body() createReportDto: CreateReportDto,
   ) {
-    return this.reportService.create(
-      user._id.toString(),
-      createReportDto,
-    );
+    return this.reportService.create(user._id.toString(), createReportDto);
   }
 
   @Get()
@@ -37,10 +36,7 @@ export class ReportController {
   }
 
   @Get(':reportId')
-  findOne(
-    @User() user: HUserDocument,
-    @Param('reportId') reportId: string,
-  ) {
+  findOne(@User() user: HUserDocument, @Param('reportId') reportId: string) {
     return this.reportService.findOne(user._id.toString(), reportId);
   }
 
@@ -58,10 +54,7 @@ export class ReportController {
   }
 
   @Delete(':reportId')
-  remove(
-    @User() user: HUserDocument,
-    @Param('reportId') reportId: string,
-  ) {
+  remove(@User() user: HUserDocument, @Param('reportId') reportId: string) {
     return this.reportService.remove(user._id.toString(), reportId);
   }
 }

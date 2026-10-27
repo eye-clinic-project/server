@@ -8,6 +8,7 @@ import {
 import type { Request, Response } from 'express';
 import { Observable, of, tap } from 'rxjs';
 import { CacheService } from '../service/cache.service.js';
+import type { IAuthReq } from '../interface/ctx.interface.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
@@ -24,14 +25,19 @@ export class CacheInterceptor implements NestInterceptor {
     }
 
     const httpContext = context.switchToHttp();
-    const request = httpContext.getRequest<Request>();
+    const request = httpContext.getRequest<Request & Partial<IAuthReq>>();
     const response = httpContext.getResponse<Response>();
 
-    if (request.method !== 'GET') {
+    if (
+      request.method !== 'GET' ||
+      request.headers.authorization ||
+      request.credentials
+    ) {
       return next.handle();
     }
 
-    const key = `http-cache:${request.originalUrl}`;
+    const language = request.headers['accept-language'] ?? 'default';
+    const key = `http-cache:${language}:${request.originalUrl}`;
 
     try {
       const cached = await this.cacheService.getCache({ key });

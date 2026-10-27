@@ -4,6 +4,7 @@ import { Role } from './role.decorator.js';
 import { TokenEnum, UserRoleEnum } from '../enum/security.enum.js';
 import { Token } from './token.decorator.js';
 import { AuthGuard } from '../guard/auth.guard.js';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 export const Auth = (
   roles: UserRoleEnum[],
@@ -13,5 +14,6 @@ export const Auth = (
     Token(type),
     Role(roles),
     UseGuards(AuthGuard, RolesGuard),
+    ApiBearerAuth('bearerAuth'),
   );
 };

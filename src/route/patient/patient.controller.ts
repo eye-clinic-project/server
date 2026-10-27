@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
@@ -8,6 +9,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto.js';
 import { PatientService } from './patient.service.js';
 
 @Controller('patient')
+@ApiTags('Patients')
 @Auth([UserRoleEnum.PATIENT])
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}

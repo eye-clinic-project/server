@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthGuard } from '../../common/guard/auth.guard.js';
 import { User } from '../../common/decorator/user.decorator.js';
@@ -28,17 +29,14 @@ import type { HUserDocument } from '../../core/database/model/user.model.js';
 function getBearerToken(request: IAuthReq): string {
   const authorization = request.headers.authorization;
   const [scheme, token, ...extra] = authorization?.trim().split(/\s+/) ?? [];
-  if (
-    scheme?.toLowerCase() !== 'bearer' ||
-    !token ||
-    extra.length > 0
-  ) {
+  if (scheme?.toLowerCase() !== 'bearer' || !token || extra.length > 0) {
     throw new UnauthorizedException('Invalid authorization format');
   }
   return token;
 }
 
 @Controller('authentication')
+@ApiTags('Authentication')
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
@@ -93,6 +91,7 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   @Token(TokenEnum.REFRESH)
   @UseGuards(AuthGuard)
+  @ApiBearerAuth('bearerAuth')
   rotateToken(@Req() request: IAuthReq) {
     return this.authenticationService.rotateToken(
       getBearerToken(request),
@@ -104,6 +103,7 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   @Token(TokenEnum.ACCESS)
   @UseGuards(AuthGuard)
+  @ApiBearerAuth('bearerAuth')
   logout(
     @Body() body: LogoutDto,
     @User() user: HUserDocument,

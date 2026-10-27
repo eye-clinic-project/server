@@ -1,26 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAnalysisDto } from './dto/create-analysis.dto.js';
-import { UpdateAnalysisDto } from './dto/update-analysis.dto.js';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Types } from 'mongoose';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import { AnalysisRepository } from '../../core/database/repository/analysis.repository.js';
+
+function objectId(id: string): Types.ObjectId {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new NotFoundException('Analysis not found');
+  }
+  return new Types.ObjectId(id);
+}
 
 @Injectable()
 export class AnalysisService {
-  create(createAnalysisDto: CreateAnalysisDto) {
-    return 'This action adds a new analysis';
+  constructor(private readonly analyses: AnalysisRepository) {}
+
+  findForUser(userId: string, role: UserRoleEnum) {
+    const id = objectId(userId);
+    if (role === UserRoleEnum.DOCTOR) {
+      return this.analyses.findByDoctor(id);
+    }
+    if (role === UserRoleEnum.PATIENT) {
+      return this.analyses.findByPatient(id);
+    }
+    throw new ForbiddenException('A doctor or patient account is required');
   }
 
-  findAll() {
-    return `This action returns all analysis`;
-  }
+  async findOneForUser(userId: string, role: UserRoleEnum, analysisId: string) {
+    if (role !== UserRoleEnum.DOCTOR && role !== UserRoleEnum.PATIENT) {
+      throw new ForbiddenException('A doctor or patient account is required');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} analysis`;
-  }
-
-  update(id: number, updateAnalysisDto: UpdateAnalysisDto) {
-    return `This action updates a #${id} analysis`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} analysis`;
+    const id = objectId(userId);
+    const analysis = await this.analyses.findOne({
+      filter: {
+        _id: objectId(analysisId),
+        [role === UserRoleEnum.DOCTOR ? 'doctor' : 'patient']: id,
+      },
+      options: {
+        populate: [{ path: 'doctor' }, { path: 'patient' }, { path: 'image' }],
+      },
+    });
+    if (!analysis) {
+      throw new NotFoundException('Analysis not found');
+    }
+    return analysis;
   }
 }

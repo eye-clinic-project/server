@@ -4,6 +4,7 @@ import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import { CreateReportDto } from './dto/create-report.dto.js';
 import { UpdateReportDto } from './dto/update-report.dto.js';
 import { ReportService } from './report.service.js';
@@ -27,20 +28,27 @@ export class ReportResolver {
   }
 
   @Mutation(() => GraphQLJSON)
-  createReport(
+  async createReport(
     @User() user: HUserDocument,
     @Args('input', { type: () => GraphQLJSON }) input: CreateReportDto,
   ) {
-    return this.reports.create(user._id.toString(), input);
+    return this.reports.create(
+      user._id.toString(),
+      await validateGraphqlInput(input, CreateReportDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)
-  updateReport(
+  async updateReport(
     @User() user: HUserDocument,
     @Args('reportId', { type: () => ID }) reportId: string,
     @Args('input', { type: () => GraphQLJSON }) input: UpdateReportDto,
   ) {
-    return this.reports.update(user._id.toString(), reportId, input);
+    return this.reports.update(
+      user._id.toString(),
+      reportId,
+      await validateGraphqlInput(input, UpdateReportDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)

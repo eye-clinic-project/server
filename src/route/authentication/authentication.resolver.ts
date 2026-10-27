@@ -7,6 +7,7 @@ import { User } from '../../common/decorator/user.decorator.js';
 import { LogoutTypeEnum, UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { IAuthReq } from '../../common/interface/ctx.interface.js';
 import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { AuthenticationService } from './authentication.service.js';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto.js';
@@ -24,44 +25,53 @@ export class AuthenticationResolver {
   ) {}
 
   @Mutation(() => GraphQLJSON)
-  signUp(
+  async signUp(
     @Args('input', { type: () => GraphQLJSON }) input: CreateAuthenticationDto,
   ) {
-    return this.authentication.signUp(input);
+    return this.authentication.signUp(
+      await validateGraphqlInput(input, CreateAuthenticationDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)
-  login(
+  async login(
     @Args('input', { type: () => GraphQLJSON }) input: LoginDto,
     @Context('req') request: Request,
   ) {
     return this.authentication.login(
-      input,
+      await validateGraphqlInput(input, LoginDto),
       this.issuer(request),
       request.ip ?? 'unknown',
     );
   }
 
   @Mutation(() => GraphQLJSON)
-  googleCredential(
+  async googleCredential(
     @Args('input', { type: () => GraphQLJSON }) input: GoogleCredentialDto,
     @Context('req') request: Request,
   ) {
-    return this.authentication.googleCredential(input, this.issuer(request));
+    return this.authentication.googleCredential(
+      await validateGraphqlInput(input, GoogleCredentialDto),
+      this.issuer(request),
+    );
   }
 
   @Mutation(() => GraphQLJSON)
-  sendVerificationEmail(
+  async sendVerificationEmail(
     @Args('input', { type: () => GraphQLJSON }) input: EmailDto,
   ) {
-    return this.authentication.sendVerificationEmail(input);
+    return this.authentication.sendVerificationEmail(
+      await validateGraphqlInput(input, EmailDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)
-  verifyEmail(
+  async verifyEmail(
     @Args('input', { type: () => GraphQLJSON }) input: VerifyEmailDto,
   ) {
-    return this.authentication.verifyEmail(input);
+    return this.authentication.verifyEmail(
+      await validateGraphqlInput(input, VerifyEmailDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)

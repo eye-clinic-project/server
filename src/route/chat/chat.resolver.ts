@@ -4,7 +4,9 @@ import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import { ChatService } from './chat.service.js';
+import { CreateMessageDto } from '../message/dto/create-message.dto.js';
 
 @Resolver()
 @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
@@ -42,13 +44,17 @@ export class ChatResolver {
   }
 
   @Mutation(() => GraphQLJSON)
-  sendChatMessage(
+  async sendChatMessage(
     @User() user: HUserDocument,
     @Args('conversationId', { type: () => ID }) conversationId: string,
     @Args('input', { type: () => GraphQLJSON })
     input: { message?: string; attachments?: string[] },
   ) {
-    return this.chat.sendMessage(user._id.toString(), conversationId, input);
+    return this.chat.sendMessage(
+      user._id.toString(),
+      conversationId,
+      await validateGraphqlInput(input, CreateMessageDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)

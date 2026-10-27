@@ -1,4 +1,5 @@
 import { Body, Controller, Patch, Param, Delete } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
@@ -7,6 +8,7 @@ import { MessageService } from './message.service.js';
 import { UpdateMessageDto } from './dto/update-message.dto.js';
 
 @Controller('message')
+@ApiTags('Messages')
 @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}

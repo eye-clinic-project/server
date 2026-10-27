@@ -5,6 +5,7 @@ import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { NotificationType } from '../../common/enum/schema.enum.js';
+import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import { NotificationService } from './notification.service.js';
 import {
   DeleteNotificationResult,
@@ -94,11 +95,17 @@ export class NotificationResolver {
     @User() user: HUserDocument,
     @Args('input') input: SendNotificationInput,
   ) {
+    const validatedInput = await validateGraphqlInput(
+      input,
+      SendNotificationInput,
+    );
     const notification = await this.notifications.sendToAssignedParticipant(
       user._id.toString(),
       {
-        ...input,
-        type: input.type ?? NotificationType.SYSTEM,
+        recipientId: validatedInput.recipientId,
+        title: validatedInput.title,
+        body: validatedInput.body,
+        type: validatedInput.type ?? NotificationType.SYSTEM,
       },
     );
     return toGraphqlNotification(notification);

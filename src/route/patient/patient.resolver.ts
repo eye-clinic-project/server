@@ -4,6 +4,7 @@ import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import { CreatePatientDto } from './dto/create-patient.dto.js';
 import { UpdatePatientDto } from './dto/update-patient.dto.js';
 import { PatientService } from './patient.service.js';
@@ -19,19 +20,25 @@ export class PatientResolver {
   }
 
   @Mutation(() => GraphQLJSON)
-  createPatientProfile(
+  async createPatientProfile(
     @User() user: HUserDocument,
     @Args('input', { type: () => GraphQLJSON }) input: CreatePatientDto,
   ) {
-    return this.patients.createProfile(user._id, input);
+    return this.patients.createProfile(
+      user._id,
+      await validateGraphqlInput(input, CreatePatientDto),
+    );
   }
 
   @Mutation(() => GraphQLJSON)
-  updatePatientProfile(
+  async updatePatientProfile(
     @User() user: HUserDocument,
     @Args('input', { type: () => GraphQLJSON }) input: UpdatePatientDto,
   ) {
-    return this.patients.updateProfile(user._id, input);
+    return this.patients.updateProfile(
+      user._id,
+      await validateGraphqlInput(input, UpdatePatientDto),
+    );
   }
 
   @Query(() => GraphQLJSON, { name: 'myPatientMedicalRecords' })

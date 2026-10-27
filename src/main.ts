@@ -1,6 +1,10 @@
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { I18nContext } from 'nestjs-i18n';
+import type { ValidationError } from 'class-validator';
+import { formatValidationErrors } from './common/graphql/validate-graphql-input.js';
 import { join } from 'node:path';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
@@ -19,6 +23,15 @@ class Server {
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,
+        exceptionFactory: (errors: ValidationError[]) => {
+          const i18n = I18nContext.current();
+          return new BadRequestException({
+            statusCode: 400,
+            message:
+              i18n?.translate('validation.invalid') ?? 'Validation failed',
+            errors: formatValidationErrors(errors),
+          });
+        },
       }),
     );
 
@@ -26,6 +39,27 @@ class Server {
       origin: config.get<string>('app.corsOrigin', 'http://localhost:3000'),
       credentials: true,
     });
+
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Diabetic Retinopathy Detection API')
+      .setDescription(
+        'REST API for authentication, patient and doctor profiles, appointments, analyses, reports, chat, and notifications.',
+      )
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+        'bearerAuth',
+      )
+      .build();
+    const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, swaggerDocument, {
+      jsonDocumentUrl: 'api/docs-json',
+    });
+
     app.useStaticAssets(join(process.cwd(), 'uploads'), {
       prefix: '/uploads/',
     });

@@ -1,0 +1,19 @@
+{
+  "invalid": "The request contains invalid fields.",
+  "isNotEmpty": "This field is required.",
+  "minLength": "The value is shorter than allowed.",
+  "maxLength": "The value is longer than allowed.",
+  "isEmail": "Enter a valid email address.",
+  "isString": "Enter a text value.",
+  "isMongoId": "Enter a valid identifier.",
+  "isDate": "Enter a valid date.",
+  "isEnum": "Select a valid option.",
+  "isArray": "Enter a list of values.",
+  "arrayMaxSize": "The list contains too many values.",
+  "isInt": "Enter a whole number.",
+  "isNumber": "Enter a valid number.",
+  "isBoolean": "Enter true or false.",
+  "isUrl": "Enter a valid URL.",
+  "isUUID": "Enter a valid identifier.",
+  "whitelistValidation": "This field is not allowed."
+}

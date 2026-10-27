@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
@@ -16,6 +17,7 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto.js';
 import { DoctorService } from './doctor.service.js';
 
 @Controller('doctor')
+@ApiTags('Doctors')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
@@ -67,10 +69,7 @@ export class DoctorController {
     @User() user: HUserDocument,
     @Param('patientId') patientId: string,
   ) {
-    return this.doctorService.assignPatient(
-      user._id.toString(),
-      patientId,
-    );
+    return this.doctorService.assignPatient(user._id.toString(), patientId);
   }
 
   @Delete('patients/:patientId')
@@ -79,10 +78,7 @@ export class DoctorController {
     @User() user: HUserDocument,
     @Param('patientId') patientId: string,
   ) {
-    return this.doctorService.unassignPatient(
-      user._id.toString(),
-      patientId,
-    );
+    return this.doctorService.unassignPatient(user._id.toString(), patientId);
   }
 
   @Get('patients/:patientId/records')

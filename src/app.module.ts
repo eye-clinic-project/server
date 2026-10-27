@@ -9,9 +9,7 @@ import { LoggingInterceptor } from './common/interceptor/logging.interceptor.js'
 import { TransformInterceptor } from './common/interceptor/transform.interceptor.js';
 import { TimeoutInterceptor } from './common/interceptor/timeout.interceptor.js';
 import { LanguageInterceptor } from './common/interceptor/language.interceptor.js';
-
 import { CacheInterceptor } from './common/interceptor/cache.interceptor.js';
-
 import { AuthenticationModule } from './route/authentication/authentication.module.js';
 import { MessageModule } from './route/message/message.module.js';
 import { DoctorModule } from './route/doctor/doctor.module.js';
@@ -28,6 +26,8 @@ import { PatientModule } from './route/patient/patient.module.js';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import type { Request } from 'express';
+import { AcceptLanguageResolver, I18nJsonLoader, I18nModule } from 'nestjs-i18n';
+import { join } from 'node:path';
 
 @Module({
   imports: [
@@ -35,6 +35,15 @@ import type { Request } from 'express';
       envFilePath: ['.env.development', '.env'],
       load: [configuration],
       isGlobal: true,
+    }),
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loader: I18nJsonLoader,
+      loaderOptions: {
+        path: join(import.meta.dirname, 'i18n'),
+        watch: process.env.NODE_ENV !== 'production',
+      },
+      resolvers: [AcceptLanguageResolver],
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

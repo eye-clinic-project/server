@@ -1,35 +1,30 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, ID, Query, Resolver } from '@nestjs/graphql';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { AnalysisService } from './analysis.service.js';
-import { CreateAnalysisDto } from './dto/create-analysis.dto.js';
-import { UpdateAnalysisDto } from './dto/update-analysis.dto.js';
 
 @Resolver()
+@Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
 export class AnalysisResolver {
   constructor(private readonly analysis: AnalysisService) {}
 
-  @Mutation(() => GraphQLJSON)
-  createAnalysis() {
-    return this.analysis.create(new CreateAnalysisDto());
-  }
-
   @Query(() => GraphQLJSON, { name: 'analyses' })
-  findAll() {
-    return this.analysis.findAll();
+  findAll(@User() user: HUserDocument) {
+    return this.analysis.findForUser(user._id.toString(), user.role);
   }
 
   @Query(() => GraphQLJSON, { name: 'analysis' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.analysis.findOne(id);
-  }
-
-  @Mutation(() => GraphQLJSON)
-  updateAnalysis(@Args('id', { type: () => Int }) id: number) {
-    return this.analysis.update(id, new UpdateAnalysisDto());
-  }
-
-  @Mutation(() => GraphQLJSON)
-  removeAnalysis(@Args('id', { type: () => Int }) id: number) {
-    return this.analysis.remove(id);
+  findOne(
+    @User() user: HUserDocument,
+    @Args('analysisId', { type: () => ID }) analysisId: string,
+  ) {
+    return this.analysis.findOneForUser(
+      user._id.toString(),
+      user.role,
+      analysisId,
+    );
   }
 }
