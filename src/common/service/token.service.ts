@@ -17,7 +17,7 @@ import { UserRepository } from '../../core/database/repository/user.repository.j
 
 import { RedisKeys, CacheService } from './cache.service.js';
 
-import { TokenType, UserRole } from '../enum/security.enum.js';
+import { TokenEnum, UserRoleEnum } from '../enum/security.enum.js';
 import {
   DecodedToken,
   JwtType,
@@ -75,18 +75,18 @@ export class TokenService {
     return this.jwtService.verifyAsync<DecodedToken>(token, { secret });
   }
 
-  getSignature(tokenType: TokenType, _role: UserRole): string {
-    return tokenType === TokenType.REFRESH
+  getSignature(tokenType: TokenEnum, _role: UserRoleEnum): string {
+    return tokenType === TokenEnum.REFRESH
       ? this.refreshUserTokenSignature
       : this.accessUserTokenSignature;
   }
 
   async decodeToken({
     token,
-    tokenType = TokenType.ACCESS,
+    tokenType = TokenEnum.ACCESS,
   }: {
     token: string;
-    tokenType?: TokenType;
+    tokenType?: TokenEnum;
   }): Promise<{ user: HUserDocument; decoded: DecodedToken }> {
     const rawDecoded = this.jwtService.decode(token);
     if (!rawDecoded || typeof rawDecoded !== 'object') {
@@ -104,13 +104,13 @@ export class TokenService {
         `Invalid token type. Only ${tokenType} is allowed`,
       );
     }
-    if (!Object.values(UserRole).includes(claimedRole as UserRole)) {
+    if (!Object.values(UserRoleEnum).includes(claimedRole as UserRoleEnum)) {
       throw new BadRequestException('Invalid token role');
     }
 
     const verifiedData = await this.verify({
       token,
-      secret: this.getSignature(tokenType, claimedRole as UserRole),
+      secret: this.getSignature(tokenType, claimedRole as UserRoleEnum),
     });
 
     if (!verifiedData.sub || !Types.ObjectId.isValid(verifiedData.sub)) {
@@ -120,7 +120,7 @@ export class TokenService {
       throw new BadRequestException('Invalid token claims');
     }
 
-    const activeTokenType = await this.redis.getCache<TokenType>({
+    const activeTokenType = await this.redis.getCache<TokenEnum>({
       key: RedisKeys.userToken(verifiedData.sub, verifiedData.jti),
     });
     if (activeTokenType !== tokenType) {
@@ -150,7 +150,7 @@ export class TokenService {
     const refreshJti = randomUUID();
     const commonOptions = {
       issuer,
-      audience: [TokenType.ACCESS, user.role],
+      audience: [TokenEnum.ACCESS, user.role],
     };
 
     const [access_token, refresh_token] = await Promise.all([
@@ -168,7 +168,7 @@ export class TokenService {
         secret: this.refreshUserTokenSignature,
         options: {
           ...commonOptions,
-          audience: [TokenType.REFRESH, user.role],
+          audience: [TokenEnum.REFRESH, user.role],
           expiresIn: this.refreshTokenExpiresIn,
           jwtid: refreshJti,
         },
@@ -178,12 +178,12 @@ export class TokenService {
     await Promise.all([
       this.redis.setCache({
         key: RedisKeys.userToken(subject, accessJti),
-        value: TokenType.ACCESS,
+        value: TokenEnum.ACCESS,
         options: { EX: this.accessTokenExpiresIn },
       }),
       this.redis.setCache({
         key: RedisKeys.userToken(subject, refreshJti),
-        value: TokenType.REFRESH,
+        value: TokenEnum.REFRESH,
         options: { EX: this.refreshTokenExpiresIn },
       }),
     ]);
@@ -206,7 +206,7 @@ export class TokenService {
   }): Promise<{ access_token: string; refresh_token: string }> {
     const { user, decoded } = await this.decodeToken({
       token,
-      tokenType: TokenType.REFRESH,
+      tokenType: TokenEnum.REFRESH,
     });
 
     if (!decoded.jti || !decoded.exp || !decoded.sub) {
@@ -218,10 +218,10 @@ export class TokenService {
       throw new UnauthorizedException('Refresh token expired');
     }
 
-    const activeTokenType = await this.redis.getAndDelete<TokenType>({
+    const activeTokenType = await this.redis.getAndDelete<TokenEnum>({
       key: RedisKeys.userToken(decoded.sub, decoded.jti),
     });
-    if (activeTokenType !== TokenType.REFRESH) {
+    if (activeTokenType !== TokenEnum.REFRESH) {
       throw new UnauthorizedException(
         'Refresh token already used or no longer active',
       );

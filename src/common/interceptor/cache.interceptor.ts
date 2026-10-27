@@ -7,12 +7,12 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { Observable, of, tap, catchError, throwError } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { CacheService } from '../service/cache.service.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(CacheInterceptor.name);
+  private readonly logger = new Logger();
 
   constructor(
     private readonly cacheService: CacheService,

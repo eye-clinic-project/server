@@ -11,4 +11,4 @@ export interface IAuthSocket extends Socket{
     credentials:{ user:HUserDocument, decoded:JwtPayload}
 }
 
-export type CtxType = "http" | "ws" | "rpc" | "graphql" ;
+export type CtxType = "http" | "ws" | "graphql" ;
