@@ -15,7 +15,7 @@ import { UserRepository } from '../../../../core/database/repository/user.reposi
 import { RedisKeys, RedisService } from '../../redis/redis.service.js';
 
 import { TokenType } from '../../../enum/security.enum.js';
-import { DecodedToken, JwtType, VerifyJwt } from '../../../_interface/security.interface.js';
+import { DecodedToken, JwtType, VerifyJwt } from '../../../interface/security.interface.js';
 import { UserRole } from '../../../enum/user.enum.js';
 
 @Injectable()
