@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 
@@ -18,12 +18,9 @@ import { UserRepository } from '../../core/database/repository/user.repository.j
 import { RedisKeys, CacheService } from './cache.service.js';
 
 import { TokenEnum, UserRoleEnum } from '../enum/security.enum.js';
-import {
-  DecodedToken,
-  JwtType,
-  VerifyJwt,
-} from '../interface/security.interface.js';
+
 import { UtilService } from './util.service.js';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class TokenService {
@@ -66,15 +63,22 @@ export class TokenService {
     payload,
     secret = this.accessUserTokenSignature,
     options,
-  }: JwtType): Promise<string> {
+  }: {
+    payload: object;
+    secret?: string;
+    options?: JwtSignOptions;
+  }): Promise<string> {
     return this.jwtService.signAsync(payload, { ...options, secret });
   }
 
   async verify({
     token,
     secret = this.accessUserTokenSignature,
-  }: VerifyJwt): Promise<DecodedToken> {
-    return this.jwtService.verifyAsync<DecodedToken>(token, { secret });
+  }: {
+    token: string;
+    secret?: string;
+  }): Promise<JwtPayload> {
+    return this.jwtService.verifyAsync<JwtPayload>(token, { secret });
   }
 
   getSignature(tokenType: TokenEnum, _role: UserRoleEnum): string {
@@ -89,13 +93,13 @@ export class TokenService {
   }: {
     token: string;
     tokenType?: TokenEnum;
-  }): Promise<{ user: HUserDocument; decoded: DecodedToken }> {
+  }): Promise<{ user: HUserDocument; decoded: JwtPayload }> {
     const rawDecoded = this.jwtService.decode(token);
     if (!rawDecoded || typeof rawDecoded !== 'object') {
       throw new BadRequestException('Invalid token payload');
     }
 
-    const decoded = rawDecoded as DecodedToken;
+    const decoded = rawDecoded as JwtPayload;
     if (!Array.isArray(decoded.aud) || decoded.aud.length !== 2) {
       throw new BadRequestException('Invalid token audience');
     }
