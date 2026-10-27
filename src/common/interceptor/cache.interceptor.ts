@@ -12,7 +12,7 @@ import { CacheService } from '../service/cache.service.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger(CacheInterceptor.name);
 
   constructor(
     private readonly cacheService: CacheService,
@@ -26,8 +26,9 @@ export class CacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
-    const response = context.switchToHttp().getResponse<Response>();
+    const httpContext = context.switchToHttp();
+    const request = httpContext.getRequest<Request>();
+    const response = httpContext.getResponse<Response>();
 
     if (request.method !== 'GET') {
       return next.handle();
@@ -42,7 +43,7 @@ export class CacheInterceptor implements NestInterceptor {
         response.setHeader('X-Cache', 'HIT');
         return of(cached);
       }
-    } catch (error) {
+    } catch {
       this.logger.warn('Cache read failed; continuing without cache');
     }
 
