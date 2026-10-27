@@ -9,7 +9,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
-import { ROLES_KEY } from '../decorator/role.decorator.js';
+import { roleName } from '../decorator/role.decorator.js';
 import { CtxType, IAuthReq, IAuthSocket } from '../interface/ctx.interface.js';
 
 
@@ -19,7 +19,7 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const roles = this.reflector.getAllAndOverride<string[]>(
-      ROLES_KEY,
+      roleName,
       [context.getHandler(), context.getClass()],
     );
 

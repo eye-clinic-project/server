@@ -11,7 +11,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import type { Request } from 'express';
 
 
-import { RATE_LIMIT_KEY } from '../decorator/limit.decorator.js';
+import { rateLimitName } from '../decorator/limit.decorator.js';
 import { CacheService } from '../service/cache.service.js';
 import { RateLimitOptions } from '../interface/decorator.interface.js';
 import { CtxType, IAuthReq, IAuthSocket } from '../interface/ctx.interface.js';
@@ -25,7 +25,7 @@ export class RateLimitGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const options = this.reflector.getAllAndOverride<RateLimitOptions>(
-      RATE_LIMIT_KEY,
+      rateLimitName,
       [context.getHandler(), context.getClass()],
     );
 
