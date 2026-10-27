@@ -6,7 +6,7 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { UserRoleEnum } from '../../../common/enum/security.enum.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
 
 registerEnumType(UserRoleEnum, { name: 'UserRole' });
 
