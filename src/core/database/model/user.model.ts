@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { UserRole } from '../../../common/enum/user.enum.js';
+import { UserRole } from '../../../common/enum/security.enum.js';
+
 
 
 

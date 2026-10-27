@@ -5,6 +5,11 @@ export enum AppointmentStatus {
   COMPLETED = 'completed',
 }
 
+export enum GenderEnum {
+    MALE = "male",
+    FEMALE = "female"
+}
+
 export enum MessageStatus {
   SENT = 'sent',
   DELIVERED = 'delivered',

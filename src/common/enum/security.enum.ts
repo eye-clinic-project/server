@@ -7,6 +7,11 @@ export enum LogoutEnum {
   ALL,
 }
 
+export enum UserRole {
+    DOCTOR = 'doctor',
+    PATIENT = 'patient',
+}
+
 export enum ProviderEnum {
   SYSTEM,
   GOOGLE,
