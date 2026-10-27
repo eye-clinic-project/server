@@ -10,7 +10,7 @@ import { TokenService } from '../service/token.service.js';
 import { UploadService } from '../service/upload.service.js';
 import { UtilService } from '../service/util.service.js';
 import { CacheModule } from './cache.module.js';
-import { SchemasModule } from './schema.module.js';
+
 
 const services = [
   LoggerService,
@@ -23,7 +23,7 @@ const services = [
 
 @Global()
 @Module({
-  imports: [ConfigModule, JwtModule.register({}), SchemasModule, CacheModule],
+  imports: [ConfigModule, JwtModule.register({}), CacheModule],
   providers: [UserRepository, ...services],
   exports: services,
 })

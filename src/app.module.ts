@@ -26,7 +26,7 @@ import { AppointmentModule } from './route/appointment/appointment.module.js';
 import { ServiceModule } from './common/module/service.module.js';
 import { CacheModule } from './common/module/cache.module.js';
 import { DatabaseModule } from './common/module/database.module.js';
-import { SchemasModule } from './common/module/schema.module.js';
+
 
 
 
@@ -39,7 +39,6 @@ import { SchemasModule } from './common/module/schema.module.js';
     ServiceModule,
     CacheModule,
     DatabaseModule,
-    SchemasModule,
     MessageModule,
     AuthenticationModule,
     DoctorModule,
