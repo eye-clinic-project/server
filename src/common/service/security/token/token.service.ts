@@ -131,12 +131,6 @@ export class TokenService {
       throw new NotFoundException('Account not found');
     }
 
-    if (
-      user.changeCredentialsTime &&
-      user.changeCredentialsTime.getTime() >= verifiedData.iat * 1000
-    ) {
-      throw new UnauthorizedException('Invalid login session');
-    }
     if (user.role !== claimedRole) {
       throw new UnauthorizedException('Invalid login session');
     }
