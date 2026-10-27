@@ -32,6 +32,7 @@ import type { Request } from 'express';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: ['.env.development', '.env'],
       load: [configuration],
       isGlobal: true,
     }),
