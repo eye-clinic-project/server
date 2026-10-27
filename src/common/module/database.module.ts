@@ -3,14 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Connection } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../../core/database/model/user.model.js';
-import {
-  Doctor,
-  DoctorSchema,
-} from '../../core/database/model/doctor.model.js';
-import {
-  Patient,
-  PatientSchema,
-} from '../../core/database/model/patient.model.js';
+
 import {
   Appointment,
   AppointmentSchema,
@@ -35,6 +28,10 @@ import {
   Notification,
   NotificationSchema,
 } from '../../core/database/model/notification.model.js';
+import { Patient, PatientSchema } from '../../core/database/model/patient.model.js';
+import { Doctor } from '../../core/database/model/doctor.model.js';
+import { DoctorPatient, DoctorPatientSchema } from '../../core/database/model/doctor-patient.model.js';
+import { FundusImage, FundusImageSchema } from '../../core/database/model/fundus-image.model.js';
 
 const logger = new Logger('Database');
 
@@ -61,11 +58,13 @@ export const databaseConnection = MongooseModule.forRootAsync({
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
-  { name: Doctor.name, schema: DoctorSchema },
+  { name: Doctor.name, schema: DoctorPatientSchema },
   { name: Patient.name, schema: PatientSchema },
+  { name: DoctorPatient.name, schema: DoctorPatientSchema },
   { name: Appointment.name, schema: AppointmentSchema },
   { name: Conversation.name, schema: ConversationSchema },
   { name: Message.name, schema: MessageSchema },
+  { name: FundusImage.name, schema: FundusImageSchema },
   { name: Analysis.name, schema: AnalysisSchema },
   { name: Report.name, schema: ReportSchema },
   { name: Notification.name, schema: NotificationSchema },
@@ -76,4 +75,4 @@ const models = MongooseModule.forFeature([
   imports: [databaseConnection, models],
   exports: [databaseConnection, models],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }

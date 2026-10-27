@@ -32,9 +32,17 @@ export enum DrSeverity {
 }
 
 export enum NotificationType {
-  ANALYSIS_READY = 'analysis_ready',
-  REPORT_READY = 'report_ready',
   APPOINTMENT = 'appointment',
+  ANALYSIS = 'analysis',
   MESSAGE = 'message',
-  DOCTOR_NOTE = 'doctor_note',
+  SYSTEM = 'system',
+  NOTE = 'note',
+}
+
+export enum DRLevel {
+  NO_DR = 0,
+  MILD = 1,
+  MODERATE = 2,
+  SEVERE = 3,
+  PROLIFERATIVE = 4,
 }

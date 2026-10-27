@@ -1,20 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Patient, HPatientDocument } from '../model/patient.model.js';
+
 import { DatabaseRepository } from './base.repository.js';
+import { IPatient } from '../../../common/interface/database-schema.interface.js';
+import { Patient } from '../model/patient.model.js';
 
 @Injectable()
-export class PatientRepository extends DatabaseRepository<HPatientDocument> {
-  constructor(@InjectModel(Patient.name) model: Model<HPatientDocument>) {
-    super(model);
+export class PatientRepository extends DatabaseRepository<IPatient> {
+  constructor(
+    @InjectModel(Patient.name)
+    private readonly patientProfileModel: Model<IPatient>,
+  ) {
+    super(patientProfileModel);
   }
 
-  search(term: string, page = 1, size = 10) {
-    return this.paginate({
-      filter: { $text: { $search: term } },
-      page,
-      size,
-    });
+  async findByUserId(userId: Types.ObjectId) {
+    return this.patientProfileModel
+      .findOne({ user: userId })
+      .populate('user')
+      .exec();
+  }
+
+  async findByGender(gender: 'male' | 'female') {
+    return this.patientProfileModel
+      .find({ gender })
+      .populate('user')
+      .exec();
+  }
+
+  async findByUserIds(userIds: Types.ObjectId[]) {
+    return this.patientProfileModel
+      .find({ user: { $in: userIds } })
+      .populate('user')
+      .exec();
   }
 }

@@ -23,6 +23,7 @@ import {
   JwtType,
   VerifyJwt,
 } from '../interface/security.interface.js';
+import { UtilService } from './util.service.js';
 
 @Injectable()
 export class TokenService {
@@ -35,6 +36,7 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redis: CacheService,
+    private readonly utilService: UtilService,
     private readonly userRepository: UserRepository,
   ) {
     this.accessTokenExpiresIn = Number(
@@ -127,9 +129,10 @@ export class TokenService {
       throw new UnauthorizedException('Invalid login session');
     }
 
-    const user = await this.userRepository.findOne({
-      filter: { _id: verifiedData.sub },
-    });
+    const user = await this.userRepository.findHydratedById(
+      new Types.ObjectId(verifiedData.sub),
+    );
+
     if (!user) {
       throw new NotFoundException('Account not found');
     }

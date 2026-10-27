@@ -1,16 +1,61 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Report, HReportDocument } from '../model/report.model.js';
 import { DatabaseRepository } from './base.repository.js';
+import { IReport } from '../../../common/interface/database-schema.interface.js';
+import { Report } from '../model/report.model.js';
 
 @Injectable()
-export class ReportRepository extends DatabaseRepository<HReportDocument> {
-  constructor(@InjectModel(Report.name) model: Model<HReportDocument>) {
-    super(model);
+export class ReportRepository extends DatabaseRepository<IReport> {
+  constructor(
+    @InjectModel(Report.name)
+    private readonly reportModel: Model<IReport>,
+  ) {
+    super(reportModel);
   }
 
-  findByAnalysis(analysisId: Types.ObjectId | string) {
-    return this.findOne({ filter: { analysis: analysisId } });
+  async findByPatient(patientId: Types.ObjectId) {
+    return this.reportModel
+      .find({ patient: patientId })
+      .populate('doctor')
+      .populate('analysis')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findByDoctor(doctorId: Types.ObjectId) {
+    return this.reportModel
+      .find({ doctor: doctorId })
+      .populate('patient')
+      .populate('analysis')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findByAnalysis(analysisId: Types.ObjectId) {
+    return this.reportModel
+      .find({ analysis: analysisId })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findByPatientAndId(
+    patientId: Types.ObjectId,
+    reportId: Types.ObjectId,
+  ) {
+    return this.reportModel
+      .findOne({
+        _id: reportId,
+        patient: patientId,
+      })
+      .populate('doctor')
+      .populate('analysis')
+      .exec();
+  }
+
+  async countByPatient(patientId: Types.ObjectId) {
+    return this.reportModel.countDocuments({
+      patient: patientId,
+    });
   }
 }
