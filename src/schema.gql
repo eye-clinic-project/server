@@ -1,0 +1,124 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type DeleteNotificationResult {
+  deleted: Boolean!
+}
+
+"""Arbitrary JSON value"""
+scalar JSON
+
+type MarkNotificationsReadResult {
+  modifiedCount: Int!
+}
+
+type Mutation {
+  assignPatient(patientId: ID!): JSON!
+  cancelAppointment(appointmentId: ID!): JSON!
+  confirmAppointment(appointmentId: ID!): JSON!
+  createAppointment(input: JSON!): JSON!
+  createDoctorProfile(input: JSON!): JSON!
+  createPatientProfile(input: JSON!): JSON!
+  createReport(input: JSON!): JSON!
+  deleteChatMessage(messageId: ID!): JSON!
+  editChatMessage(message: String!, messageId: ID!): JSON!
+  googleCredential(input: JSON!): JSON!
+  login(input: JSON!): JSON!
+  logout(allSessions: Boolean = false): JSON!
+  markAllNotificationsAsRead: MarkNotificationsReadResult!
+  markChatDelivered(conversationId: ID!): JSON!
+  markChatRead(conversationId: ID!): JSON!
+  markNotificationAsRead(notificationId: ID!): Notification!
+  removeNotification(notificationId: ID!): DeleteNotificationResult!
+  removeReport(reportId: ID!): JSON!
+  rescheduleAppointment(appointmentId: ID!, input: JSON!): JSON!
+  rotateRefreshToken(refreshToken: String!): JSON!
+  sendChatMessage(conversationId: ID!, input: JSON!): JSON!
+  sendNotification(input: SendNotificationInput!): Notification!
+  sendVerificationEmail(input: JSON!): JSON!
+  signUp(input: JSON!): JSON!
+  startChat(participantId: ID!): JSON!
+  unassignPatient(patientId: ID!): JSON!
+  updateDoctorProfile(input: JSON!): JSON!
+  updateMyProfile(input: UpdateMyProfileInput!): UserProfile!
+  updatePatientProfile(input: JSON!): JSON!
+  updateReport(input: JSON!, reportId: ID!): JSON!
+  verifyEmail(input: JSON!): JSON!
+}
+
+type Notification {
+  body: String!
+  createdAt: DateTime
+  id: ID!
+  read: Boolean!
+  recipientId: ID!
+  title: String!
+  type: NotificationType!
+  updatedAt: DateTime
+}
+
+enum NotificationType {
+  ANALYSIS
+  APPOINTMENT
+  MESSAGE
+  NOTE
+  SYSTEM
+}
+
+type Query {
+  analyses: JSON!
+  analysis(analysisId: ID!): JSON!
+  appointment(appointmentId: ID!): JSON!
+  assignedPatientRecords(patientId: ID!): JSON!
+  conversationMessages(conversationId: ID!, limit: Int = 30, skip: Int = 0): JSON!
+  doctorProfile(doctorId: ID!): JSON!
+  doctors: JSON!
+  myAppointments: JSON!
+  myAssignedPatients: JSON!
+  myConversations: JSON!
+  myDoctorAppointments: JSON!
+  myDoctorProfile: JSON!
+  myNotifications(limit: Int = 20, skip: Int = 0): [Notification!]!
+  myPatientMedicalRecords: JSON!
+  myPatientProfile: JSON!
+  myProfile: UserProfile!
+  myReports: JSON!
+  myUnreadNotificationCount: Int!
+  myUnreadNotifications: [Notification!]!
+  myUpcomingAppointments: JSON!
+  report(reportId: ID!): JSON!
+}
+
+input SendNotificationInput {
+  body: String!
+  recipientId: ID!
+  title: String!
+  type: NotificationType
+}
+
+input UpdateMyProfileInput {
+  city: String
+  name: String
+}
+
+type UserProfile {
+  avatarUrl: String
+  city: String!
+  createdAt: DateTime
+  email: String!
+  id: ID!
+  name: String!
+  role: UserRole!
+  updatedAt: DateTime
+}
+
+enum UserRole {
+  DOCTOR
+  PATIENT
+}
