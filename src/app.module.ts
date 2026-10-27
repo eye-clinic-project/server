@@ -23,6 +23,7 @@ import { TransformInterceptor } from './common/interceptor/transform.interceptor
 import { TimeoutInterceptor } from './common/interceptor/timeout.interceptor.js';
 import { LanguageInterceptor } from './common/interceptor/language.interceptor.js';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { NotificationModule } from './module/notification/notification.module.js';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
     AppointmentModule,
     ChatModule,
     UserModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [
