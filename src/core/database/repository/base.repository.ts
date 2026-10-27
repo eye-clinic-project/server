@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import {
   CreateOptions,
@@ -17,9 +16,7 @@ import {
 
 @Injectable()
 export abstract class DatabaseRepository<T> {
-  constructor(
-    protected readonly model: Model<T>,
-  ) {}
+  constructor(protected readonly model: Model<T>) {}
 
   async create({
     data,
@@ -175,20 +172,22 @@ export abstract class DatabaseRepository<T> {
       session?: Exclude<QueryOptions<T>['session'], null>;
     };
   }): Promise<UpdateResult> {
-    return this.model.updateOne(
-      filter,
-      {
-        ...update,
-        $inc: {
-          ...update.$inc,
-          __v: 1,
+    return this.model
+      .updateOne(
+        filter,
+        {
+          ...update,
+          $inc: {
+            ...update.$inc,
+            __v: 1,
+          },
         },
-      },
-      {
-        ...options,
-        runValidators: true,
-      },
-    ).exec();
+        {
+          ...options,
+          runValidators: true,
+        },
+      )
+      .exec();
   }
 
   async updateMany({
@@ -202,11 +201,7 @@ export abstract class DatabaseRepository<T> {
       session?: Exclude<QueryOptions<T>['session'], null>;
     };
   }): Promise<UpdateResult> {
-    return this.model.updateMany(
-      filter,
-      update,
-      options,
-    ).exec();
+    return this.model.updateMany(filter, update, options).exec();
   }
 
   async findOneAndUpdate({
@@ -220,21 +215,24 @@ export abstract class DatabaseRepository<T> {
     options?: QueryOptions<T>;
     populate?: PopulateOptions[];
   }) {
-    return this.model.findOneAndUpdate(
-      filter,
-      {
-        ...update,
-        $inc: {
-          ...update.$inc,
-          __v: 1,
+    return this.model
+      .findOneAndUpdate(
+        filter,
+        {
+          ...update,
+          $inc: {
+            ...update.$inc,
+            __v: 1,
+          },
         },
-      },
-      {
-        new: true,
-        runValidators: true,
-        ...options,
-      },
-    ).populate(populate).exec();
+        {
+          new: true,
+          runValidators: true,
+          ...options,
+        },
+      )
+      .populate(populate)
+      .exec();
   }
 
   async findByIdAndUpdate({
@@ -246,21 +244,23 @@ export abstract class DatabaseRepository<T> {
     update: UpdateQuery<T>;
     options?: QueryOptions<T>;
   }) {
-    return this.model.findByIdAndUpdate(
-      _id,
-      {
-        ...update,
-        $inc: {
-          ...update.$inc,
-          __v: 1,
+    return this.model
+      .findByIdAndUpdate(
+        _id,
+        {
+          ...update,
+          $inc: {
+            ...update.$inc,
+            __v: 1,
+          },
         },
-      },
-      {
-        new: true,
-        runValidators: true,
-        ...options,
-      },
-    ).exec();
+        {
+          new: true,
+          runValidators: true,
+          ...options,
+        },
+      )
+      .exec();
   }
 
   async deleteOne({
@@ -279,19 +279,11 @@ export abstract class DatabaseRepository<T> {
     return this.model.deleteMany(filter).exec();
   }
 
-  async findOneAndDelete({
-    filter,
-  }: {
-    filter: QueryFilter<T>;
-  }) {
+  async findOneAndDelete({ filter }: { filter: QueryFilter<T> }) {
     return this.model.findOneAndDelete(filter).exec();
   }
 
-  async findByIdAndDelete({
-    _id,
-  }: {
-    _id: Types.ObjectId | string;
-  }) {
+  async findByIdAndDelete({ _id }: { _id: Types.ObjectId | string }) {
     return this.model.findByIdAndDelete(_id).exec();
   }
 }

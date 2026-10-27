@@ -24,7 +24,7 @@
 //             client.emit("custom_error" , error.message )
 
 //         }
-        
+
 //     }
 //     async handleDisconnect(client: Socket) {
 //         try {

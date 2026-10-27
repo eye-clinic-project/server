@@ -8,11 +8,10 @@ class Server {
   public async run() {
     const app = await NestFactory.create(AppModule, {
       logger: new LoggerService(),
-
     });
     const config = app.get(ConfigService);
     const logger = app.get(LoggerService);
-    
+
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -22,10 +21,7 @@ class Server {
     );
 
     app.enableCors({
-      origin: config.get<string>(
-        'app.corsOrigin',
-        'http://localhost:3000',
-      ),
+      origin: config.get<string>('app.corsOrigin', 'http://localhost:3000'),
       credentials: true,
     });
 

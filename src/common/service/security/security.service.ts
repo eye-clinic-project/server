@@ -1,13 +1,6 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from 'node:crypto';
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -20,7 +13,7 @@ export class SecurityService {
     const key = this.configService.get<string>('encryption.key');
 
     if (!key) {
-      throw new InternalServerErrorException( 'ENCRYPTION_KEY is missing');
+      throw new InternalServerErrorException('ENCRYPTION_KEY is missing');
     }
 
     this.key = Buffer.from(key, 'base64');
@@ -35,11 +28,7 @@ export class SecurityService {
   encrypt(value: string): string {
     const iv = randomBytes(12);
 
-    const cipher = createCipheriv(
-      this.algorithm,
-      this.key,
-      iv,
-    );
+    const cipher = createCipheriv(this.algorithm, this.key, iv);
 
     const encrypted = Buffer.concat([
       cipher.update(value, 'utf8'),
@@ -72,11 +61,7 @@ export class SecurityService {
       throw new Error('Invalid encrypted value');
     }
 
-    const decipher = createDecipheriv(
-      this.algorithm,
-      this.key,
-      iv,
-    );
+    const decipher = createDecipheriv(this.algorithm, this.key, iv);
 
     decipher.setAuthTag(authTag);
 
@@ -92,15 +77,7 @@ export class SecurityService {
     return bcrypt.hash(value, this.saltRounds);
   }
 
-  async compare(
-    value: string,
-    hashedValue: string,
-  ): Promise<boolean> {
+  async compare(value: string, hashedValue: string): Promise<boolean> {
     return bcrypt.compare(value, hashedValue);
   }
-
 }
-
-
-
-

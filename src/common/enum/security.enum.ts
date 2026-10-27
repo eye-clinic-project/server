@@ -8,8 +8,8 @@ export enum LogoutEnum {
 }
 
 export enum UserRole {
-    DOCTOR = 'doctor',
-    PATIENT = 'patient',
+  DOCTOR = 'doctor',
+  PATIENT = 'patient',
 }
 
 export enum ProviderEnum {

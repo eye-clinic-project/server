@@ -13,7 +13,10 @@ export class AnalysisRepository extends DatabaseRepository<AnalysisDocument> {
   history(patientId: Types.ObjectId | string, page = 1, size = 10) {
     return this.paginate({
       filter: { patient: patientId },
-      options: { sort: { createdAt: -1 }, populate: [{ path: 'doctor', select: 'fullName' }] },
+      options: {
+        sort: { createdAt: -1 },
+        populate: [{ path: 'doctor', select: 'fullName' }],
+      },
       page,
       size,
     });

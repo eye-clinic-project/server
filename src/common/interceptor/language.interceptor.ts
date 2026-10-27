@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NestInterceptor,
@@ -8,20 +7,12 @@ import {
 import { Observable } from 'rxjs';
 import { LanguageRequest } from '../interface/interceptor.interface.js';
 
-
-
 @Injectable()
 export class LanguageInterceptor implements NestInterceptor {
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<unknown> {
-    const req = context
-      .switchToHttp()
-      .getRequest<LanguageRequest>();
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const req = context.switchToHttp().getRequest<LanguageRequest>();
 
-    req.headers['accept-language'] ??=
-      req.credentials?.user?.lang ?? 'en';
+    req.headers['accept-language'] ??= req.credentials?.user?.lang ?? 'en';
 
     return next.handle();
   }

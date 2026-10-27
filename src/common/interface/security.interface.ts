@@ -9,11 +9,11 @@ export interface DecodedToken extends JwtPayload {
   exp?: number;
 }
 export interface JwtType {
-    payload: object;
-    secret?: string;
-    options?: JwtSignOptions;
-  }
-  export interface VerifyJwt{
-    token: string;
-    secret?: string;
-  }
+  payload: object;
+  secret?: string;
+  options?: JwtSignOptions;
+}
+export interface VerifyJwt {
+  token: string;
+  secret?: string;
+}

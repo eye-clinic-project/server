@@ -5,6 +5,7 @@ import { ChatService } from './chat.service.js';
 @Module({
   providers: [
     // ChatGateway,
-    ChatService],
+    ChatService,
+  ],
 })
-export class ChatModule { }
+export class ChatModule {}

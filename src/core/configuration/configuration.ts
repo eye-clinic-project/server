@@ -10,9 +10,9 @@ export default () => ({
     host: process.env.REDIS_HOST ?? '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT ?? '', 10) || 6379,
   },
-  encryption : {
-    key : process.env.ENCRYPTION_KEY
-  }
+  encryption: {
+    key: process.env.ENCRYPTION_KEY,
+  },
   // mail: {
   //   host: process.env.SMTP_HOST,
   //   port: parseInt(process.env.SMTP_PORT ?? '', 10) || 587,

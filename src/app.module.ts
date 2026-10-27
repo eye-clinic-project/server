@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ConfigModule } from '@nestjs/config';
-import {  DatabaseModule } from './core/database/database.connection.js';
+import { DatabaseModule } from './core/database/database.connection.js';
 import configuration from './core/configuration/configuration.js';
 import { RedisModule } from './common/service/redis/redis.module.js';
 import { MailModule } from './common/service/mail/mail.module.js';
@@ -46,7 +46,8 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService,
+  providers: [
+    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
@@ -63,10 +64,10 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
       provide: APP_INTERCEPTOR,
       useClass: LanguageInterceptor,
     },
-        {
+    {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

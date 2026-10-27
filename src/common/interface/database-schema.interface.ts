@@ -1,38 +1,17 @@
-export interface IUser {
+export interface IUser {}
 
-}
+export interface IDoctor extends IUser {}
+export interface IPatient extends IUser {}
+export interface IAppointment {}
 
-export interface IDoctor extends IUser {
+export interface IAnalysis {}
 
-}
-export interface IPatient extends IUser {
+export interface IConversation {}
 
-}
-export interface IAppointment {
+export interface IMessage {}
 
-}
+export interface IMessage {}
 
-export interface IAnalysis {
+export interface INotification {}
 
-}
-
-export interface IConversation {
-
-}
-
-
-export interface IMessage {
-
-}
-
-export interface IMessage {
-
-}
-
-export interface INotification {
-
-}
-
-export interface IReport {
-
-}
+export interface IReport {}

@@ -10,7 +10,6 @@ import { tap } from 'rxjs/operators';
 import type { Request, Response } from 'express';
 import { RedisService } from '../service/redis/redis.service.js';
 
-
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
   constructor(
@@ -39,7 +38,7 @@ export class CacheInterceptor implements NestInterceptor {
 
     const key = `http-cache:${request.originalUrl}`;
 
-    const cached = await this.cacheService.getCache({key});
+    const cached = await this.cacheService.getCache({ key });
 
     if (cached !== null && cached !== undefined) {
       response.setHeader('X-Cache', 'HIT');
@@ -55,7 +54,7 @@ export class CacheInterceptor implements NestInterceptor {
             key,
             value: data,
             options: {
-                EX : 60 
+              EX: 60,
             },
           });
         }

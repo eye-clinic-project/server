@@ -4,9 +4,7 @@ import { HydratedDocument, Types } from 'mongoose';
 export type PatientDocument = HydratedDocument<Patient>;
 
 @Schema({ timestamps: true, collection: 'patients' })
-export class Patient {
-
-}
+export class Patient {}
 
 export const PatientSchema = SchemaFactory.createForClass(Patient);
-PatientSchema.index({ fullName: 'text' }); 
+PatientSchema.index({ fullName: 'text' });

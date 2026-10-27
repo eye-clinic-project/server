@@ -6,8 +6,8 @@ export enum AppointmentStatus {
 }
 
 export enum GenderEnum {
-    MALE = "male",
-    FEMALE = "female"
+  MALE = 'male',
+  FEMALE = 'female',
 }
 
 export enum MessageStatus {

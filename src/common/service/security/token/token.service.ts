@@ -9,14 +9,20 @@ import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 
-import { User, UserDocument } from '../../../../core/database/model/user.model.js';
+import {
+  User,
+  UserDocument,
+} from '../../../../core/database/model/user.model.js';
 import { UserRepository } from '../../../../core/database/repository/user.repository.js';
 
 import { RedisKeys, RedisService } from '../../redis/redis.service.js';
 
 import { TokenType, UserRole } from '../../../enum/security.enum.js';
-import { DecodedToken, JwtType, VerifyJwt } from '../../../interface/security.interface.js';
-
+import {
+  DecodedToken,
+  JwtType,
+  VerifyJwt,
+} from '../../../interface/security.interface.js';
 
 @Injectable()
 export class TokenService {
@@ -58,21 +64,18 @@ export class TokenService {
     payload,
     secret = this.accessUserTokenSignature,
     options,
-  }: JwtType ): Promise<string> {
+  }: JwtType): Promise<string> {
     return this.jwtService.signAsync(payload, { ...options, secret });
   }
 
   async verify({
     token,
     secret = this.accessUserTokenSignature,
-  }:VerifyJwt): Promise<DecodedToken> {
+  }: VerifyJwt): Promise<DecodedToken> {
     return this.jwtService.verifyAsync<DecodedToken>(token, { secret });
   }
 
-  getSignature(
-    tokenType: TokenType,
-    _role: UserRole,
-  ): string {
+  getSignature(tokenType: TokenType, _role: UserRole): string {
     return tokenType === TokenType.REFRESH
       ? this.refreshUserTokenSignature
       : this.accessUserTokenSignature;

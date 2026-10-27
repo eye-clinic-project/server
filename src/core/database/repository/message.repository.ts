@@ -4,7 +4,6 @@ import { Model, Types } from 'mongoose';
 import { Message, MessageDocument } from '../model/message.model.js';
 import { DatabaseRepository } from './base.repository.js';
 
-
 @Injectable()
 export class MessageRepository extends DatabaseRepository<MessageDocument> {
   constructor(@InjectModel(Message.name) model: Model<MessageDocument>) {

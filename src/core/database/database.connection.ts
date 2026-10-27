@@ -17,7 +17,9 @@ export const databaseConnection = MongooseModule.forRootAsync({
       connection.on('reconnected', () => logger.log('reconnected'));
       connection.on('disconnecting', () => logger.warn('disconnecting'));
       connection.on('disconnected', () => logger.warn('disconnected'));
-      connection.on('error', (err: Error) => logger.error(err.message, err.stack));
+      connection.on('error', (err: Error) =>
+        logger.error(err.message, err.stack),
+      );
 
       return connection;
     },

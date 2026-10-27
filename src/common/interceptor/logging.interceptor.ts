@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NestInterceptor,
@@ -11,12 +10,8 @@ import { LoggerService } from '../service/log/logger.service.js';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  
-constructor(private readonly logger :  LoggerService ){}
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<unknown> {
+  constructor(private readonly logger: LoggerService) {}
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const req = context.switchToHttp().getRequest();
     const method = req.method;
     const url = req.originalUrl ?? req.url;
