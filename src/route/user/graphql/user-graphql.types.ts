@@ -27,13 +27,13 @@ export class UserProfileGraphqlType {
   @Field(() => UserRoleEnum)
   role!: UserRoleEnum;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   avatarUrl!: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   createdAt!: Date | null;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   updatedAt!: Date | null;
 }
 

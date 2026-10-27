@@ -9,7 +9,7 @@ import { ReportRepository } from '../../core/database/repository/report.reposito
 import { UserRepository } from '../../core/database/repository/user.repository.js';
 import { DoctorService } from './doctor.service.js';
 import { DoctorController } from './doctor.controller.js';
-import { DoctorResolver } from './graphql/doctor.resolver.js';
+import { DoctorResolver } from './doctor.resolver.js';
 
 @Module({
   controllers: [DoctorController],

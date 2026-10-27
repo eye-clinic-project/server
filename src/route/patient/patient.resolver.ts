@@ -1,12 +1,12 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Auth } from '../../../common/decorator/auth.decorator.js';
-import { User } from '../../../common/decorator/user.decorator.js';
-import { UserRoleEnum } from '../../../common/enum/security.enum.js';
-import type { HUserDocument } from '../../../core/database/model/user.model.js';
-import { GraphQLJSON } from '../../../common/graphql/json.scalar.js';
-import { CreatePatientDto } from '../dto/create-patient.dto.js';
-import { UpdatePatientDto } from '../dto/update-patient.dto.js';
-import { PatientService } from '../patient.service.js';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
+import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { CreatePatientDto } from './dto/create-patient.dto.js';
+import { UpdatePatientDto } from './dto/update-patient.dto.js';
+import { PatientService } from './patient.service.js';
 
 @Resolver()
 @Auth([UserRoleEnum.PATIENT])

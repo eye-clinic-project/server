@@ -1,8 +1,8 @@
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { GraphQLJSON } from '../../../common/graphql/json.scalar.js';
-import { AnalysisService } from '../analysis.service.js';
-import { CreateAnalysisDto } from '../dto/create-analysis.dto.js';
-import { UpdateAnalysisDto } from '../dto/update-analysis.dto.js';
+import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { AnalysisService } from './analysis.service.js';
+import { CreateAnalysisDto } from './dto/create-analysis.dto.js';
+import { UpdateAnalysisDto } from './dto/update-analysis.dto.js';
 
 @Resolver()
 export class AnalysisResolver {

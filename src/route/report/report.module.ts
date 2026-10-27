@@ -5,7 +5,7 @@ import { DoctorModule } from '../doctor/doctor.module.js';
 import { ReportRepository } from '../../core/database/repository/report.repository.js';
 import { ReportService } from './report.service.js';
 import { ReportController } from './report.controller.js';
-import { ReportResolver } from './graphql/report.resolver.js';
+import { ReportResolver } from './report.resolver.js';
 
 @Module({
   imports: [DoctorModule],

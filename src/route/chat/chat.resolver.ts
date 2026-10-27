@@ -1,10 +1,10 @@
 import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Auth } from '../../../common/decorator/auth.decorator.js';
-import { User } from '../../../common/decorator/user.decorator.js';
-import { UserRoleEnum } from '../../../common/enum/security.enum.js';
-import type { HUserDocument } from '../../../core/database/model/user.model.js';
-import { GraphQLJSON } from '../../../common/graphql/json.scalar.js';
-import { ChatService } from '../chat.service.js';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
+import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { ChatService } from './chat.service.js';
 
 @Resolver()
 @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])

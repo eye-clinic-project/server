@@ -7,7 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { NotificationType } from '../../../common/enum/schema.enum.js';
+import { NotificationType } from '../../common/enum/schema.enum.js';
 
 registerEnumType(NotificationType, { name: 'NotificationType' });
 
@@ -31,10 +31,10 @@ export class NotificationGraphqlType {
   @Field(() => NotificationType)
   type!: NotificationType;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   createdAt!: Date | null;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   updatedAt!: Date | null;
 }
 

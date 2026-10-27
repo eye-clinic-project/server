@@ -1,11 +1,11 @@
 import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { InternalServerErrorException } from '@nestjs/common';
-import { Auth } from '../../../common/decorator/auth.decorator.js';
-import { User } from '../../../common/decorator/user.decorator.js';
-import { UserRoleEnum } from '../../../common/enum/security.enum.js';
-import type { HUserDocument } from '../../../core/database/model/user.model.js';
-import { NotificationType } from '../../../common/enum/schema.enum.js';
-import { NotificationService } from '../notification.service.js';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
+import { NotificationType } from '../../common/enum/schema.enum.js';
+import { NotificationService } from './notification.service.js';
 import {
   DeleteNotificationResult,
   MarkNotificationsReadResult,
