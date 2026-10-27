@@ -6,7 +6,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { LanguageRequest } from '../_interface/interceptor.interface.js';
+import { LanguageRequest } from '../interface/interceptor.interface.js';
 
 
 
