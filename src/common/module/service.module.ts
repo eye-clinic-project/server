@@ -11,7 +11,6 @@ import { UploadService } from '../service/upload.service.js';
 import { UtilService } from '../service/util.service.js';
 import { CacheModule } from './cache.module.js';
 
-
 const services = [
   LoggerService,
   MailService,

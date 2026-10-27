@@ -10,9 +10,7 @@ import { TransformInterceptor } from './common/interceptor/transform.interceptor
 import { TimeoutInterceptor } from './common/interceptor/timeout.interceptor.js';
 import { LanguageInterceptor } from './common/interceptor/language.interceptor.js';
 
-
 import { CacheInterceptor } from './common/interceptor/cache.interceptor.js';
-
 
 import { AuthenticationModule } from './route/authentication/authentication.module.js';
 import { MessageModule } from './route/message/message.module.js';
@@ -26,9 +24,6 @@ import { AppointmentModule } from './route/appointment/appointment.module.js';
 import { ServiceModule } from './common/module/service.module.js';
 import { CacheModule } from './common/module/cache.module.js';
 import { DatabaseModule } from './common/module/database.module.js';
-
-
-
 
 @Module({
   imports: [

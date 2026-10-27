@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -12,16 +11,15 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { roleName } from '../decorator/role.decorator.js';
 import { CtxType, IAuthReq, IAuthSocket } from '../interface/ctx.interface.js';
 
-
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const roles = this.reflector.getAllAndOverride<string[]>(
-      roleName,
-      [context.getHandler(), context.getClass()],
-    );
+    const roles = this.reflector.getAllAndOverride<string[]>(roleName, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (!roles?.length) {
       return true;
@@ -35,9 +33,9 @@ export class RolesGuard implements CanActivate {
         break;
 
       case 'graphql':
-        req = GqlExecutionContext.create(context)
-          .getContext<{ req: IAuthReq }>()
-          .req;
+        req = GqlExecutionContext.create(context).getContext<{
+          req: IAuthReq;
+        }>().req;
         break;
 
       case 'ws':

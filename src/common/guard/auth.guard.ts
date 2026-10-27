@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -13,22 +12,20 @@ import { TokenEnum } from '../enum/security.enum.js';
 import { CtxType, IAuthReq, IAuthSocket } from '../interface/ctx.interface.js';
 import { UtilService } from '../service/util.service.js';
 
-
-
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly tokenService: TokenService,
-    private readonly utilService : UtilService
+    private readonly utilService: UtilService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const tokenType =
-      this.reflector.getAllAndOverride<TokenEnum>(
-        tokenTypeName,
-        [context.getHandler(), context.getClass()],
-      ) ?? TokenEnum.ACCESS;
+      this.reflector.getAllAndOverride<TokenEnum>(tokenTypeName, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? TokenEnum.ACCESS;
 
     let req: IAuthReq | IAuthSocket;
     let authorization: string | undefined;
@@ -63,9 +60,7 @@ export class AuthGuard implements CanActivate {
       }
 
       default:
-        throw new UnauthorizedException(
-          'Unsupported execution context',
-        );
+        throw new UnauthorizedException('Unsupported execution context');
     }
 
     if (!authorization) {

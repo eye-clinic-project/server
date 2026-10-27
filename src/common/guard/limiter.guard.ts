@@ -1,4 +1,3 @@
-
 import {
   CanActivate,
   ExecutionContext,
@@ -9,7 +8,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { Request } from 'express';
-
 
 import { rateLimitName } from '../decorator/limit.decorator.js';
 import { CacheService } from '../service/cache.service.js';
@@ -62,9 +60,7 @@ export class RateLimitGuard implements CanActivate {
         const client = context.switchToWs().getClient<IAuthSocket>();
 
         const ip =
-          client.handshake?.address ??
-          client.conn?.remoteAddress ??
-          'unknown';
+          client.handshake?.address ?? client.conn?.remoteAddress ?? 'unknown';
 
         const pattern = context.switchToWs().getPattern();
 

@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NestInterceptor,
@@ -13,14 +12,9 @@ import { LoggerService } from '../service/logger.service.js';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  constructor(
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly logger: LoggerService) {}
 
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<unknown> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const startedAt = Date.now();
 
     let method: string;

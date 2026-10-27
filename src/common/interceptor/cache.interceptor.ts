@@ -1,4 +1,3 @@
-
 import {
   CallHandler,
   ExecutionContext,
@@ -14,9 +13,7 @@ import { CacheService } from '../service/cache.service.js';
 export class CacheInterceptor implements NestInterceptor {
   private readonly logger = new Logger(CacheInterceptor.name);
 
-  constructor(
-    private readonly cacheService: CacheService,
-  ) {}
+  constructor(private readonly cacheService: CacheService) {}
 
   async intercept(
     context: ExecutionContext,

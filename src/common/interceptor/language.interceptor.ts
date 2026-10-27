@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NestInterceptor,
@@ -13,32 +12,25 @@ import { IAuthReq } from '../interface/ctx.interface.js';
 
 @Injectable()
 export class LanguageInterceptor implements NestInterceptor {
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<unknown> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     let req: LanguageRequest;
 
     switch (context.getType<string>()) {
       case 'http':
-        req = context
-          .switchToHttp()
-          .getRequest<LanguageRequest>();
+        req = context.switchToHttp().getRequest<LanguageRequest>();
         break;
 
       case 'graphql':
-        req = GqlExecutionContext
-          .create(context)
-          .getContext<{ req: IAuthReq }>()
-          .req as LanguageRequest;
+        req = GqlExecutionContext.create(context).getContext<{
+          req: IAuthReq;
+        }>().req as LanguageRequest;
         break;
 
       default:
         return next.handle();
     }
 
-    req.headers['accept-language'] ??=
-      req.credentials?.user?.lang ?? 'en';
+    req.headers['accept-language'] ??= req.credentials?.user?.lang ?? 'en';
 
     return next.handle();
   }
