@@ -13,8 +13,8 @@ import type {
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';
 
-// Atomic: increments and sets the TTL only when the key is created,
-// so a crash between INCR and EXPIRE can never leave a key without a TTL.
+
+
 const INCR_WITH_TTL = `
 local v = redis.call('INCRBY', KEYS[1], ARGV[1])
 if v == tonumber(ARGV[1]) and tonumber(ARGV[2]) > 0 then
