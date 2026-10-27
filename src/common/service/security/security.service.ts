@@ -8,10 +8,11 @@ import {
   createDecipheriv,
   randomBytes,
 } from 'node:crypto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-
-export class EncryptionService {
+export class SecurityService {
+  private readonly saltRounds = 12;
   private readonly algorithm = 'aes-256-gcm';
   private readonly key: Buffer;
 
@@ -86,4 +87,20 @@ export class EncryptionService {
 
     return decrypted.toString('utf8');
   }
+
+  async hash(value: string): Promise<string> {
+    return bcrypt.hash(value, this.saltRounds);
+  }
+
+  async compare(
+    value: string,
+    hashedValue: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(value, hashedValue);
+  }
+
 }
+
+
+
+

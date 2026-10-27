@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ApiResponse } from './interface/interceptor.type.js';
+import { ApiResponse } from '../_interface/interceptor.interface.js';
 
 
 
