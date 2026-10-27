@@ -14,17 +14,17 @@ import { LanguageInterceptor } from './common/interceptor/language.interceptor.j
 import { CacheInterceptor } from './common/interceptor/cache.interceptor.js';
 
 
-import { AuthenticationModule } from './module/authentication/authentication.module.js';
-import { MessageModule } from './module/message/message.module.js';
-import { DoctorModule } from './module/doctor/doctor.module.js';
-import { AnalysisModule } from './module/analysis/analysis.module.js';
-import { ReportModule } from './module/report/report.module.js';
-import { ChatModule } from './module/chat/chat.module.js';
-import { NotificationModule } from './module/notification/notification.module.js';
-import { UserModule } from './module/user/user.module.js';
-import { AppointmentModule } from './module/appointment/appointment.module.js';
+import { AuthenticationModule } from './route/authentication/authentication.module.js';
+import { MessageModule } from './route/message/message.module.js';
+import { DoctorModule } from './route/doctor/doctor.module.js';
+import { AnalysisModule } from './route/analysis/analysis.module.js';
+import { ReportModule } from './route/report/report.module.js';
+import { ChatModule } from './route/chat/chat.module.js';
+import { NotificationModule } from './route/notification/notification.module.js';
+import { UserModule } from './route/user/user.module.js';
+import { AppointmentModule } from './route/appointment/appointment.module.js';
 import { ServiceModule } from './common/module/service.module.js';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule } from './common/module/cache.module.js';
 import { DatabaseModule } from './common/module/database.module.js';
 import { SchemasModule } from './common/module/schema.module.js';
 
