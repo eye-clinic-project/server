@@ -8,7 +8,7 @@ import type {
   GetOrSetCache,
   RateLimit,
   RateLimitResult,
-} from '../../interface/redis.interface.js';
+} from '../../_interface/redis.interface.js';
 
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';
@@ -28,6 +28,14 @@ if c == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
 local ttl = redis.call('TTL', KEYS[1])
 if ttl < 0 then redis.call('EXPIRE', KEYS[1], ARGV[1]); ttl = tonumber(ARGV[1]) end
 return { c, ttl }`;
+
+export const RedisKeys = {
+  otpKey: (email: string) => `otp:${email.toLowerCase()}`,
+  rateLimitKey: (scope: string, id: string) => `rate:${scope}:${id}`,
+  userToken: (userId: string, jti: string) =>
+    `auth:token:${userId}:${jti}`,
+  userTokens: (userId: string) => `auth:token:${userId}:*`,
+} as const;
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
