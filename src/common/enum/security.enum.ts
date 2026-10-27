@@ -1,4 +1,4 @@
-export enum TokenType {
+export enum TokenEnum {
   ACCESS = 'access',
   REFRESH = 'refresh',
 }
@@ -7,7 +7,7 @@ export enum LogoutEnum {
   ALL,
 }
 
-export enum UserRole {
+export enum UserRoleEnum {
   DOCTOR = 'doctor',
   PATIENT = 'patient',
 }

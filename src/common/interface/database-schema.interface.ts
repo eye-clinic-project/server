@@ -1,7 +1,7 @@
-import type { UserRole } from '../enum/security.enum.js';
+import type { UserRoleEnum } from '../enum/security.enum.js';
 
 export interface IUser {
-  role: UserRole;
+  role: UserRoleEnum;
 }
 
 export interface IDoctor extends IUser {}

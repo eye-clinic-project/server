@@ -7,10 +7,6 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface AuthReq extends Request {
-  credentials: { user: HUserDocument; decoded: JwtPayload };
-}
-
 export interface LanguageRequest {
   headers: Record<string, string | string[] | undefined>;
   credentials?: {
