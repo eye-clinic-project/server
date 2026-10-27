@@ -8,7 +8,7 @@ import type {
   GetOrSetCache,
   RateLimit,
   RateLimitResult,
-} from './interface/redis.interface.js';
+} from '../../interface/redis.interface.js';
 
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';

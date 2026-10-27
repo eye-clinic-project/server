@@ -1,8 +1,3 @@
-export enum UserRole {
-  DOCTOR = 'doctor',
-  PATIENT = 'patient',
-}
-
 export enum AppointmentStatus {
   PENDING = 'pending',
   CONFIRMED = 'confirmed',

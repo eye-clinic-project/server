@@ -13,7 +13,7 @@ import { User, UserDocument } from '../../../core/database/model/user.model.js';
 import { UserRepository } from '../../../core/database/repository/user.repository.js';
 import { RedisKeys } from '../redis/redis.keys.js';
 import { RedisService } from '../redis/redis.service.js';
-import type { DecodedToken, JwtType, VerifyJwt } from './interface/security.type.js';
+import type { DecodedToken, JwtType, VerifyJwt } from '../../interface/security.type.js';
 import { TokenType } from '../../enum/security.enum.js';
 
 @Injectable()

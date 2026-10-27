@@ -1,12 +1,12 @@
 import type { Request } from "express"
 import type { JwtPayload  } from "jsonwebtoken";
-import { UserDocument } from "../../../core/database/model/user.model.js";
+import { UserDocument } from "../../core/database/model/user.model.js";
+
 
 export interface ApiResponse<T> {
     message: string;
     data: T;
 }
-
 
 export interface IAuthReq extends Request {
     credentials: { user: UserDocument, decoded: JwtPayload }
