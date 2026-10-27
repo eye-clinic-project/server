@@ -5,24 +5,24 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 
-import {
+import type {
+  HUserDocument,
   User,
-  UserDocument,
-} from '../../../../core/database/model/user.model.js';
-import { UserRepository } from '../../../../core/database/repository/user.repository.js';
+} from '../../core/database/model/user.model.js';
+import { UserRepository } from '../../core/database/repository/user.repository.js';
 
-import { RedisKeys, RedisService } from '../../redis/redis.service.js';
+import { RedisKeys, CacheService } from './cache.service.js';
 
-import { TokenType, UserRole } from '../../../enum/security.enum.js';
+import { TokenType, UserRole } from '../enum/security.enum.js';
 import {
   DecodedToken,
   JwtType,
   VerifyJwt,
-} from '../../../interface/security.interface.js';
+} from '../interface/security.interface.js';
 
 @Injectable()
 export class TokenService {
@@ -34,7 +34,7 @@ export class TokenService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly redis: RedisService,
+    private readonly redis: CacheService,
     private readonly userRepository: UserRepository,
   ) {
     this.accessTokenExpiresIn = Number(
@@ -87,7 +87,7 @@ export class TokenService {
   }: {
     token: string;
     tokenType?: TokenType;
-  }): Promise<{ user: UserDocument; decoded: DecodedToken }> {
+  }): Promise<{ user: HUserDocument; decoded: DecodedToken }> {
     const rawDecoded = this.jwtService.decode(token);
     if (!rawDecoded || typeof rawDecoded !== 'object') {
       throw new BadRequestException('Invalid token payload');

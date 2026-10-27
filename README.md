@@ -33,13 +33,13 @@ $ npm install
 
 ## Redis
 
-Redis is connected by the global `RedisModule`. Set `REDIS_URI` to use a Redis
+Redis is connected by the global `ServiceModule`. Set `REDIS_URI` to use a Redis
 connection URL, or configure `REDIS_HOST` and `REDIS_PORT` (defaulting to
 `127.0.0.1:6379`).
 
 ## Email
 
-The global `MailModule` provides `MailService.sendMail()` using SMTP. Configure
+The global `ServiceModule` provides `MailService`. Configure
 `SMTP_HOST` and `MAIL_FROM`; optionally set `SMTP_PORT` (default `587`),
 `SMTP_SECURE` (`true` or `false`), and the paired `SMTP_USER` and
 `SMTP_PASSWORD` values when the server requires authentication.

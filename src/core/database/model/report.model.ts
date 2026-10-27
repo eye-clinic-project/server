@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { IReport } from '../../../common/interface/database-schema.interface.js';
 
-export type ReportDocument = HydratedDocument<Report>;
+export type HReportDocument = HydratedDocument<IReport>;
 
 @Schema({
   timestamps: { createdAt: 'generatedAt', updatedAt: false },

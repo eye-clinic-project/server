@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { MessageStatus } from '../../../common/enum/schema.enum.js';
+import { IMessage } from '../../../common/interface/database-schema.interface.js';
 
-export type MessageDocument = HydratedDocument<Message>;
+export type HMessageDocument = HydratedDocument<IMessage>;
 
 @Schema({
   timestamps: { createdAt: 'sentAt', updatedAt: false },

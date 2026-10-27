@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { NotificationType } from '../../../common/enum/schema.enum.js';
+import { INotification } from '../../../common/interface/database-schema.interface.js';
 
-export type NotificationDocument = HydratedDocument<Notification>;
+export type HNotificationDocument = HydratedDocument<INotification>;
 
 @Schema({
   timestamps: { createdAt: true, updatedAt: false },

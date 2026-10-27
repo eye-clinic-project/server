@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-import { LoggerService } from './common/service/log/logger.service.js';
+import { LoggerService } from './common/service/logger.service.js';
 
 class Server {
   public async run() {

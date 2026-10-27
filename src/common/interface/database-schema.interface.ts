@@ -1,4 +1,8 @@
-export interface IUser {}
+import type { UserRole } from '../enum/security.enum.js';
+
+export interface IUser {
+  role: UserRole;
+}
 
 export interface IDoctor extends IUser {}
 

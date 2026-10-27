@@ -3,14 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
   Conversation,
-  ConversationDocument,
+  HConversationDocument,
 } from '../model/conversation.model.js';
 import { DatabaseRepository } from './base.repository.js';
 
 @Injectable()
-export class ConversationRepository extends DatabaseRepository<ConversationDocument> {
+export class ConversationRepository extends DatabaseRepository<HConversationDocument> {
   constructor(
-    @InjectModel(Conversation.name) model: Model<ConversationDocument>,
+    @InjectModel(Conversation.name) model: Model<HConversationDocument>,
   ) {
     super(model);
   }

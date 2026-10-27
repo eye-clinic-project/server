@@ -8,7 +8,7 @@ import type {
   GetOrSetCache,
   RateLimit,
   RateLimitResult,
-} from '../../interface/redis.interface.js';
+} from '../interface/redis.interface.js';
 
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';
@@ -35,8 +35,8 @@ export const RedisKeys = {
 } as const;
 
 @Injectable()
-export class RedisService implements OnModuleDestroy {
-  private readonly logger = new Logger(RedisService.name);
+export class CacheService implements OnModuleDestroy {
+  private readonly logger = new Logger(CacheService.name);
 
   constructor(
     @Inject('REDIS_CLIENT')

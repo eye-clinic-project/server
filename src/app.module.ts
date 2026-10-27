@@ -4,9 +4,7 @@ import { AppService } from './app.service.js';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './core/database/database.connection.js';
 import configuration from './core/configuration/configuration.js';
-import { RedisModule } from './common/service/redis/redis.module.js';
-import { MailModule } from './common/service/mail/mail.module.js';
-import { SecurityModule } from './common/service/security/security.module.js';
+
 import { MessageModule } from './module/message/message.module.js';
 import { AuthenticationModule } from './module/authentication/authentication.module.js';
 import { DoctorModule } from './module/doctor/doctor.module.js';
@@ -16,14 +14,15 @@ import { AppointmentModule } from './module/appointment/appointment.module.js';
 import { ChatModule } from './module/chat/chat.module.js';
 import { UserModule } from './module/user/user.module.js';
 import { SchemasModule } from './core/database/database.schema.js';
-import { LoggerModule } from './common/service/log/logger.module.js';
+
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor.js';
 import { TransformInterceptor } from './common/interceptor/transform.interceptor.js';
 import { TimeoutInterceptor } from './common/interceptor/timeout.interceptor.js';
 import { LanguageInterceptor } from './common/interceptor/language.interceptor.js';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 import { NotificationModule } from './module/notification/notification.module.js';
+import { ServiceModule } from './common/service/service.module.js';
+import { CacheInterceptor } from './common/interceptor/cache.interceptor.js';
 
 @Module({
   imports: [
@@ -31,12 +30,9 @@ import { NotificationModule } from './module/notification/notification.module.js
       load: [configuration],
       isGlobal: true,
     }),
-    LoggerModule,
+    ServiceModule,
     DatabaseModule,
     SchemasModule,
-    RedisModule,
-    MailModule,
-    SecurityModule,
     MessageModule,
     AuthenticationModule,
     DoctorModule,

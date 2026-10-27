@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { IConversation } from '../../../common/interface/database-schema.interface.js';
 
-export type ConversationDocument = HydratedDocument<Conversation>;
+export type HConversationDocument = HydratedDocument<IConversation>;
 
 @Schema({ timestamps: true, collection: 'conversations' })
 export class Conversation {}

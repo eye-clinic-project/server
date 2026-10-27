@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Patient, PatientDocument } from '../model/patient.model.js';
+import { Patient, HPatientDocument } from '../model/patient.model.js';
 import { DatabaseRepository } from './base.repository.js';
 
 @Injectable()
-export class PatientRepository extends DatabaseRepository<PatientDocument> {
-  constructor(@InjectModel(Patient.name) model: Model<PatientDocument>) {
+export class PatientRepository extends DatabaseRepository<HPatientDocument> {
+  constructor(@InjectModel(Patient.name) model: Model<HPatientDocument>) {
     super(model);
   }
 

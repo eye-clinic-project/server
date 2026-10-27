@@ -1,20 +1,21 @@
+
 import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import type { Request, Response } from 'express';
-import { RedisService } from '../service/redis/redis.service.js';
+import { Observable, of, tap, catchError, throwError } from 'rxjs';
+import { CacheService } from '../service/cache.service.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(CacheInterceptor.name);
+
   constructor(
-    private readonly cacheService: RedisService,
-    private readonly reflector: Reflector,
+    private readonly cacheService: CacheService,
   ) {}
 
   async intercept(
@@ -32,31 +33,33 @@ export class CacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    if (response.statusCode !== 200) {
-      return next.handle();
-    }
-
     const key = `http-cache:${request.originalUrl}`;
 
-    const cached = await this.cacheService.getCache({ key });
+    try {
+      const cached = await this.cacheService.getCache({ key });
 
-    if (cached !== null && cached !== undefined) {
-      response.setHeader('X-Cache', 'HIT');
-      return of(cached);
+      if (cached !== null && cached !== undefined) {
+        response.setHeader('X-Cache', 'HIT');
+        return of(cached);
+      }
+    } catch (error) {
+      this.logger.warn('Cache read failed; continuing without cache');
     }
 
     response.setHeader('X-Cache', 'MISS');
 
     return next.handle().pipe(
       tap((data) => {
-        if (data !== undefined) {
-          void this.cacheService.setCache({
-            key,
-            value: data,
-            options: {
-              EX: 60,
-            },
-          });
+        if (response.statusCode === 200 && data !== undefined) {
+          void this.cacheService
+            .setCache({
+              key,
+              value: data,
+              options: { EX: 60 },
+            })
+            .catch(() => {
+              this.logger.warn('Cache write failed');
+            });
         }
       }),
     );

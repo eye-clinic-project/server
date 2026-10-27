@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { AppointmentStatus } from '../../../common/enum/schema.enum.js';
+import { IAppointment } from '../../../common/interface/database-schema.interface.js';
 
-export type AppointmentDocument = HydratedDocument<Appointment>;
+export type HAppointmentDocument = HydratedDocument<IAppointment>;
 
 @Schema({ timestamps: true, collection: 'appointments' })
 export class Appointment {}

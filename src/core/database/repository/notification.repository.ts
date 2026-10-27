@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { DatabaseRepository } from './base.repository.js';
-import { NotificationDocument } from '../model/notification.model.js';
+import { HNotificationDocument } from '../model/notification.model.js';
 
 @Injectable()
-export class NotificationRepository extends DatabaseRepository<NotificationDocument> {
+export class NotificationRepository extends DatabaseRepository<HNotificationDocument> {
   constructor(
-    @InjectModel(Notification.name) model: Model<NotificationDocument>,
+    @InjectModel(Notification.name) model: Model<HNotificationDocument>,
   ) {
     super(model);
   }
