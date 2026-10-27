@@ -24,6 +24,6 @@ const services = [
 @Module({
   imports: [ConfigModule, JwtModule.register({}), CacheModule],
   providers: [UserRepository, ...services],
-  exports: services,
+  exports: [...services, UserRepository],
 })
 export class ServiceModule {}

@@ -29,9 +29,7 @@ export class MessageRepository extends DatabaseRepository<IMessage> {
       .exec();
   }
 
-  async findLatestByConversation(
-    conversationId: Types.ObjectId,
-  ) {
+  async findLatestByConversation(conversationId: Types.ObjectId) {
     return this.messageModel
       .findOne({ conversation: conversationId })
       .sort({ createdAt: -1 })
@@ -39,7 +37,22 @@ export class MessageRepository extends DatabaseRepository<IMessage> {
       .exec();
   }
 
-  async markAsRead(
+  async findByIdForConversation(
+    messageId: Types.ObjectId,
+    conversationId: Types.ObjectId,
+  ) {
+    return this.messageModel
+      .findOne({ _id: messageId, conversation: conversationId })
+      .exec();
+  }
+
+  async findByIdForSender(messageId: Types.ObjectId, senderId: Types.ObjectId) {
+    return this.messageModel
+      .findOne({ _id: messageId, sender: senderId })
+      .exec();
+  }
+
+  async markAsDelivered(
     conversationId: Types.ObjectId,
     userId: Types.ObjectId,
   ) {
@@ -48,9 +61,26 @@ export class MessageRepository extends DatabaseRepository<IMessage> {
         {
           conversation: conversationId,
           sender: { $ne: userId },
-          readBy: { $ne: userId },
+          deliveredTo: { $ne: userId },
+          deletedAt: null,
         },
-        { $addToSet: { readBy: userId } },
+        { $addToSet: { deliveredTo: userId } },
+      )
+      .exec();
+  }
+
+  async markAsRead(conversationId: Types.ObjectId, userId: Types.ObjectId) {
+    return this.messageModel
+      .updateMany(
+        {
+          conversation: conversationId,
+          sender: { $ne: userId },
+          readBy: { $ne: userId },
+          deletedAt: null,
+        },
+        {
+          $addToSet: { readBy: userId, deliveredTo: userId },
+        },
       )
       .exec();
   }
@@ -81,10 +111,7 @@ export class MessageRepository extends DatabaseRepository<IMessage> {
       .exec();
   }
 
-  async softDeleteMessage(
-    messageId: Types.ObjectId,
-    senderId: Types.ObjectId,
-  ) {
+  async softDeleteMessage(messageId: Types.ObjectId, senderId: Types.ObjectId) {
     return this.messageModel
       .findOneAndUpdate(
         {

@@ -21,7 +21,11 @@ export class UserRepository extends DatabaseRepository<IUser> {
     return this.userModel.findById(id).exec();
   }
 
-  async findByEmail(email: string) {
+  createAuthUser(data: Partial<IUser>): Promise<HUserDocument> {
+    return new this.userModel(data).save();
+  }
+
+  async findByEmail(email: string): Promise<HUserDocument | null> {
     return this.userModel
       .findOne({ email: email.toLowerCase().trim() })
       .select('+passwordHash')
@@ -32,9 +36,12 @@ export class UserRepository extends DatabaseRepository<IUser> {
     return this.userModel.find({ role }).exec();
   }
 
-  async findByEmailWithoutPassword(email: string) {
+  async findByEmailWithoutPassword(
+    email: string,
+  ): Promise<HUserDocument | null> {
     return this.userModel
       .findOne({ email: email.toLowerCase().trim() })
+      .select('+googleId')
       .exec();
   }
 

@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import type { UserRoleEnum } from '../enum/security.enum.js';
+import type { AuthProviderEnum, UserRoleEnum } from '../enum/security.enum.js';
 import { AppointmentStatus, DRLevel } from '../enum/schema.enum.js';
 
 // ==================== User ====================
@@ -9,8 +9,11 @@ export interface IUser {
   role: UserRoleEnum;
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   city: string;
+  provider?: AuthProviderEnum;
+  googleId?: string;
+  emailVerifiedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -108,6 +111,7 @@ export interface IMessage {
   sender: Types.ObjectId;
   message: string;
   attachments: string[];
+  deliveredTo: Types.ObjectId[];
   readBy: Types.ObjectId[];
   editedAt?: Date;
   deletedAt?: Date;

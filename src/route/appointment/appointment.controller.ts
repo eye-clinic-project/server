@@ -7,6 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { AppointmentService } from './appointment.service.js';
 import { CreateAppointmentDto } from './dto/create-appointment.dto.js';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto.js';
@@ -16,30 +20,84 @@ export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
 
   @Post()
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.appointmentService.create(createAppointmentDto);
+  @Auth([UserRoleEnum.PATIENT])
+  create(
+    @User() user: HUserDocument,
+    @Body() createAppointmentDto: CreateAppointmentDto,
+  ) {
+    return this.appointmentService.create(
+      user._id.toString(),
+      createAppointmentDto,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.appointmentService.findAll();
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  findAll(@User() user: HUserDocument) {
+    return this.appointmentService.findAll(user._id.toString());
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appointmentService.findOne(+id);
+  @Get('upcoming')
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  findUpcoming(@User() user: HUserDocument) {
+    return this.appointmentService.findUpcoming(user._id.toString(), user.role);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @Get(':appointmentId')
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  findOne(
+    @User() user: HUserDocument,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.appointmentService.findOne(user._id.toString(), appointmentId);
+  }
+
+  @Patch(':appointmentId/reschedule')
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  reschedule(
+    @User() user: HUserDocument,
+    @Param('appointmentId') appointmentId: string,
     @Body() updateAppointmentDto: UpdateAppointmentDto,
   ) {
-    return this.appointmentService.update(+id, updateAppointmentDto);
+    return this.appointmentService.reschedule(
+      user._id.toString(),
+      appointmentId,
+      updateAppointmentDto,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.appointmentService.remove(+id);
+  @Patch(':appointmentId/confirm')
+  @Auth([UserRoleEnum.DOCTOR])
+  confirm(
+    @User() user: HUserDocument,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.appointmentService.confirm(user._id.toString(), appointmentId);
+  }
+
+  @Patch(':appointmentId/cancel')
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  cancel(
+    @User() user: HUserDocument,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.appointmentService.cancel(
+      user._id.toString(),
+      user.role,
+      appointmentId,
+    );
+  }
+
+  @Delete(':appointmentId')
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  remove(
+    @User() user: HUserDocument,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.appointmentService.remove(
+      user._id.toString(),
+      user.role,
+      appointmentId,
+    );
   }
 }

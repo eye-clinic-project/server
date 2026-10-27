@@ -43,6 +43,13 @@ export class Message {
     ref: User.name,
     default: [],
   })
+  deliveredTo: Types.ObjectId[];
+
+  @Prop({
+    type: [Types.ObjectId],
+    ref: User.name,
+    default: [],
+  })
   readBy: Types.ObjectId[];
 
   @Prop({

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-
 import { DatabaseRepository } from './base.repository.js';
 import { IAppointment } from '../../../common/interface/database-schema.interface.js';
 import { Appointment } from '../model/appointment.model.js';
@@ -17,10 +16,139 @@ export class AppointmentRepository extends DatabaseRepository<IAppointment> {
     super(appointmentModel);
   }
 
+  async findForParticipant(userId: Types.ObjectId) {
+    return this.appointmentModel
+      .find({ $or: [{ doctor: userId }, { patient: userId }] })
+      .populate('doctor')
+      .populate('patient')
+      .sort({ scheduledAt: 1 })
+      .exec();
+  }
+
+  async findByIdForParticipant(
+    appointmentId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    return this.appointmentModel
+      .findOne({
+        _id: appointmentId,
+        $or: [{ doctor: userId }, { patient: userId }],
+      })
+      .populate('doctor')
+      .populate('patient')
+      .exec();
+  }
+
+  async findParticipantAppointment(
+    appointmentId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    return this.appointmentModel
+      .findOne({
+        _id: appointmentId,
+        $or: [{ doctor: userId }, { patient: userId }],
+      })
+      .exec();
+  }
+
+  async findConflict({
+    doctorId,
+    patientId,
+    scheduledAt,
+    excludeAppointmentId,
+  }: {
+    doctorId: Types.ObjectId;
+    patientId: Types.ObjectId;
+    scheduledAt: Date;
+    excludeAppointmentId?: Types.ObjectId;
+  }) {
+    return this.appointmentModel
+      .findOne({
+        $or: [{ doctor: doctorId }, { patient: patientId }],
+        scheduledAt,
+        status: {
+          $in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED],
+        },
+        ...(excludeAppointmentId && { _id: { $ne: excludeAppointmentId } }),
+      })
+      .exec();
+  }
+
+  async updateScheduleIfActive({
+    appointmentId,
+    scheduledAt,
+    notes,
+  }: {
+    appointmentId: Types.ObjectId;
+    scheduledAt: Date;
+    notes?: string;
+  }) {
+    return this.appointmentModel
+      .findOneAndUpdate(
+        {
+          _id: appointmentId,
+          status: {
+            $in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED],
+          },
+        },
+        {
+          $set: {
+            scheduledAt,
+            status: AppointmentStatus.PENDING,
+            ...(notes !== undefined && { notes }),
+          },
+          $inc: { __v: 1 },
+        },
+        { new: true, runValidators: true },
+      )
+      .populate('doctor')
+      .populate('patient')
+      .exec();
+  }
+
+  async transitionStatus({
+    appointmentId,
+    userId,
+    role,
+    from,
+    to,
+  }: {
+    appointmentId: Types.ObjectId;
+    userId: Types.ObjectId;
+    role: 'doctor' | 'patient';
+    from: AppointmentStatus[];
+    to: AppointmentStatus;
+  }) {
+    const participantField = role;
+    return this.appointmentModel
+      .findOneAndUpdate(
+        {
+          _id: appointmentId,
+          [participantField]: userId,
+          status: { $in: from },
+        },
+        { $set: { status: to }, $inc: { __v: 1 } },
+        { new: true, runValidators: true },
+      )
+      .populate('doctor')
+      .populate('patient')
+      .exec();
+  }
+
   async findByDoctor(doctorId: Types.ObjectId) {
     return this.appointmentModel
       .find({ doctor: doctorId })
       .populate('patient')
+      .sort({ scheduledAt: -1 })
+      .exec();
+  }
+
+  async findByDoctorAndPatient(
+    doctorId: Types.ObjectId,
+    patientId: Types.ObjectId,
+  ) {
+    return this.appointmentModel
+      .find({ doctor: doctorId, patient: patientId })
       .sort({ scheduledAt: -1 })
       .exec();
   }
@@ -39,10 +167,7 @@ export class AppointmentRepository extends DatabaseRepository<IAppointment> {
         doctor: doctorId,
         scheduledAt: { $gte: new Date() },
         status: {
-          $in: [
-            AppointmentStatus.PENDING,
-            AppointmentStatus.CONFIRMED,
-          ],
+          $in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED],
         },
       })
       .populate('patient')
@@ -56,10 +181,7 @@ export class AppointmentRepository extends DatabaseRepository<IAppointment> {
         patient: patientId,
         scheduledAt: { $gte: new Date() },
         status: {
-          $in: [
-            AppointmentStatus.PENDING,
-            AppointmentStatus.CONFIRMED,
-          ],
+          $in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED],
         },
       })
       .populate('doctor')
@@ -74,10 +196,7 @@ export class AppointmentRepository extends DatabaseRepository<IAppointment> {
       .exec();
   }
 
-  async updateStatus(
-    appointmentId: Types.ObjectId,
-    status: AppointmentStatus,
-  ) {
+  async updateStatus(appointmentId: Types.ObjectId, status: AppointmentStatus) {
     return this.appointmentModel
       .findByIdAndUpdate(
         appointmentId,

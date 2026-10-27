@@ -24,6 +24,7 @@ import { AppointmentModule } from './route/appointment/appointment.module.js';
 import { ServiceModule } from './common/module/service.module.js';
 import { CacheModule } from './common/module/cache.module.js';
 import { DatabaseModule } from './common/module/database.module.js';
+import { PatientModule } from './route/patient/patient.module.js';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { DatabaseModule } from './common/module/database.module.js';
     ChatModule,
     UserModule,
     NotificationModule,
+    PatientModule,
   ],
   controllers: [AppController],
   providers: [

@@ -29,6 +29,8 @@ return { c, ttl }`;
 
 export const RedisKeys = {
   otpKey: (email: string) => `otp:${email.toLowerCase()}`,
+  emailVerification: (email: string) =>
+    `auth:email-verification:${email.toLowerCase()}`,
   rateLimitKey: (scope: string, id: string) => `rate:${scope}:${id}`,
   userToken: (userId: string, jti: string) => `auth:token:${userId}:${jti}`,
   userTokens: (userId: string) => `auth:token:${userId}:*`,

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -204,6 +205,15 @@ export class TokenService {
     });
   }
 
+  async revokeToken(
+    userId: Types.ObjectId | string,
+    tokenId: string,
+  ): Promise<number> {
+    return this.redis.deleteCache({
+      key: RedisKeys.userToken(userId.toString(), tokenId),
+    });
+  }
+
   async rotateRefreshToken({
     token,
     issuer,
@@ -223,6 +233,11 @@ export class TokenService {
     const ttl = decoded.exp - Math.floor(Date.now() / 1000);
     if (ttl <= 0) {
       throw new UnauthorizedException('Refresh token expired');
+    }
+    if (ttl > 5 * 60) {
+      throw new ConflictException(
+        'Refresh token can only be renewed within 5 minutes of expiry',
+      );
     }
 
     const activeTokenType = await this.redis.getAndDelete<TokenEnum>({

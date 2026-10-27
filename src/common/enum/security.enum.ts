@@ -16,3 +16,13 @@ export enum ProviderEnum {
   SYSTEM,
   GOOGLE,
 }
+
+export enum AuthProviderEnum {
+  SYSTEM = 'system',
+  GOOGLE = 'google',
+}
+
+export enum LogoutTypeEnum {
+  SINGLE = 'single',
+  ALL = 'all',
+}

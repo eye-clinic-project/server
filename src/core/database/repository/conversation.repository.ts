@@ -40,14 +40,20 @@ export class ConversationRepository extends DatabaseRepository<IConversation> {
       .exec();
   }
 
-  async isParticipant(
-    conversationId: Types.ObjectId,
-    userId: Types.ObjectId,
-  ) {
+  async isParticipant(conversationId: Types.ObjectId, userId: Types.ObjectId) {
     return this.conversationModel.exists({
       _id: conversationId,
       participants: userId,
     });
+  }
+
+  async findParticipantConversation(
+    conversationId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ) {
+    return this.conversationModel
+      .findOne({ _id: conversationId, participants: userId })
+      .exec();
   }
 
   async updateLastMessage(
@@ -58,6 +64,16 @@ export class ConversationRepository extends DatabaseRepository<IConversation> {
       .findByIdAndUpdate(
         conversationId,
         { $set: { lastMessage: messageId } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async touch(conversationId: Types.ObjectId) {
+    return this.conversationModel
+      .findByIdAndUpdate(
+        conversationId,
+        { $set: { updatedAt: new Date() } },
         { new: true },
       )
       .exec();

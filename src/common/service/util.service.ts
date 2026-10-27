@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { randomInt } from 'node:crypto';
 import { Socket } from 'socket.io';
 @Injectable()
 export class UtilService {
@@ -8,7 +9,7 @@ export class UtilService {
     return Types.ObjectId.createFromHexString(id);
   };
   public createNumberOtp = (): number => {
-    return Math.floor(Math.random() * 900000 + 100000);
+    return randomInt(100_000, 1_000_000);
   };
   public generateSlug = (value: string) => {
     return value.replaceAll(/\s+/g, '-');

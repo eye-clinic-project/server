@@ -1,42 +1,111 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { DoctorService } from './doctor.service.js';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { CreateDoctorDto } from './dto/create-doctor.dto.js';
 import { UpdateDoctorDto } from './dto/update-doctor.dto.js';
+import { DoctorService } from './doctor.service.js';
 
 @Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
-  @Post()
-  create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorService.create(createDoctorDto);
-  }
-
   @Get()
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
   findAll() {
     return this.doctorService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorService.findOne(+id);
+  @Get('me')
+  @Auth([UserRoleEnum.DOCTOR])
+  findMyProfile(@User() user: HUserDocument) {
+    return this.doctorService.findProfile(user._id.toString());
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
-    return this.doctorService.update(+id, updateDoctorDto);
+  @Post('me')
+  @Auth([UserRoleEnum.DOCTOR])
+  createMyProfile(
+    @User() user: HUserDocument,
+    @Body() createDoctorDto: CreateDoctorDto,
+  ) {
+    return this.doctorService.createProfile(
+      user._id.toString(),
+      createDoctorDto,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.doctorService.remove(+id);
+  @Patch('me')
+  @Auth([UserRoleEnum.DOCTOR])
+  updateMyProfile(
+    @User() user: HUserDocument,
+    @Body() updateDoctorDto: UpdateDoctorDto,
+  ) {
+    return this.doctorService.updateProfile(
+      user._id.toString(),
+      updateDoctorDto,
+    );
+  }
+
+  @Get('patients')
+  @Auth([UserRoleEnum.DOCTOR])
+  findAssignedPatients(@User() user: HUserDocument) {
+    return this.doctorService.findAssignedPatients(user._id.toString());
+  }
+
+  @Post('patients/:patientId')
+  @Auth([UserRoleEnum.DOCTOR])
+  assignPatient(
+    @User() user: HUserDocument,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.doctorService.assignPatient(
+      user._id.toString(),
+      patientId,
+    );
+  }
+
+  @Delete('patients/:patientId')
+  @Auth([UserRoleEnum.DOCTOR])
+  unassignPatient(
+    @User() user: HUserDocument,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.doctorService.unassignPatient(
+      user._id.toString(),
+      patientId,
+    );
+  }
+
+  @Get('patients/:patientId/records')
+  @Auth([UserRoleEnum.DOCTOR])
+  getPatientRecords(
+    @User() user: HUserDocument,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.doctorService.getAssignedPatientRecords(
+      user._id.toString(),
+      patientId,
+    );
+  }
+
+  @Get('appointments')
+  @Auth([UserRoleEnum.DOCTOR])
+  getAppointments(@User() user: HUserDocument) {
+    return this.doctorService.getDoctorAppointments(user._id.toString());
+  }
+
+  @Get(':doctorId')
+  @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
+  findOne(@Param('doctorId') doctorId: string) {
+    return this.doctorService.findProfile(doctorId);
   }
 }

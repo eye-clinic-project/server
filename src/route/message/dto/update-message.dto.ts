@@ -1,4 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateMessageDto } from './create-message.dto.js';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 
-export class UpdateMessageDto extends PartialType(CreateMessageDto) {}
+export class UpdateMessageDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(5_000)
+  message!: string;
+}

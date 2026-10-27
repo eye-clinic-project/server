@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { DatabaseRepository } from './base.repository.js';
-import { Doctor, HDoctorDocument } from '../model/doctor.model.js';
+import { Doctor } from '../model/doctor.model.js';
 import { IDoctor } from '../../../common/interface/database-schema.interface.js';
 
 @Injectable()

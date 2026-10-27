@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { UserRoleEnum } from '../../../common/enum/security.enum.js';
-import { IUser } from '../../../common/interface/database-schema.interface.js';
+import {
+  AuthProviderEnum,
+  UserRoleEnum,
+} from '../../../common/enum/security.enum.js';
+import type { IUser } from '../../../common/interface/database-schema.interface.js';
 
 export type HUserDocument = HydratedDocument<IUser>;
 
@@ -25,10 +28,10 @@ export class User {
   email: string;
 
   @Prop({
-    required: true,
+    required: false,
     select: false,
   })
-  passwordHash: string;
+  passwordHash?: string;
 
   @Prop({
     required: true,
@@ -42,6 +45,20 @@ export class User {
     type: String,
   })
   role: UserRoleEnum;
+
+  @Prop({
+    required: true,
+    enum: Object.values(AuthProviderEnum),
+    type: String,
+    default: AuthProviderEnum.SYSTEM,
+  })
+  provider: AuthProviderEnum;
+
+  @Prop({ type: String, unique: true, sparse: true, select: false })
+  googleId?: string;
+
+  @Prop({ type: Date, default: null })
+  emailVerifiedAt?: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

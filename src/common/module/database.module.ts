@@ -29,7 +29,10 @@ import {
   NotificationSchema,
 } from '../../core/database/model/notification.model.js';
 import { Patient, PatientSchema } from '../../core/database/model/patient.model.js';
-import { Doctor } from '../../core/database/model/doctor.model.js';
+import {
+  Doctor,
+  DoctorSchema,
+} from '../../core/database/model/doctor.model.js';
 import { DoctorPatient, DoctorPatientSchema } from '../../core/database/model/doctor-patient.model.js';
 import { FundusImage, FundusImageSchema } from '../../core/database/model/fundus-image.model.js';
 
@@ -58,7 +61,7 @@ export const databaseConnection = MongooseModule.forRootAsync({
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
-  { name: Doctor.name, schema: DoctorPatientSchema },
+  { name: Doctor.name, schema: DoctorSchema },
   { name: Patient.name, schema: PatientSchema },
   { name: DoctorPatient.name, schema: DoctorPatientSchema },
   { name: Appointment.name, schema: AppointmentSchema },

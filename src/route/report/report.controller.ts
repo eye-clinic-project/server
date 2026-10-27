@@ -1,42 +1,67 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { ReportService } from './report.service.js';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { CreateReportDto } from './dto/create-report.dto.js';
 import { UpdateReportDto } from './dto/update-report.dto.js';
+import { ReportService } from './report.service.js';
 
 @Controller('report')
+@Auth([UserRoleEnum.DOCTOR])
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
   @Post()
-  create(@Body() createReportDto: CreateReportDto) {
-    return this.reportService.create(createReportDto);
+  create(
+    @User() user: HUserDocument,
+    @Body() createReportDto: CreateReportDto,
+  ) {
+    return this.reportService.create(
+      user._id.toString(),
+      createReportDto,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.reportService.findAll();
+  findAll(@User() user: HUserDocument) {
+    return this.reportService.findAll(user._id.toString());
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reportService.findOne(+id);
+  @Get(':reportId')
+  findOne(
+    @User() user: HUserDocument,
+    @Param('reportId') reportId: string,
+  ) {
+    return this.reportService.findOne(user._id.toString(), reportId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
-    return this.reportService.update(+id, updateReportDto);
+  @Patch(':reportId')
+  update(
+    @User() user: HUserDocument,
+    @Param('reportId') reportId: string,
+    @Body() updateReportDto: UpdateReportDto,
+  ) {
+    return this.reportService.update(
+      user._id.toString(),
+      reportId,
+      updateReportDto,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reportService.remove(+id);
+  @Delete(':reportId')
+  remove(
+    @User() user: HUserDocument,
+    @Param('reportId') reportId: string,
+  ) {
+    return this.reportService.remove(user._id.toString(), reportId);
   }
 }

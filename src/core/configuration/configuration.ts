@@ -1,6 +1,7 @@
 export default () => ({
   app: {
     port: parseInt(process.env.PORT ?? '', 10) || 3000,
+    corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
   },
   database: {
     uri: process.env.DATABASE_URI,
@@ -13,12 +14,18 @@ export default () => ({
   encryption: {
     key: process.env.ENCRYPTION_KEY,
   },
-  // mail: {
-  //   host: process.env.SMTP_HOST,
-  //   port: parseInt(process.env.SMTP_PORT ?? '', 10) || 587,
-  //   secure: process.env.SMTP_SECURE === 'true',
-  //   user: process.env.SMTP_USER,
-  //   password: process.env.SMTP_PASSWORD,
-  //   from: process.env.MAIL_FROM,
-  // },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  },
+  auth: {
+    issuer: process.env.AUTH_ISSUER,
+  },
+  mail: {
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT ?? '', 10) || 587,
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER,
+    password: process.env.SMTP_PASSWORD,
+    from: process.env.MAIL_FROM,
+  },
 });
