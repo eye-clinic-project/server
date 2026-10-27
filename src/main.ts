@@ -1,12 +1,14 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { join } from 'node:path';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { LoggerService } from './common/service/logger.service.js';
 
 class Server {
   public async run() {
-    const app = await NestFactory.create(AppModule, {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
       logger: new LoggerService(),
     });
     const config = app.get(ConfigService);
@@ -24,6 +26,9 @@ class Server {
       origin: config.get<string>('app.corsOrigin', 'http://localhost:3000'),
       credentials: true,
     });
+    app.useStaticAssets(join(process.cwd(), 'uploads'), {
+      prefix: '/uploads/',
+    });
 
     app.enableShutdownHooks();
 
@@ -34,4 +39,7 @@ class Server {
 }
 
 const server = new Server();
-server.run();
+void server.run().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

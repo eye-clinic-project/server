@@ -25,12 +25,21 @@ import { ServiceModule } from './common/module/service.module.js';
 import { CacheModule } from './common/module/cache.module.js';
 import { DatabaseModule } from './common/module/database.module.js';
 import { PatientModule } from './route/patient/patient.module.js';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLModule } from '@nestjs/graphql';
+import type { Request } from 'express';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      sortSchema: true,
+      context: (context: { req: Request }) => ({ req: context.req }),
     }),
     ServiceModule,
     CacheModule,

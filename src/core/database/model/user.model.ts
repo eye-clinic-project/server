@@ -40,6 +40,12 @@ export class User {
   city: string;
 
   @Prop({
+    type: String,
+    trim: true,
+  })
+  avatarUrl?: string;
+
+  @Prop({
     required: true,
     enum: Object.values(UserRoleEnum),
     type: String,

@@ -1,6 +1,10 @@
 import type { Types } from 'mongoose';
 import type { AuthProviderEnum, UserRoleEnum } from '../enum/security.enum.js';
-import { AppointmentStatus, DRLevel } from '../enum/schema.enum.js';
+import {
+  AppointmentStatus,
+  DRLevel,
+  NotificationType,
+} from '../enum/schema.enum.js';
 
 // ==================== User ====================
 
@@ -11,6 +15,7 @@ export interface IUser {
   email: string;
   passwordHash?: string;
   city: string;
+  avatarUrl?: string;
   provider?: AuthProviderEnum;
   googleId?: string;
   emailVerifiedAt?: Date | null;
@@ -127,7 +132,7 @@ export interface INotification {
   title: string;
   body: string;
   read: boolean;
-  type?: string;
+  type: NotificationType;
   createdAt?: Date;
   updatedAt?: Date;
 }

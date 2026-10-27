@@ -14,11 +14,7 @@ export class NotificationRepository extends DatabaseRepository<INotification> {
     super(notificationModel);
   }
 
-  async findByRecipient(
-    recipientId: Types.ObjectId,
-    limit = 20,
-    skip = 0,
-  ) {
+  async findByRecipient(recipientId: Types.ObjectId, limit = 20, skip = 0) {
     return this.notificationModel
       .find({ recipient: recipientId })
       .sort({ createdAt: -1 })
@@ -42,6 +38,15 @@ export class NotificationRepository extends DatabaseRepository<INotification> {
       recipient: recipientId,
       read: false,
     });
+  }
+
+  async findByIdForRecipient(
+    notificationId: Types.ObjectId,
+    recipientId: Types.ObjectId,
+  ) {
+    return this.notificationModel
+      .findOne({ _id: notificationId, recipient: recipientId })
+      .exec();
   }
 
   async markAsRead(

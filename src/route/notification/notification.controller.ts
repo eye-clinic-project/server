@@ -1,45 +1,74 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { NotificationService } from './notification.service.js';
+import { Auth } from '../../common/decorator/auth.decorator.js';
+import { User } from '../../common/decorator/user.decorator.js';
+import { UserRoleEnum } from '../../common/enum/security.enum.js';
+import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { CreateNotificationDto } from './dto/create-notification.dto.js';
-import { UpdateNotificationDto } from './dto/update-notification.dto.js';
+import { NotificationQueryDto } from './dto/notification-query.dto.js';
+import { NotificationService } from './notification.service.js';
 
 @Controller('notification')
+@Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Post()
-  create(@Body() createNotificationDto: CreateNotificationDto) {
-    return this.notificationService.create(createNotificationDto);
+  send(@User() user: HUserDocument, @Body() dto: CreateNotificationDto) {
+    return this.notificationService.sendToAssignedParticipant(
+      user._id.toString(),
+      dto,
+    );
+  }
+
+  @Get('unread/count')
+  countUnread(@User() user: HUserDocument) {
+    return this.notificationService.countUnreadForUser(user._id.toString());
+  }
+
+  @Get('unread')
+  findUnread(@User() user: HUserDocument) {
+    return this.notificationService.findUnreadForUser(user._id.toString());
   }
 
   @Get()
-  findAll() {
-    return this.notificationService.findAll();
+  findAll(@User() user: HUserDocument, @Query() query: NotificationQueryDto) {
+    return this.notificationService.findForUser(
+      user._id.toString(),
+      query.limit,
+      query.skip,
+    );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notificationService.findOne(+id);
+  @Patch('read-all')
+  markAllAsRead(@User() user: HUserDocument) {
+    return this.notificationService.markAllAsRead(user._id.toString());
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateNotificationDto: UpdateNotificationDto,
+  @Patch(':notificationId/read')
+  markAsRead(
+    @User() user: HUserDocument,
+    @Param('notificationId') notificationId: string,
   ) {
-    return this.notificationService.update(+id, updateNotificationDto);
+    return this.notificationService.markAsRead(
+      user._id.toString(),
+      notificationId,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.notificationService.remove(+id);
+  @Delete(':notificationId')
+  remove(
+    @User() user: HUserDocument,
+    @Param('notificationId') notificationId: string,
+  ) {
+    return this.notificationService.remove(user._id.toString(), notificationId);
   }
 }

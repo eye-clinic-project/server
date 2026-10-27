@@ -6,10 +6,17 @@ import { RolesGuard } from '../../common/guard/role.guard.js';
 import { AppointmentRepository } from '../../core/database/repository/appointment.repository.js';
 import { DoctorModule } from '../doctor/doctor.module.js';
 import { PatientModule } from '../patient/patient.module.js';
+import { AppointmentResolver } from './appointment.resolver.js';
 
 @Module({
   imports: [DoctorModule, PatientModule],
   controllers: [AppointmentController],
-  providers: [AppointmentService, AppointmentRepository, AuthGuard, RolesGuard],
+  providers: [
+    AppointmentService,
+    AppointmentRepository,
+    AppointmentResolver,
+    AuthGuard,
+    RolesGuard,
+  ],
 })
 export class AppointmentModule {}

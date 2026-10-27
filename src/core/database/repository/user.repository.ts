@@ -36,6 +36,19 @@ export class UserRepository extends DatabaseRepository<IUser> {
     return this.userModel.find({ role }).exec();
   }
 
+  updateUserProfile(
+    userId: Types.ObjectId,
+    profile: { name?: string; city?: string; avatarUrl?: string },
+  ) {
+    return this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $set: profile },
+        { new: true, runValidators: true },
+      )
+      .exec();
+  }
+
   async findByEmailWithoutPassword(
     email: string,
   ): Promise<HUserDocument | null> {
