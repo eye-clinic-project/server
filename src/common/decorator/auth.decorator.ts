@@ -5,9 +5,6 @@ import { Roles } from "./role.decorator.js";
 import { UserRole } from "../enum/user.enum.js";
 
 
-export function Auth(...roles: UserRole[]) {
-  return applyDecorators(
-    Roles(...roles),
-    UseGuards(JwtAuthGuard, RolesGuard),
-  );
+export const Auth = (...roles: UserRole[]) => {
+  return applyDecorators(Roles(...roles), UseGuards(JwtAuthGuard, RolesGuard),);
 }

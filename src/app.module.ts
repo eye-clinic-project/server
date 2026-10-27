@@ -22,6 +22,7 @@ import { LoggingInterceptor } from './common/interceptor/logging.interceptor.js'
 import { TransformInterceptor } from './common/interceptor/transform.interceptor.js';
 import { TimeoutInterceptor } from './common/interceptor/timeout.interceptor.js';
 import { LanguageInterceptor } from './common/interceptor/language.interceptor.js';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -61,6 +62,10 @@ import { LanguageInterceptor } from './common/interceptor/language.interceptor.j
     {
       provide: APP_INTERCEPTOR,
       useClass: LanguageInterceptor,
+    },
+        {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
   ],
 })

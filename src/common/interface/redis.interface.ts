@@ -26,7 +26,6 @@ export interface ExpireCache extends CacheKey {
 
 export interface IncrementCache extends CacheKey {
   amount?: number;
-  /** TTL in seconds, applied only when the key is first created */
   ttl?: number;
 }
 
@@ -52,6 +51,5 @@ export interface RateLimit extends CacheKey {
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
-  /** Seconds until the window resets (0 when allowed) */
   retryAfter: number;
 }

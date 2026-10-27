@@ -12,4 +12,4 @@ export class Analysis {
 }
 
 export const AnalysisSchema = SchemaFactory.createForClass(Analysis);
-AnalysisSchema.index({ patient: 1, createdAt: -1 }); // Analysis History
+AnalysisSchema.index({ patient: 1, createdAt: -1 }); 

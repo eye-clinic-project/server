@@ -9,8 +9,9 @@ import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 
 
-import { RATE_LIMIT_KEY, RateLimitOptions } from '../decorator/limit.decorator.js';
+import { RATE_LIMIT_KEY } from '../decorator/limit.decorator.js';
 import { RedisService } from '../service/redis/redis.service.js';
+import { RateLimitOptions } from '../interface/decorator.interface.js';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {

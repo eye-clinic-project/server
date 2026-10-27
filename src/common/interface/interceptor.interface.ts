@@ -8,7 +8,7 @@ export interface ApiResponse<T> {
     data: T;
 }
 
-export interface IAuthReq extends Request {
+export interface AuthReq extends Request {
     credentials: { user: UserDocument, decoded: JwtPayload }
 }
 
