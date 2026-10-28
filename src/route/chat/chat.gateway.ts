@@ -52,12 +52,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const token = credential.replace(/^Bearer\s+/i, '').trim();
       const { user } = await this.tokens.decodeToken({ token });
+
       client.data.userId = user._id.toString();
       client.data.role = user.role;
       await client.join(userRoom(client.data.userId));
+
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Socket authentication failed';
+
+      const message = error instanceof Error ? error.message : 'Socket authentication failed';
       this.logger.warn(`Rejected chat socket ${client.id}: ${message}`);
       client.emit('chat:error', { message: 'Socket authentication failed' });
       client.disconnect(true);
@@ -74,15 +76,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() body: { conversationId?: string },
   ) {
     const conversationId = this.requireConversationId(body);
+
     const participants = await this.chat.getConversationParticipantIds(
       client.data.userId,
       conversationId,
     );
+
     await client.join(conversationRoom(conversationId));
     const result = await this.chat.markDelivered(
       client.data.userId,
       conversationId,
     );
+    
     if (result.modifiedCount > 0) {
       this.emitToParticipants(participants, 'message:delivered', {
         conversationId,

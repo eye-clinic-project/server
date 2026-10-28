@@ -41,7 +41,7 @@ export class UserController {
     }
     return this.userService.updateMyAvatar(
       user._id,
-      `/uploads/avatars/${file.filename}`,
+      `/assets/avatars/${file.filename}`,
     );
   }
 }
