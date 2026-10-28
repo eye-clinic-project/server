@@ -6,7 +6,7 @@ import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { LogoutTypeEnum, UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { IAuthReq } from '../../common/interface/ctx.interface.js';
-import { GraphQLJSON } from '../../common/graphql/json.scalar.js';
+import { GraphQL_JSON } from '../../common/graphql/json.scalar.js';
 import { validateGraphqlInput } from '../../common/graphql/validate-graphql-input.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { AuthenticationService } from './authentication.service.js';
@@ -24,18 +24,18 @@ export class AuthenticationResolver {
     private readonly config: ConfigService,
   ) {}
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   async signUp(
-    @Args('input', { type: () => GraphQLJSON }) input: CreateAuthenticationDto,
+    @Args('input', { type: () => GraphQL_JSON }) input: CreateAuthenticationDto,
   ) {
     return this.authentication.signUp(
       await validateGraphqlInput(input, CreateAuthenticationDto),
     );
   }
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   async login(
-    @Args('input', { type: () => GraphQLJSON }) input: LoginDto,
+    @Args('input', { type: () => GraphQL_JSON }) input: LoginDto,
     @Context('req') request: Request,
   ) {
     return this.authentication.login(
@@ -45,9 +45,9 @@ export class AuthenticationResolver {
     );
   }
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   async googleCredential(
-    @Args('input', { type: () => GraphQLJSON }) input: GoogleCredentialDto,
+    @Args('input', { type: () => GraphQL_JSON }) input: GoogleCredentialDto,
     @Context('req') request: Request,
   ) {
     return this.authentication.googleCredential(
@@ -56,25 +56,25 @@ export class AuthenticationResolver {
     );
   }
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   async sendVerificationEmail(
-    @Args('input', { type: () => GraphQLJSON }) input: EmailDto,
+    @Args('input', { type: () => GraphQL_JSON }) input: EmailDto,
   ) {
     return this.authentication.sendVerificationEmail(
       await validateGraphqlInput(input, EmailDto),
     );
   }
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   async verifyEmail(
-    @Args('input', { type: () => GraphQLJSON }) input: VerifyEmailDto,
+    @Args('input', { type: () => GraphQL_JSON }) input: VerifyEmailDto,
   ) {
     return this.authentication.verifyEmail(
       await validateGraphqlInput(input, VerifyEmailDto),
     );
   }
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   rotateRefreshToken(
     @Args('refreshToken') refreshToken: string,
     @Context('req') request: Request,
@@ -85,7 +85,7 @@ export class AuthenticationResolver {
     );
   }
 
-  @Mutation(() => GraphQLJSON)
+  @Mutation(() => GraphQL_JSON)
   @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
   logout(
     @User() user: HUserDocument,

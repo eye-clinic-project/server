@@ -60,8 +60,8 @@ class Server {
       jsonDocumentUrl: 'api/docs-json',
     });
 
-    app.useStaticAssets(join(process.cwd(), 'uploads'), {
-      prefix: '/uploads/',
+    app.useStaticAssets(join(process.cwd(), 'assets'), {
+      prefix: '/assets/',
     });
 
     app.enableShutdownHooks();

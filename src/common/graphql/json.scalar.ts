@@ -22,7 +22,7 @@ function parseLiteral(value: Parameters<NonNullable<GraphQLScalarType['parseLite
   }
 }
 
-export const GraphQLJSON = new GraphQLScalarType({
+export const GraphQL_JSON = new GraphQLScalarType({
   name: 'JSON',
   description: 'Arbitrary JSON value',
   serialize: (value: unknown) => value,

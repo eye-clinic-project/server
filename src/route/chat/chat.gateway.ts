@@ -23,8 +23,7 @@ type AuthenticatedSocket = Socket & {
 };
 
 const userRoom = (userId: string) => `user:${userId}`;
-const conversationRoom = (conversationId: string) =>
-  `conversation:${conversationId}`;
+const conversationRoom = (conversationId: string) => `conversation:${conversationId}`;
 
 @WebSocketGateway({
   cors: {
