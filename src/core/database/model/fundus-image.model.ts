@@ -23,7 +23,7 @@ export class FundusImage {
     ref: User.name,
     required: true,
   })
-  uploadedBy: Types.ObjectId;
+  supervisorBy: Types.ObjectId;
 
   @Prop({
     required: true,
