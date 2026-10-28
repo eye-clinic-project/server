@@ -1,19 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AnalysisService } from './analysis.service.js';
 import { AnalysisController } from './analysis.controller.js';
-// import { AnalysisResolver } from './analysis.resolver.js';
+import { AnalysisResolver } from './analysis.resolver.js';
 import { AnalysisRepository } from '../../core/database/repository/analysis.repository.js';
 import { AuthGuard } from '../../common/guard/auth.guard.js';
 import { RolesGuard } from '../../common/guard/role.guard.js';
+import { HttpClientModule } from '@nestjs/http-client';
 
 @Module({
+  imports: [
+    HttpClientModule.register({
+      baseUrl: 'https://127.0.0.1:9000',
+      timeout: '10s',
+    }),
+  ],
   controllers: [AnalysisController],
   providers: [
     AnalysisService,
-    // AnalysisResolver,
+    AnalysisResolver,
     AnalysisRepository,
     AuthGuard,
     RolesGuard,
   ],
 })
-export class AnalysisModule {}
+export class AnalysisModule { }

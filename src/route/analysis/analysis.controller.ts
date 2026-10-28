@@ -1,10 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { AnalysisService } from './analysis.service.js';
+import { th } from 'zod/v4/locales/index.js';
 
 @Controller('analysis')
 @ApiTags('Analysis')
@@ -27,5 +28,10 @@ export class AnalysisController {
       user.role,
       analysisId,
     );
+  }
+
+  @Post()
+  SendFundusImageToFastAPI(){
+    return this.analysisService.fundusImage()
   }
 }

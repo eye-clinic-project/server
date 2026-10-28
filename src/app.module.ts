@@ -31,7 +31,7 @@ import {
 } from 'nestjs-i18n';
 import { join } from 'node:path';
 import { AppResolver } from './app.resolver.js';
-import { AdminModule } from './route/admin/admin.module.js';
+
 import configuration from './core/configuration/configuration.js';
 
 @Module({
@@ -70,7 +70,6 @@ import configuration from './core/configuration/configuration.js';
     NotificationModule,
     PatientModule,
     AppResolver,
-    AdminModule,
   ],
   controllers: [AppController],
   providers: [

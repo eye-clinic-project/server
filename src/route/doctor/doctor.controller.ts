@@ -16,7 +16,7 @@ import { CreateDoctorDto } from './dto/create-doctor.dto.js';
 import { UpdateDoctorDto } from './dto/update-doctor.dto.js';
 import { DoctorService } from './doctor.service.js';
 import { RateLimit } from '../../common/decorator/limit.decorator.js';
-import { th } from 'zod/v4/locales/index.js';
+
 
 @Controller('doctor')
 @ApiTags('Doctors')
@@ -72,7 +72,7 @@ export class DoctorController {
     @User() user: HUserDocument,
     @Param('patientId') patientId: string,
   ) {
-    return this.doctorService.assignPatient(user._id.toString(), patientId);
+    return this.doctorService.assignPatient(user._id.toString(), patientId );
   }
 
   @Delete('patients/:patientId')

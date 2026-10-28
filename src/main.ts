@@ -36,7 +36,7 @@ class Server {
     );
 
     app.enableCors({
-      origin: config.get<string>('app.corsOrigin', 'http://localhost:3000'),
+      origin: config.get<string>('app.corsOrigin', 'http://localhost:3000' ),
       credentials: true,
     });
 

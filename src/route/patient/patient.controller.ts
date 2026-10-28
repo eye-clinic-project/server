@@ -7,6 +7,7 @@ import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { CreatePatientDto } from './dto/create-patient.dto.js';
 import { UpdatePatientDto } from './dto/update-patient.dto.js';
 import { PatientService } from './patient.service.js';
+import { RateLimit } from '../../common/decorator/limit.decorator.js';
 
 @Controller('patient')
 @ApiTags('Patients')
@@ -15,6 +16,7 @@ export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Get('me')
+  @RateLimit({ limit: 10, ttl: 60 })
   findMyProfile(@User() user: HUserDocument) {
     return this.patientService.findProfile(user._id);
   }

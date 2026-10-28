@@ -20,6 +20,8 @@ type Mutation {
 }
 
 type Query {
+  analyses: JSON!
+  analysis(analysisId: ID!): JSON!
   assignedPatientRecords(patientId: ID!): JSON!
   doctorProfile(doctorId: ID!): JSON!
   doctors: JSON!

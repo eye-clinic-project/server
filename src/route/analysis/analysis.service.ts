@@ -49,4 +49,8 @@ export class AnalysisService {
     }
     return analysis;
   }
+
+  fundusImage(){
+    
+  }
 }
