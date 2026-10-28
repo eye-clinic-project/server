@@ -4,11 +4,12 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { I18nContext } from 'nestjs-i18n';
 import type { ValidationError } from 'class-validator';
-import { formatValidationErrors } from './common/graphql/validate-graphql-input.js';
+import { formatValidationErrors } from './common/gql/validate-graphql-input.js';
 import { join } from 'node:path';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { LoggerService } from './common/service/logger.service.js';
+
 
 class Server {
   public async run() {

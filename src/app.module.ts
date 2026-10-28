@@ -28,6 +28,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import type { Request } from 'express';
 import { AcceptLanguageResolver, I18nJsonLoader, I18nModule } from 'nestjs-i18n';
 import { join } from 'node:path';
+import { AppResolver } from './app.resolver.js';
+import { AdminModule } from './admin/admin.module.js';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { join } from 'node:path';
     UserModule,
     NotificationModule,
     PatientModule,
+    AppResolver,
+    AdminModule
   ],
   controllers: [AppController],
   providers: [

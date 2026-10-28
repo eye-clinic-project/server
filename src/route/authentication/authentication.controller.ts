@@ -25,22 +25,17 @@ import { GoogleCredentialDto } from './dto/google-credential.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { LogoutDto } from './dto/logout.dto.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
+import { TokenService } from '../../common/service/token.service.js';
+import { UtilService } from '../../common/service/util.service.js';
 
-function getBearerToken(request: IAuthReq): string {
-  const authorization = request.headers.authorization;
-  const [scheme, token, ...extra] = authorization?.trim().split(/\s+/) ?? [];
-  if (scheme?.toLowerCase() !== 'bearer' || !token || extra.length > 0) {
-    throw new UnauthorizedException('Invalid authorization format');
-  }
-  return token;
-}
 
 @Controller('authentication')
 @ApiTags('Authentication')
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
-    private readonly configService: ConfigService,
+    private readonly UtilService : UtilService,
+    private readonly tokenService : TokenService
   ) {}
 
   @Post('sign-up')
@@ -58,7 +53,7 @@ export class AuthenticationController {
   ) {
     const result = await this.authenticationService.googleCredential(
       body,
-      this.issuer(request),
+      this.UtilService.issuer(request),
     );
     response.status(result.statusCode);
     const { statusCode: _statusCode, ...credentials } = result;
@@ -70,7 +65,7 @@ export class AuthenticationController {
   login(@Body() body: LoginDto, @Req() request: IAuthReq) {
     return this.authenticationService.login(
       body,
-      this.issuer(request),
+      this.UtilService.issuer(request),
       request.ip ?? 'unknown',
     );
   }
@@ -94,8 +89,8 @@ export class AuthenticationController {
   @ApiBearerAuth('bearerAuth')
   rotateToken(@Req() request: IAuthReq) {
     return this.authenticationService.rotateToken(
-      getBearerToken(request),
-      this.issuer(request),
+      this.tokenService.getBearerToken(request),
+      this.UtilService.issuer(request),
     );
   }
 
@@ -116,18 +111,5 @@ export class AuthenticationController {
     }
 
     return this.authenticationService.logout(userId, tokenId, body.action);
-  }
-
-  private issuer(request: IAuthReq): string {
-    const configuredIssuer = this.configService.get<string>('auth.issuer');
-    if (configuredIssuer) {
-      return configuredIssuer;
-    }
-
-    const host = request.get('host');
-    if (!host) {
-      throw new BadRequestException('Could not determine token issuer');
-    }
-    return `${request.protocol}://${host}`;
   }
 }

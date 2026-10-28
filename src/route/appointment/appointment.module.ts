@@ -6,7 +6,7 @@ import { RolesGuard } from '../../common/guard/role.guard.js';
 import { AppointmentRepository } from '../../core/database/repository/appointment.repository.js';
 import { DoctorModule } from '../doctor/doctor.module.js';
 import { PatientModule } from '../patient/patient.module.js';
-import { AppointmentResolver } from './appointment.resolver.js';
+// import { AppointmentResolver } from './appointment.resolver.js';
 
 @Module({
   imports: [DoctorModule, PatientModule],
@@ -14,7 +14,7 @@ import { AppointmentResolver } from './appointment.resolver.js';
   providers: [
     AppointmentService,
     AppointmentRepository,
-    AppointmentResolver,
+    // AppointmentResolver,
     AuthGuard,
     RolesGuard,
   ],

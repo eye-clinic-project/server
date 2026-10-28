@@ -4,7 +4,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class SecurityService {
+export class SecurityService  {
   private readonly saltRounds = 12;
   private readonly algorithm = 'aes-256-gcm';
   private readonly key: Buffer;

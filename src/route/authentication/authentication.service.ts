@@ -25,14 +25,9 @@ import { EmailDto, VerifyEmailDto } from './dto/email.dto.js';
 import { GoogleCredentialDto } from './dto/google-credential.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { LogoutTypeEnum } from '../../common/enum/security.enum.js';
+import { GoogleTokenClaims } from '../../common/interface/security.interface.js';
 
-interface GoogleTokenClaims {
-  aud?: unknown;
-  email?: unknown;
-  email_verified?: unknown;
-  name?: unknown;
-  sub?: unknown;
-}
+
 
 function isDuplicateKeyError(error: unknown): error is { code: number } {
   return (
@@ -55,9 +50,8 @@ export class AuthenticationService {
     private readonly config: ConfigService,
   ) {}
 
-  async signUp(
-    { name, email, password, city }: CreateAuthenticationDto,
-  ): Promise<{ email: string; emailVerificationRequired: true }> {
+  async signUp({ name, email, password, city }: CreateAuthenticationDto,): Promise<{ email: string; emailVerificationRequired: true }> 
+  {
     if (await this.users.findByEmailWithoutPassword(email)) {
       throw new ConflictException('An account with this email already exists');
     }
@@ -85,11 +79,7 @@ export class AuthenticationService {
     }
   }
 
-  async login(
-    { email, password }: LoginDto,
-    issuer: string,
-    clientAddress: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async login({ email, password }: LoginDto, issuer: string, ip: string): Promise<{ accessToken: string; refreshToken: string }> {
     const user = await this.users.findByEmail(email);
 
     if (
@@ -98,9 +88,10 @@ export class AuthenticationService {
       !(await this.security.compare(password, user.passwordHash))
     ) {
       const attempts = await this.cache.incrementCache({
-        key: RedisKeys.rateLimitKey('login', `${clientAddress}:${email}`),
+        key: RedisKeys.rateLimitKey('login', `${ip}:${email}`),
         ttl: 900,
       });
+
       if (attempts > 5) {
         throw new HttpException(
           'Too many failed sign-in attempts. Try again in 15 minutes.',
@@ -115,7 +106,7 @@ export class AuthenticationService {
     }
 
     await this.cache.deleteCache({
-      key: RedisKeys.rateLimitKey('login', `${clientAddress}:${email}`),
+      key: RedisKeys.rateLimitKey('login', `${ip}:${email}`),
     });
 
     const credentials = await this.tokens.createLoginCredentials(user, issuer);
@@ -125,14 +116,7 @@ export class AuthenticationService {
     };
   }
 
-  async googleCredential(
-    { idToken, city }: GoogleCredentialDto,
-    issuer: string,
-  ): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    statusCode: 200 | 201;
-  }> {
+  async googleCredential({ idToken, city }: GoogleCredentialDto, issuer: string,): Promise<{ accessToken: string; refreshToken: string; statusCode: 200 | 201}> {
     const claims = await this.verifyGoogleCredential(idToken);
     const email = claims.email.toLowerCase();
     const existing = await this.users.findByEmailWithoutPassword(email);
@@ -323,4 +307,5 @@ export class AuthenticationService {
         : {}),
     };
   }
+
 }

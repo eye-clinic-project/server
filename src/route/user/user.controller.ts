@@ -10,7 +10,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
 import { UserRoleEnum } from '../../common/enum/security.enum.js';
-import { avatarMulterOptions } from '../../common/service/upload.service.js';
 import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { UserService } from './user.service.js';
 
@@ -31,7 +30,8 @@ export class UserController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('avatar', avatarMulterOptions))
+
+  @UseInterceptors(FileInterceptor('avatar'))
   uploadAvatar(
     @User() user: HUserDocument,
     @UploadedFile() file?: Express.Multer.File,

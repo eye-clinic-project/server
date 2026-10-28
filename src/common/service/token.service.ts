@@ -22,6 +22,7 @@ import { TokenEnum, UserRoleEnum } from '../enum/security.enum.js';
 
 import { UtilService } from './util.service.js';
 import { JwtPayload } from 'jsonwebtoken';
+import { IAuthReq } from '../interface/ctx.interface.js';
 
 @Injectable()
 export class TokenService {
@@ -58,6 +59,15 @@ export class TokenService {
     ) {
       throw new Error('Token expirations must be positive integer seconds');
     }
+  }
+
+    getBearerToken(request: IAuthReq): string {
+    const authorization = request.headers.authorization;
+    const [scheme, token, ...extra] = authorization?.trim().split(/\s+/) ?? [];
+    if (scheme?.toLowerCase() !== 'bearer' || !token || extra.length > 0) {
+      throw new UnauthorizedException('Invalid authorization format');
+    }
+    return token;
   }
 
   async sign({
@@ -252,3 +262,4 @@ export class TokenService {
     return this.createLoginCredentials(user, issuer);
   }
 }
+

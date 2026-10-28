@@ -6,50 +6,15 @@
 scalar JSON
 
 type Mutation {
-  assignPatient(patientId: ID!): JSON!
-  cancelAppointment(appointmentId: ID!): JSON!
-  confirmAppointment(appointmentId: ID!): JSON!
-  createAppointment(input: JSON!): JSON!
-  createDoctorProfile(input: JSON!): JSON!
-  createPatientProfile(input: JSON!): JSON!
-  createReport(input: JSON!): JSON!
-  deleteChatMessage(messageId: ID!): JSON!
-  editChatMessage(message: String!, messageId: ID!): JSON!
   googleCredential(input: JSON!): JSON!
   login(input: JSON!): JSON!
   logout(allSessions: Boolean = false): JSON!
-  markChatDelivered(conversationId: ID!): JSON!
-  markChatRead(conversationId: ID!): JSON!
-  removeReport(reportId: ID!): JSON!
-  rescheduleAppointment(appointmentId: ID!, input: JSON!): JSON!
   rotateRefreshToken(refreshToken: String!): JSON!
-  sendChatMessage(conversationId: ID!, input: JSON!): JSON!
   sendVerificationEmail(input: JSON!): JSON!
   signUp(input: JSON!): JSON!
-  startChat(participantId: ID!): JSON!
-  unassignPatient(patientId: ID!): JSON!
-  updateDoctorProfile(input: JSON!): JSON!
-  updatePatientProfile(input: JSON!): JSON!
-  updateReport(input: JSON!, reportId: ID!): JSON!
   verifyEmail(input: JSON!): JSON!
 }
 
 type Query {
-  analyses: JSON!
-  analysis(analysisId: ID!): JSON!
-  appointment(appointmentId: ID!): JSON!
-  assignedPatientRecords(patientId: ID!): JSON!
-  conversationMessages(conversationId: ID!, limit: Int = 30, skip: Int = 0): JSON!
-  doctorProfile(doctorId: ID!): JSON!
-  doctors: JSON!
-  myAppointments: JSON!
-  myAssignedPatients: JSON!
-  myConversations: JSON!
-  myDoctorAppointments: JSON!
-  myDoctorProfile: JSON!
-  myPatientMedicalRecords: JSON!
-  myPatientProfile: JSON!
-  myReports: JSON!
-  myUpcomingAppointments: JSON!
-  report(reportId: ID!): JSON!
+  healthCheck: String!
 }
