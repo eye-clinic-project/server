@@ -61,7 +61,7 @@ export class TokenService {
     }
   }
 
-    getBearerToken(request: IAuthReq): string {
+  getBearerToken(request: IAuthReq): string {
     const authorization = request.headers.authorization;
     const [scheme, token, ...extra] = authorization?.trim().split(/\s+/) ?? [];
     if (scheme?.toLowerCase() !== 'bearer' || !token || extra.length > 0) {
@@ -262,4 +262,3 @@ export class TokenService {
     return this.createLoginCredentials(user, issuer);
   }
 }
-

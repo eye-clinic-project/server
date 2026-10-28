@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-
 import { DatabaseRepository } from './base.repository.js';
 import { IAnalysis } from '../../../common/interface/database-schema.interface.js';
 import { Analysis } from '../model/analysis.model.js';

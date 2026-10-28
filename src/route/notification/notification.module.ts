@@ -7,7 +7,6 @@ import { NotificationRepository } from '../../core/database/repository/notificat
 import { UserRepository } from '../../core/database/repository/user.repository.js';
 import { DoctorPatientRepository } from '../../core/database/repository/doctor-patient.repository.js';
 
-
 @Module({
   providers: [
     NotificationService,

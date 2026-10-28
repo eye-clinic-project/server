@@ -3,5 +3,5 @@ import { RateLimitOptions } from '../interface/decorator.interface.js';
 
 export const rateLimitName = 'rateLimit';
 export const RateLimit = (options: RateLimitOptions) => {
-  SetMetadata(rateLimitName, options);
+  return SetMetadata(rateLimitName, options);
 };

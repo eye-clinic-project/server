@@ -43,10 +43,7 @@ export class ReportRepository extends DatabaseRepository<IReport> {
       .exec();
   }
 
-  async findByDoctorAndId(
-    doctorId: Types.ObjectId,
-    reportId: Types.ObjectId,
-  ) {
+  async findByDoctorAndId(doctorId: Types.ObjectId, reportId: Types.ObjectId) {
     return this.reportModel
       .findOne({ _id: reportId, doctor: doctorId })
       .populate('patient')

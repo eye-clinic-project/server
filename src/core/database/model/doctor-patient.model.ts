@@ -3,7 +3,6 @@ import { HydratedDocument, Types } from 'mongoose';
 import { IDoctorPatient } from '../../../common/interface/database-schema.interface.js';
 import { User } from './user.model.js';
 
-
 export type HDoctorPatientDocument = HydratedDocument<IDoctorPatient>;
 
 @Schema({
@@ -30,18 +29,8 @@ export class DoctorPatient {
     default: Date.now,
   })
   assignedAt: Date;
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: User.name,
-  })
-  assignedBy?: Types.ObjectId;
 }
 
-export const DoctorPatientSchema =
-  SchemaFactory.createForClass(DoctorPatient);
+export const DoctorPatientSchema = SchemaFactory.createForClass(DoctorPatient);
 
-DoctorPatientSchema.index(
-  { doctor: 1, patient: 1 },
-  { unique: true },
-);
+DoctorPatientSchema.index({ doctor: 1, patient: 1 }, { unique: true });

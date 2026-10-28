@@ -23,7 +23,8 @@ type AuthenticatedSocket = Socket & {
 };
 
 const userRoom = (userId: string) => `user:${userId}`;
-const conversationRoom = (conversationId: string) => `conversation:${conversationId}`;
+const conversationRoom = (conversationId: string) =>
+  `conversation:${conversationId}`;
 
 @WebSocketGateway({
   cors: {
@@ -56,10 +57,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.userId = user._id.toString();
       client.data.role = user.role;
       await client.join(userRoom(client.data.userId));
-
     } catch (error) {
-
-      const message = error instanceof Error ? error.message : 'Socket authentication failed';
+      const message =
+        error instanceof Error ? error.message : 'Socket authentication failed';
       this.logger.warn(`Rejected chat socket ${client.id}: ${message}`);
       client.emit('chat:error', { message: 'Socket authentication failed' });
       client.disconnect(true);
@@ -87,7 +87,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.userId,
       conversationId,
     );
-    
+
     if (result.modifiedCount > 0) {
       this.emitToParticipants(participants, 'message:delivered', {
         conversationId,

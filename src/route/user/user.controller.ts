@@ -30,7 +30,6 @@ export class UserController {
       },
     },
   })
-
   @UseInterceptors(FileInterceptor('avatar'))
   uploadAvatar(
     @User() user: HUserDocument,

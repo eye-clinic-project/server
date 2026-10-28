@@ -4,7 +4,10 @@ import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import type { Request } from 'express';
 import { Auth } from '../../common/decorator/auth.decorator.js';
 import { User } from '../../common/decorator/user.decorator.js';
-import { LogoutTypeEnum, UserRoleEnum } from '../../common/enum/security.enum.js';
+import {
+  LogoutTypeEnum,
+  UserRoleEnum,
+} from '../../common/enum/security.enum.js';
 import type { IAuthReq } from '../../common/interface/ctx.interface.js';
 import { GraphQL_JSON } from '../../common/gql/json.scalar.js';
 import { validateGraphqlInput } from '../../common/gql/validate-graphql-input.js';
@@ -79,10 +82,7 @@ export class AuthenticationResolver {
     @Args('refreshToken') refreshToken: string,
     @Context('req') request: Request,
   ) {
-    return this.authentication.rotateToken(
-      refreshToken,
-      this.issuer(request),
-    );
+    return this.authentication.rotateToken(refreshToken, this.issuer(request));
   }
 
   @Mutation(() => GraphQL_JSON)

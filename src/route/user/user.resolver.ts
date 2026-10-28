@@ -5,7 +5,6 @@
 // import type { HUserDocument } from '../../core/database/model/user.model.js';
 // import { UserService } from './user.service.js';
 
-
 // @Resolver(() => UserProfileGraphqlType)
 // @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
 // export class UserResolver {

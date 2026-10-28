@@ -14,13 +14,10 @@ import { ReportRepository } from '../../core/database/repository/report.reposito
 import { UserRepository } from '../../core/database/repository/user.repository.js';
 import { CreateDoctorDto } from './dto/create-doctor.dto.js';
 import { UpdateDoctorDto } from './dto/update-doctor.dto.js';
+import { UtilService } from '../../common/service/util.service.js';
+import { th } from 'zod/v4/locales/index.js';
 
-function objectId(id: string): Types.ObjectId {
-  if (!Types.ObjectId.isValid(id)) {
-    throw new NotFoundException('Resource not found');
-  }
-  return new Types.ObjectId(id);
-}
+
 
 @Injectable()
 export class DoctorService {
@@ -31,6 +28,7 @@ export class DoctorService {
     private readonly analyses: AnalysisRepository,
     private readonly appointments: AppointmentRepository,
     private readonly reports: ReportRepository,
+    private readonly UtilService : UtilService,
   ) {}
 
   async findAll() {
@@ -40,7 +38,7 @@ export class DoctorService {
   }
 
   async findProfile(doctorId: string) {
-    const id = objectId(doctorId);
+    const id = this.UtilService.toObjectId(doctorId);
     const profile =
       (await this.doctors.findById({
         _id: id,
@@ -53,7 +51,7 @@ export class DoctorService {
   }
 
   async createProfile(doctorId: string, dto: CreateDoctorDto) {
-    const userObjectId = objectId(doctorId);
+    const userObjectId = this.UtilService.toObjectId(doctorId);
     const user = await this.users.findHydratedById(userObjectId);
     if (!user || user.role !== UserRoleEnum.DOCTOR) {
       throw new ForbiddenException('A doctor account is required');
@@ -89,7 +87,7 @@ export class DoctorService {
   }
 
   async updateProfile(doctorId: string, dto: UpdateDoctorDto) {
-    const userObjectId = objectId(doctorId);
+    const userObjectId = this.UtilService.toObjectId(doctorId);
     const existing = await this.doctors.findByUserId(userObjectId);
     if (!existing) {
       throw new NotFoundException('Doctor profile not found');
@@ -105,7 +103,9 @@ export class DoctorService {
           ...(dto.clinicAddress !== undefined && {
             clinicAddress: dto.clinicAddress.trim(),
           }),
-          ...(dto.specialty !== undefined && { specialty: dto.specialty.trim() }),
+          ...(dto.specialty !== undefined && {
+            specialty: dto.specialty.trim(),
+          }),
           ...(dto.licenseNumber !== undefined && {
             licenseNumber: dto.licenseNumber.trim(),
           }),
@@ -121,8 +121,8 @@ export class DoctorService {
   }
 
   async assignPatient(doctorId: string, patientId: string) {
-    const doctorObjectId = objectId(doctorId);
-    const patientObjectId = objectId(patientId);
+    const doctorObjectId = this.UtilService.toObjectId(doctorId);
+    const patientObjectId = this.UtilService.toObjectId(patientId);
     const doctor = await this.users.findHydratedById(doctorObjectId);
     const patient = await this.users.findHydratedById(patientObjectId);
 
@@ -148,8 +148,8 @@ export class DoctorService {
 
   async unassignPatient(doctorId: string, patientId: string) {
     const relation = await this.doctorPatients.removeAssignment(
-      objectId(doctorId),
-      objectId(patientId),
+      this.UtilService.toObjectId(doctorId),
+      this.UtilService.toObjectId(patientId),
     );
     if (!relation) {
       throw new NotFoundException('Patient assignment not found');
@@ -158,12 +158,12 @@ export class DoctorService {
   }
 
   async findAssignedPatients(doctorId: string) {
-    return this.doctorPatients.findPatientsByDoctor(objectId(doctorId));
+    return this.doctorPatients.findPatientsByDoctor(this.UtilService.toObjectId(doctorId));
   }
 
   async getAssignedPatientRecords(doctorId: string, patientId: string) {
-    const doctorObjectId = objectId(doctorId);
-    const patientObjectId = objectId(patientId);
+    const doctorObjectId = this.UtilService.toObjectId(doctorId);
+    const patientObjectId = this.UtilService.toObjectId(patientId);
     await this.assertAssignedPatient(doctorObjectId, patientObjectId);
 
     const patient = await this.users.findHydratedById(patientObjectId);
@@ -173,10 +173,7 @@ export class DoctorService {
 
     const [analyses, appointments, reports] = await Promise.all([
       this.analyses.findByPatient(patientObjectId),
-      this.appointments.findByDoctorAndPatient(
-        doctorObjectId,
-        patientObjectId,
-      ),
+      this.appointments.findByDoctorAndPatient(doctorObjectId, patientObjectId),
       this.reports.findByDoctorAndPatient(doctorObjectId, patientObjectId),
     ]);
 
@@ -184,7 +181,7 @@ export class DoctorService {
   }
 
   async getDoctorAppointments(doctorId: string) {
-    return this.appointments.findByDoctor(objectId(doctorId));
+    return this.appointments.findByDoctor(this.UtilService.toObjectId(doctorId));
   }
 
   async assertAssignedPatient(
@@ -228,4 +225,5 @@ export class DoctorService {
 
     return { doctor, patient, analysis };
   }
+
 }

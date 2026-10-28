@@ -10,7 +10,6 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { LoggerService } from './common/service/logger.service.js';
 
-
 class Server {
   public async run() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {

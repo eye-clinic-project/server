@@ -16,7 +16,10 @@ import { TokenService } from '../../common/service/token.service.js';
 import { CacheService, RedisKeys } from '../../common/service/cache.service.js';
 import { UtilService } from '../../common/service/util.service.js';
 import { MailService } from '../../common/service/mail.service.js';
-import { AuthProviderEnum, LogoutTypeEnum } from '../../common/enum/security.enum.js';
+import {
+  AuthProviderEnum,
+  LogoutTypeEnum,
+} from '../../common/enum/security.enum.js';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
@@ -124,7 +127,9 @@ describe('AuthenticationService', () => {
     it('rejects an email that already exists', async () => {
       users.findByEmailWithoutPassword.mockResolvedValue({ email: dto.email });
 
-      await expect(service.signUp(dto)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.signUp(dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
       expect(users.createAuthUser).not.toHaveBeenCalled();
     });
 
@@ -133,7 +138,9 @@ describe('AuthenticationService', () => {
       security.hash.mockResolvedValue('hashed-password');
       users.createAuthUser.mockRejectedValue({ code: 11000 });
 
-      await expect(service.signUp(dto)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.signUp(dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
 
     it('rethrows unexpected repository errors', async () => {
@@ -161,15 +168,19 @@ describe('AuthenticationService', () => {
       expect(cache.deleteCache).toHaveBeenCalledWith({
         key: RedisKeys.rateLimitKey('login', '127.0.0.1:test@example.com'),
       });
-      expect(tokens.createLoginCredentials).toHaveBeenCalledWith(validUser, 'issuer');
+      expect(tokens.createLoginCredentials).toHaveBeenCalledWith(
+        validUser,
+        'issuer',
+      );
     });
 
     it('rejects invalid credentials and increments the rate limiter', async () => {
       users.findByEmail.mockResolvedValue(validUser);
       security.compare.mockResolvedValue(false);
 
-      await expect(service.login(dto, 'issuer', '127.0.0.1'))
-        .rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        service.login(dto, 'issuer', '127.0.0.1'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
 
       expect(cache.incrementCache).toHaveBeenCalledWith({
         key: RedisKeys.rateLimitKey('login', '127.0.0.1:test@example.com'),
@@ -181,8 +192,9 @@ describe('AuthenticationService', () => {
       users.findByEmail.mockResolvedValue(null);
       cache.incrementCache.mockResolvedValue(6);
 
-      await expect(service.login(dto, 'issuer', '127.0.0.1'))
-        .rejects.toMatchObject({ status: 429 });
+      await expect(
+        service.login(dto, 'issuer', '127.0.0.1'),
+      ).rejects.toMatchObject({ status: 429 });
     });
 
     it('rejects Google-only users attempting password login', async () => {
@@ -192,16 +204,21 @@ describe('AuthenticationService', () => {
         passwordHash: undefined,
       });
 
-      await expect(service.login(dto, 'issuer', '127.0.0.1'))
-        .rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        service.login(dto, 'issuer', '127.0.0.1'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('rejects users whose email is not verified', async () => {
-      users.findByEmail.mockResolvedValue({ ...validUser, emailVerifiedAt: null });
+      users.findByEmail.mockResolvedValue({
+        ...validUser,
+        emailVerifiedAt: null,
+      });
       security.compare.mockResolvedValue(true);
 
-      await expect(service.login(dto, 'issuer', '127.0.0.1'))
-        .rejects.toBeInstanceOf(ConflictException);
+      await expect(
+        service.login(dto, 'issuer', '127.0.0.1'),
+      ).rejects.toBeInstanceOf(ConflictException);
       expect(tokens.createLoginCredentials).not.toHaveBeenCalled();
     });
   });
@@ -283,14 +300,16 @@ describe('AuthenticationService', () => {
         provider: AuthProviderEnum.SYSTEM,
       });
 
-      await expect(service.googleCredential(dto, 'issuer'))
-        .rejects.toBeInstanceOf(ConflictException);
+      await expect(
+        service.googleCredential(dto, 'issuer'),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
 
     it('rejects an invalid Google token response', async () => {
       mockGoogleResponse({}, false);
-      await expect(service.googleCredential(dto, 'issuer'))
-        .rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        service.googleCredential(dto, 'issuer'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('rejects a token with the wrong audience', async () => {
@@ -301,23 +320,26 @@ describe('AuthenticationService', () => {
         sub: 'google-sub',
       });
 
-      await expect(service.googleCredential(dto, 'issuer'))
-        .rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        service.googleCredential(dto, 'issuer'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('fails when Google sign-in is not configured', async () => {
       config.get.mockReturnValue(undefined);
 
-      await expect(service.googleCredential(dto, 'issuer'))
-        .rejects.toBeInstanceOf(ServiceUnavailableException);
+      await expect(
+        service.googleCredential(dto, 'issuer'),
+      ).rejects.toBeInstanceOf(ServiceUnavailableException);
       expect(fetch).not.toHaveBeenCalled();
     });
 
     it('maps Google network errors to ServiceUnavailableException', async () => {
       vi.mocked(fetch).mockRejectedValue(new Error('network down'));
 
-      await expect(service.googleCredential(dto, 'issuer'))
-        .rejects.toBeInstanceOf(ServiceUnavailableException);
+      await expect(
+        service.googleCredential(dto, 'issuer'),
+      ).rejects.toBeInstanceOf(ServiceUnavailableException);
     });
   });
 
@@ -431,7 +453,9 @@ describe('AuthenticationService', () => {
     it('rotates refresh token and returns camelCase credentials', async () => {
       tokens.rotateRefreshToken.mockResolvedValue(credentials);
 
-      await expect(service.rotateToken('refresh-token', 'issuer')).resolves.toEqual({
+      await expect(
+        service.rotateToken('refresh-token', 'issuer'),
+      ).resolves.toEqual({
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
@@ -445,8 +469,9 @@ describe('AuthenticationService', () => {
     it('propagates refresh-token errors', async () => {
       tokens.rotateRefreshToken.mockRejectedValue(new UnauthorizedException());
 
-      await expect(service.rotateToken('invalid-token', 'issuer'))
-        .rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        service.rotateToken('invalid-token', 'issuer'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
   });
 
@@ -455,7 +480,11 @@ describe('AuthenticationService', () => {
       tokens.revokeToken.mockResolvedValue(1);
 
       await expect(
-        service.logout(validUser._id as never, 'token-id', ('CURRENT' as LogoutTypeEnum)),
+        service.logout(
+          validUser._id as never,
+          'token-id',
+          'CURRENT' as LogoutTypeEnum,
+        ),
       ).resolves.toEqual({ revoked: 1 });
     });
 

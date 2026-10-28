@@ -28,14 +28,13 @@ import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { TokenService } from '../../common/service/token.service.js';
 import { UtilService } from '../../common/service/util.service.js';
 
-
 @Controller('authentication')
 @ApiTags('Authentication')
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
-    private readonly UtilService : UtilService,
-    private readonly tokenService : TokenService
+    private readonly UtilService: UtilService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @Post('sign-up')

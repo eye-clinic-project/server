@@ -74,7 +74,11 @@ describe('AuthenticationController', () => {
     });
 
     await expect(
-      controller.googleCredential(dto as never, request as never, response as never),
+      controller.googleCredential(
+        dto as never,
+        request as never,
+        response as never,
+      ),
     ).resolves.toEqual({
       accessToken: 'access',
       refreshToken: 'refresh',
@@ -88,7 +92,10 @@ describe('AuthenticationController', () => {
   it('login passes DTO, issuer, and IP to the service', async () => {
     const dto = { email: 'test@example.com', password: 'Password123!' };
     const request = { headers: {}, ip: '127.0.0.1' };
-    auth.login.mockResolvedValue({ accessToken: 'access', refreshToken: 'refresh' });
+    auth.login.mockResolvedValue({
+      accessToken: 'access',
+      refreshToken: 'refresh',
+    });
 
     await expect(controller.login(dto, request as never)).resolves.toEqual({
       accessToken: 'access',
@@ -99,7 +106,10 @@ describe('AuthenticationController', () => {
 
   it('login uses unknown when request IP is absent', async () => {
     const request = { headers: {} };
-    auth.login.mockResolvedValue({ accessToken: 'access', refreshToken: 'refresh' });
+    auth.login.mockResolvedValue({
+      accessToken: 'access',
+      refreshToken: 'refresh',
+    });
 
     await controller.login(
       { email: 'test@example.com', password: 'Password123!' },
@@ -117,7 +127,9 @@ describe('AuthenticationController', () => {
     const dto = { email: 'test@example.com' };
     auth.sendVerificationEmail.mockResolvedValue({ sent: true });
 
-    await expect(controller.sendVerificationEmail(dto)).resolves.toEqual({ sent: true });
+    await expect(controller.sendVerificationEmail(dto)).resolves.toEqual({
+      sent: true,
+    });
     expect(auth.sendVerificationEmail).toHaveBeenCalledWith(dto);
   });
 
@@ -125,7 +137,9 @@ describe('AuthenticationController', () => {
     const dto = { email: 'test@example.com', otp: '123456' };
     auth.verifyEmail.mockResolvedValue({ verified: true });
 
-    await expect(controller.verifyEmail(dto)).resolves.toEqual({ verified: true });
+    await expect(controller.verifyEmail(dto)).resolves.toEqual({
+      verified: true,
+    });
     expect(auth.verifyEmail).toHaveBeenCalledWith(dto);
   });
 
@@ -142,7 +156,10 @@ describe('AuthenticationController', () => {
     });
 
     expect(tokens.getBearerToken).toHaveBeenCalledWith(request);
-    expect(auth.rotateToken).toHaveBeenCalledWith('refresh-token', 'test-issuer');
+    expect(auth.rotateToken).toHaveBeenCalledWith(
+      'refresh-token',
+      'test-issuer',
+    );
   });
 
   it('logout delegates current user and token claims to the service', async () => {
@@ -164,10 +181,16 @@ describe('AuthenticationController', () => {
 
   it('logout rejects missing access-token claims', async () => {
     const user = { _id: '507f1f77bcf86cd799439011' };
-    const request = { credentials: { decoded: { jti: undefined, sub: user._id } } };
+    const request = {
+      credentials: { decoded: { jti: undefined, sub: user._id } },
+    };
 
     await expect(
-      controller.logout({ action: 'CURRENT' } as never, user as never, request as never),
+      controller.logout(
+        { action: 'CURRENT' } as never,
+        user as never,
+        request as never,
+      ),
     ).rejects.toBeInstanceOf(BadRequestException);
 
     expect(auth.logout).not.toHaveBeenCalled();

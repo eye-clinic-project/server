@@ -1,6 +1,8 @@
 import { GraphQLScalarType, Kind } from 'graphql';
 
-function parseLiteral(value: Parameters<NonNullable<GraphQLScalarType['parseLiteral']>>[0]): unknown {
+function parseLiteral(
+  value: Parameters<NonNullable<GraphQLScalarType['parseLiteral']>>[0],
+): unknown {
   switch (value.kind) {
     case Kind.STRING:
     case Kind.BOOLEAN:
@@ -15,7 +17,10 @@ function parseLiteral(value: Parameters<NonNullable<GraphQLScalarType['parseLite
       return value.values.map(parseLiteral);
     case Kind.OBJECT:
       return Object.fromEntries(
-        value.fields.map((field) => [field.name.value, parseLiteral(field.value)]),
+        value.fields.map((field) => [
+          field.name.value,
+          parseLiteral(field.value),
+        ]),
       );
     default:
       return null;

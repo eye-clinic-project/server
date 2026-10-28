@@ -8,9 +8,7 @@ import {
 } from 'class-validator';
 
 export class CreateAuthenticationDto {
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MinLength(1)
@@ -29,9 +27,7 @@ export class CreateAuthenticationDto {
   @MaxLength(72)
   password!: string;
 
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MinLength(1)

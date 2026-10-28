@@ -6,9 +6,7 @@ import { IAuthReq } from '../interface/ctx.interface.js';
 import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UtilService {
-  constructor(
-    private readonly configService : ConfigService
-  ) { }
+  constructor(private readonly configService: ConfigService) {}
 
   toObjectId = (id: string) => {
     return Types.ObjectId.createFromHexString(id);

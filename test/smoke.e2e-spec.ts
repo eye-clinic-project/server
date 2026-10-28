@@ -9,7 +9,10 @@ describe('AppModule Bootstrap & Core Protocols (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    console.log('Is GraphQLJSON instanceof GraphQLScalarType?', GraphQLJSON instanceof GraphQLScalarType);
+    console.log(
+      'Is GraphQLJSON instanceof GraphQLScalarType?',
+      GraphQLJSON instanceof GraphQLScalarType,
+    );
     console.log('GraphQLJSON constructor:', GraphQLJSON?.constructor?.name);
     console.log('GraphQLScalarType:', GraphQLScalarType?.name);
     const moduleFixture: TestingModule = await Test.createTestingModule({

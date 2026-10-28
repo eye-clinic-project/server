@@ -37,9 +37,7 @@ export class DoctorRepository extends DatabaseRepository<IDoctor> {
   }
 
   async findByLicenseNumber(licenseNumber: string) {
-    return this.doctorProfileModel
-      .findOne({ licenseNumber })
-      .exec();
+    return this.doctorProfileModel.findOne({ licenseNumber }).exec();
   }
 
   async licenseExists(licenseNumber: string) {

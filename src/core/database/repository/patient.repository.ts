@@ -23,10 +23,7 @@ export class PatientRepository extends DatabaseRepository<IPatient> {
   }
 
   async findByGender(gender: 'male' | 'female') {
-    return this.patientProfileModel
-      .find({ gender })
-      .populate('user')
-      .exec();
+    return this.patientProfileModel.find({ gender }).populate('user').exec();
   }
 
   async findByUserIds(userIds: Types.ObjectId[]) {

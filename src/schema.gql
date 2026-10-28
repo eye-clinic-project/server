@@ -6,15 +6,25 @@
 scalar JSON
 
 type Mutation {
+  assignPatient(patientId: ID!): JSON!
+  createDoctorProfile(input: JSON!): JSON!
   googleCredential(input: JSON!): JSON!
   login(input: JSON!): JSON!
   logout(allSessions: Boolean = false): JSON!
   rotateRefreshToken(refreshToken: String!): JSON!
   sendVerificationEmail(input: JSON!): JSON!
   signUp(input: JSON!): JSON!
+  unassignPatient(patientId: ID!): JSON!
+  updateDoctorProfile(input: JSON!): JSON!
   verifyEmail(input: JSON!): JSON!
 }
 
 type Query {
+  assignedPatientRecords(patientId: ID!): JSON!
+  doctorProfile(doctorId: ID!): JSON!
+  doctors: JSON!
   healthCheck: String!
+  myAssignedPatients: JSON!
+  myDoctorAppointments: JSON!
+  myDoctorProfile: JSON!
 }

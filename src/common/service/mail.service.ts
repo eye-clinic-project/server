@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import nodemailer from 'nodemailer';
 
@@ -14,9 +11,7 @@ export class MailService {
     const from = this.configService.get<string>('mail.from');
 
     if (!host || !from) {
-      throw new ServiceUnavailableException(
-        'Email delivery is not configured',
-      );
+      throw new ServiceUnavailableException('Email delivery is not configured');
     }
 
     const user = this.configService.get<string>('mail.user');

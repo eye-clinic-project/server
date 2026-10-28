@@ -36,5 +36,4 @@ export class Patient {
   emergencyContact?: string;
 }
 
-export const PatientSchema =
-  SchemaFactory.createForClass(Patient);
+export const PatientSchema = SchemaFactory.createForClass(Patient);

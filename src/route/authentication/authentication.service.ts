@@ -27,8 +27,6 @@ import { LoginDto } from './dto/login.dto.js';
 import { LogoutTypeEnum } from '../../common/enum/security.enum.js';
 import { GoogleTokenClaims } from '../../common/interface/security.interface.js';
 
-
-
 function isDuplicateKeyError(error: unknown): error is { code: number } {
   return (
     typeof error === 'object' &&
@@ -50,8 +48,15 @@ export class AuthenticationService {
     private readonly config: ConfigService,
   ) {}
 
-  async signUp({ name, email, password, city }: CreateAuthenticationDto,): Promise<{ email: string; emailVerificationRequired: true }> 
-  {
+  async signUp({
+    name,
+    email,
+    password,
+    city,
+  }: CreateAuthenticationDto): Promise<{
+    email: string;
+    emailVerificationRequired: true;
+  }> {
     if (await this.users.findByEmailWithoutPassword(email)) {
       throw new ConflictException('An account with this email already exists');
     }
@@ -59,13 +64,13 @@ export class AuthenticationService {
     const passwordHash = await this.security.hash(password);
     try {
       const user = await this.users.createAuthUser({
-          name: name.trim(),
-          email,
-          passwordHash,
-          city: city.trim(),
-          role: UserRoleEnum.PATIENT,
-          provider: AuthProviderEnum.SYSTEM,
-          emailVerifiedAt: null,
+        name: name.trim(),
+        email,
+        passwordHash,
+        city: city.trim(),
+        role: UserRoleEnum.PATIENT,
+        provider: AuthProviderEnum.SYSTEM,
+        emailVerifiedAt: null,
       });
 
       return { email: user.email, emailVerificationRequired: true };
@@ -79,7 +84,11 @@ export class AuthenticationService {
     }
   }
 
-  async login({ email, password }: LoginDto, issuer: string, ip: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(
+    { email, password }: LoginDto,
+    issuer: string,
+    ip: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const user = await this.users.findByEmail(email);
 
     if (
@@ -116,7 +125,14 @@ export class AuthenticationService {
     };
   }
 
-  async googleCredential({ idToken, city }: GoogleCredentialDto, issuer: string,): Promise<{ accessToken: string; refreshToken: string; statusCode: 200 | 201}> {
+  async googleCredential(
+    { idToken, city }: GoogleCredentialDto,
+    issuer: string,
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    statusCode: 200 | 201;
+  }> {
     const claims = await this.verifyGoogleCredential(idToken);
     const email = claims.email.toLowerCase();
     const existing = await this.users.findByEmailWithoutPassword(email);
@@ -144,18 +160,21 @@ export class AuthenticationService {
 
     try {
       const user = await this.users.createAuthUser({
-          name:
-            typeof claims.name === 'string' && claims.name.trim()
-              ? claims.name.trim()
-              : email.split('@')[0],
-          email,
-          city: city.trim(),
-          role: UserRoleEnum.PATIENT,
-          provider: AuthProviderEnum.GOOGLE,
-          googleId: claims.sub,
-          emailVerifiedAt: new Date(),
+        name:
+          typeof claims.name === 'string' && claims.name.trim()
+            ? claims.name.trim()
+            : email.split('@')[0],
+        email,
+        city: city.trim(),
+        role: UserRoleEnum.PATIENT,
+        provider: AuthProviderEnum.GOOGLE,
+        googleId: claims.sub,
+        emailVerifiedAt: new Date(),
       });
-      const credentials = await this.tokens.createLoginCredentials(user, issuer);
+      const credentials = await this.tokens.createLoginCredentials(
+        user,
+        issuer,
+      );
       return {
         accessToken: credentials.access_token,
         refreshToken: credentials.refresh_token,
@@ -194,7 +213,10 @@ export class AuthenticationService {
     return { sent: true };
   }
 
-  async verifyEmail({ email, otp }: VerifyEmailDto): Promise<{ verified: true }> {
+  async verifyEmail({
+    email,
+    otp,
+  }: VerifyEmailDto): Promise<{ verified: true }> {
     const user = await this.users.findByEmailWithoutPassword(email);
     if (!user) {
       throw new NotFoundException('Account not found');
@@ -252,9 +274,7 @@ export class AuthenticationService {
   ): Promise<{ email: string; name?: string; sub: string }> {
     const clientId = this.config.get<string>('google.clientId');
     if (!clientId) {
-      throw new ServiceUnavailableException(
-        'Google sign-in is not configured',
-      );
+      throw new ServiceUnavailableException('Google sign-in is not configured');
     }
 
     const endpoint = new URL('https://oauth2.googleapis.com/tokeninfo');
@@ -307,5 +327,4 @@ export class AuthenticationService {
         : {}),
     };
   }
-
 }

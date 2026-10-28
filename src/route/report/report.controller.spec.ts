@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReportController } from './report.controller.js';
 import { ReportService } from './report.service.js';
 
-
 describe('ReportController', () => {
   let controller: ReportController;
 

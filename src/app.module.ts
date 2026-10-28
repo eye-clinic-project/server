@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './core/configuration/configuration.js';
-
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor.js';
 import { TransformInterceptor } from './common/interceptor/transform.interceptor.js';
@@ -26,10 +24,15 @@ import { PatientModule } from './route/patient/patient.module.js';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import type { Request } from 'express';
-import { AcceptLanguageResolver, I18nJsonLoader, I18nModule } from 'nestjs-i18n';
+import {
+  AcceptLanguageResolver,
+  I18nJsonLoader,
+  I18nModule,
+} from 'nestjs-i18n';
 import { join } from 'node:path';
 import { AppResolver } from './app.resolver.js';
-import { AdminModule } from './admin/admin.module.js';
+import { AdminModule } from './route/admin/admin.module.js';
+import configuration from './core/configuration/configuration.js';
 
 @Module({
   imports: [
@@ -49,7 +52,7 @@ import { AdminModule } from './admin/admin.module.js';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile:  join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       context: (context: { req: Request }) => ({ req: context.req }),
     }),
@@ -67,7 +70,7 @@ import { AdminModule } from './admin/admin.module.js';
     NotificationModule,
     PatientModule,
     AppResolver,
-    AdminModule
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

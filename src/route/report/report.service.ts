@@ -61,11 +61,7 @@ export class ReportService {
     });
   }
 
-  async update(
-    doctorId: string,
-    reportId: string,
-    dto: UpdateReportDto,
-  ) {
+  async update(doctorId: string, reportId: string, dto: UpdateReportDto) {
     if (
       dto.title === undefined &&
       dto.content === undefined &&

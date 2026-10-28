@@ -29,10 +29,7 @@ export class FundusImageRepository extends DatabaseRepository<IFundusImage> {
       .exec();
   }
 
-  async findByPatientAndId(
-    patientId: Types.ObjectId,
-    imageId: Types.ObjectId,
-  ) {
+  async findByPatientAndId(patientId: Types.ObjectId, imageId: Types.ObjectId) {
     return this.fundusImageModel
       .findOne({
         _id: imageId,

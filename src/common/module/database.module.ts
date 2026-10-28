@@ -28,13 +28,22 @@ import {
   Notification,
   NotificationSchema,
 } from '../../core/database/model/notification.model.js';
-import { Patient, PatientSchema } from '../../core/database/model/patient.model.js';
+import {
+  Patient,
+  PatientSchema,
+} from '../../core/database/model/patient.model.js';
 import {
   Doctor,
   DoctorSchema,
 } from '../../core/database/model/doctor.model.js';
-import { DoctorPatient, DoctorPatientSchema } from '../../core/database/model/doctor-patient.model.js';
-import { FundusImage, FundusImageSchema } from '../../core/database/model/fundus-image.model.js';
+import {
+  DoctorPatient,
+  DoctorPatientSchema,
+} from '../../core/database/model/doctor-patient.model.js';
+import {
+  FundusImage,
+  FundusImageSchema,
+} from '../../core/database/model/fundus-image.model.js';
 
 const logger = new Logger('Database');
 
@@ -79,4 +88,4 @@ const models = MongooseModule.forFeature([
   imports: [databaseConnection, models],
   exports: [databaseConnection, models],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

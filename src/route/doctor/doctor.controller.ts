@@ -15,11 +15,13 @@ import type { HUserDocument } from '../../core/database/model/user.model.js';
 import { CreateDoctorDto } from './dto/create-doctor.dto.js';
 import { UpdateDoctorDto } from './dto/update-doctor.dto.js';
 import { DoctorService } from './doctor.service.js';
+import { RateLimit } from '../../common/decorator/limit.decorator.js';
+import { th } from 'zod/v4/locales/index.js';
 
 @Controller('doctor')
 @ApiTags('Doctors')
 export class DoctorController {
-  constructor(private readonly doctorService: DoctorService) {}
+  constructor(private readonly doctorService: DoctorService) { }
 
   @Get()
   @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])
@@ -28,6 +30,7 @@ export class DoctorController {
   }
 
   @Get('me')
+  @RateLimit({ limit: 10, ttl: 60 })
   @Auth([UserRoleEnum.DOCTOR])
   findMyProfile(@User() user: HUserDocument) {
     return this.doctorService.findProfile(user._id.toString());
@@ -98,6 +101,7 @@ export class DoctorController {
   getAppointments(@User() user: HUserDocument) {
     return this.doctorService.getDoctorAppointments(user._id.toString());
   }
+
 
   @Get(':doctorId')
   @Auth([UserRoleEnum.DOCTOR, UserRoleEnum.PATIENT])

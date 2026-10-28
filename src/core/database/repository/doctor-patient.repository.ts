@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-
 import { DatabaseRepository } from './base.repository.js';
 import { IDoctorPatient } from '../../../common/interface/database-schema.interface.js';
 import { DoctorPatient } from '../model/doctor-patient.model.js';
@@ -25,10 +24,7 @@ export class DoctorPatientRepository extends DatabaseRepository<IDoctorPatient> 
       .exec();
   }
 
-  async isAssigned(
-    doctorId: Types.ObjectId,
-    patientId: Types.ObjectId,
-  ) {
+  async isAssigned(doctorId: Types.ObjectId, patientId: Types.ObjectId) {
     return this.doctorPatientModel.exists({
       doctor: doctorId,
       patient: patientId,
@@ -51,10 +47,7 @@ export class DoctorPatientRepository extends DatabaseRepository<IDoctorPatient> 
       .exec();
   }
 
-  async removeAssignment(
-    doctorId: Types.ObjectId,
-    patientId: Types.ObjectId,
-  ) {
+  async removeAssignment(doctorId: Types.ObjectId, patientId: Types.ObjectId) {
     return this.doctorPatientModel
       .findOneAndDelete({
         doctor: doctorId,
