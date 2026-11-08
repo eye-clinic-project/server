@@ -1,16 +1,15 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { AuthModule } from './module/auth/auth.module.js';
-import { UserModule } from './module/user/user.module.js';
-import { assignToObject } from '@nestjs/core/repl/assign-to-object.util.js';
-import { appendFile } from 'fs';
+import { AuthenticationModule } from './application/authentication/authentication.module.js';
+import { UserModule } from './application/user/user.module.js';
 
 
 @Module({
   imports: [
-    AuthModule,
+    AuthenticationModule,
     UserModule,
+    AuthenticationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
