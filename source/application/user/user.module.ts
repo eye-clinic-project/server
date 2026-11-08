@@ -3,7 +3,7 @@ import { UserService } from './user.service.js';
 import { UserController } from './user.controller.js';
 import type { Request, Response, NextFunction } from 'express';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DevPrint } from '../../dependency/middleware/dev-print.js';
+import { DevPrint } from '../../dependency/middleware/dev-print.middleware.js';
 
 @Module({
   controllers: [UserController],

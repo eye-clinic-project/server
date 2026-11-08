@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { ServiceModule } from './dependency/module/service.module.js';
 import { CacheInterceptor } from './dependency/interceptor/cache.interceptor.js';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -14,6 +14,9 @@ import { TimeoutInterceptor } from './dependency/interceptor/timeout.interceptor
 import { LanguageInterceptor } from './dependency/interceptor/language.interceptor.js';
 import { DatabaseModule } from './dependency/module/database.module.js';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
+import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
+
 
 @Module({
   imports: [
@@ -68,5 +71,15 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) { }
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(
+        MaintenanceMiddleware,
+        SlowRequestMiddleware,
+      )
+      .forRoutes({
+        path: '*splat',
+        method: RequestMethod.ALL,
+      });
+  }
 }

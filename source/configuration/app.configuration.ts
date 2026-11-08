@@ -2,6 +2,9 @@ export default () => ({
   app: {
     port: parseInt(process.env.PORT ?? '', 10) || 3000,
     corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    maintenance: ['1', 'true'].includes(
+      process.env.MAINTENANCE_MODE?.toLowerCase() ?? '',
+    ),
   },
   database: {
     uri: process.env.DATABASE_URI,
