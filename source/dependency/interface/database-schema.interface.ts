@@ -1,0 +1,130 @@
+import type { Types } from 'mongoose';
+import type { AuthProviderEnum, SystemRoleEnum } from '../enum/security.enum.js';
+import {
+  AppointmentStatus,
+  DRLevel,
+  NotificationType,
+} from '../enum/database.enum.js';
+
+export interface IUser {
+  _id?: Types.ObjectId;
+  role: SystemRoleEnum;
+  name: string;
+  email: string;
+  passwordHash?: string;
+  city: string;
+  avatarUrl?: string;
+  provider?: AuthProviderEnum;
+  googleId?: string;
+  emailVerifiedAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IDoctor {
+  _id?: Types.ObjectId;
+  user: Types.ObjectId;
+  clinicName: string;
+  clinicAddress: string;
+  specialty?: string;
+  licenseNumber?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IPatient {
+  _id?: Types.ObjectId;
+  user: Types.ObjectId;
+  dateOfBirth?: Date;
+  gender?: 'male' | 'female';
+  emergencyContact?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IDoctorPatient {
+  _id?: Types.ObjectId;
+  doctor: Types.ObjectId;
+  patient: Types.ObjectId;
+  assignedAt?: Date;
+  assignedBy?: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IAppointment {
+  _id?: Types.ObjectId;
+  doctor: Types.ObjectId;
+  patient: Types.ObjectId;
+  scheduledAt: Date;
+  status: AppointmentStatus;
+  notes?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IFundusImage {
+  _id?: Types.ObjectId;
+  patient: Types.ObjectId;
+  uploadedBy: Types.ObjectId;
+  imageUrl: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IAnalysis {
+  _id?: Types.ObjectId;
+  doctor: Types.ObjectId;
+  patient: Types.ObjectId;
+  image: Types.ObjectId;
+  predictedLevel: DRLevel;
+  confidence?: number;
+  gradCamUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IConversation {
+  _id?: Types.ObjectId;
+  participants: Types.ObjectId[];
+  lastMessage?: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IMessage {
+  _id?: Types.ObjectId;
+  conversation: Types.ObjectId;
+  sender: Types.ObjectId;
+  message: string;
+  attachments: string[];
+  deliveredTo: Types.ObjectId[];
+  readBy: Types.ObjectId[];
+  editedAt?: Date;
+  deletedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface INotification {
+  _id?: Types.ObjectId;
+  recipient: Types.ObjectId;
+  title: string;
+  body: string;
+  read: boolean;
+  type: NotificationType;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IReport {
+  _id?: Types.ObjectId;
+  doctor: Types.ObjectId;
+  patient: Types.ObjectId;
+  analysis: Types.ObjectId;
+  title: string;
+  content?: string;
+  fileUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

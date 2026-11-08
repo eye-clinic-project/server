@@ -2,6 +2,8 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UserService } from './user.service.js';
 import { UserController } from './user.controller.js';
 import type { Request, Response, NextFunction } from 'express';
+import { MongooseModule } from '@nestjs/mongoose';
+
 @Module({
   controllers: [UserController],
   providers: [UserService],
