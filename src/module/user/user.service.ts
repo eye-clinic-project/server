@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 
@@ -9,6 +9,7 @@ export class UserService {
   }
 
   findAll() {
+    throw new NotFoundException("user not found")
     return `This action returns all user`;
   }
 

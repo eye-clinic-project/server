@@ -1,9 +1,20 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UserService } from './user.service.js';
 import { UserController } from './user.controller.js';
-
+import type { Request, Response, NextFunction } from "express"
 @Module({
   controllers: [UserController],
   providers: [UserService],
 })
-export class UserModule {}
+
+export class UserModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply()
+      .forRoutes(UserController);
+  }
+}
+
+export const logger = (req: Request, res: Response, next: NextFunction) => {
+  next();
+}

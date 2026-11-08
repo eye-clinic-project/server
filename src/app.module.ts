@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './module/auth/auth.module.js';
 import { UserModule } from './module/user/user.module.js';
+import { assignToObject } from '@nestjs/core/repl/assign-to-object.util.js';
+import { appendFile } from 'fs';
 
 
 @Module({
@@ -13,4 +15,13 @@ import { UserModule } from './module/user/user.module.js';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply()
+      .forRoutes();
+  }
+}
+
+

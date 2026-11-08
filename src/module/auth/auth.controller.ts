@@ -4,15 +4,19 @@ import { CreateAuthDto } from './dto/create-auth.dto.js';
 import { UpdateAuthDto } from './dto/update-auth.dto.js';
 
 @Controller('auth')
+
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+  ) { }
 
   @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  create(@Body() body: CreateAuthDto) {
+    
+    return this.authService.create(body)
   }
 
-  @Get()
+  @Get("/profile")
   findAll() {
     return this.authService.findAll();
   }
