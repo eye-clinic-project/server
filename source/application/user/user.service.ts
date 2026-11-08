@@ -9,7 +9,6 @@ export class UserService {
   }
 
   findAll() {
-    throw new NotFoundException('user not found');
     return `This action returns all user`;
   }
 

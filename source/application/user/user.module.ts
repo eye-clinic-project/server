@@ -3,6 +3,7 @@ import { UserService } from './user.service.js';
 import { UserController } from './user.controller.js';
 import type { Request, Response, NextFunction } from 'express';
 import { MongooseModule } from '@nestjs/mongoose';
+import { DevPrint } from '../../dependency/middleware/dev-print.js';
 
 @Module({
   controllers: [UserController],
@@ -10,10 +11,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 })
 export class UserModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply().forRoutes(UserController);
+    consumer.apply(DevPrint).forRoutes(UserController);
   }
 }
-
-export const logger = (req: Request, res: Response, next: NextFunction) => {
-  next();
-};
