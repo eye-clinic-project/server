@@ -2,16 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
-import { AppController } from './../src/app.controller.js';
-import { AppService } from './../src/app.service.js';
+import { AppModule } from './../src/app.module.js';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App> | undefined;
+  let app: INestApplication<App>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
+      imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -19,17 +17,13 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
-    if (!app) {
-      throw new Error('Application was not initialized');
-    }
-
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect({ message: 'hello from backend server' });
+      .expect('Hello World!');
   });
 
   afterEach(async () => {
-    await app?.close();
+    await app.close();
   });
 });

@@ -31,19 +31,6 @@
 $ npm install
 ```
 
-## Redis
-
-Redis is connected by the global `ServiceModule`. Set `REDIS_URI` to use a Redis
-connection URL, or configure `REDIS_HOST` and `REDIS_PORT` (defaulting to
-`127.0.0.1:6379`).
-
-## Email
-
-The global `ServiceModule` provides `MailService`. Configure
-`SMTP_HOST` and `MAIL_FROM`; optionally set `SMTP_PORT` (default `587`),
-`SMTP_SECURE` (`true` or `false`), and the paired `SMTP_USER` and
-`SMTP_PASSWORD` values when the server requires authentication.
-
 ## Compile and run the project
 
 ```bash
@@ -68,29 +55,6 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
-```
-
-## Test the chat WebSocket
-
-Start the application in one terminal:
-
-```bash
-npm run start:dev
-```
-
-Then, in another terminal, send a test message and verify that the server
-broadcasts it back:
-
-```bash
-npm run test:socket
-```
-
-The client connects to `http://localhost:3000` by default. Set `PORT` if the
-application uses another port, or set `SOCKET_URL` to specify the full server
-URL:
-
-```bash
-SOCKET_URL=http://localhost:4000 npm run test:socket
 ```
 
 ## Deployment
