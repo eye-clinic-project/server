@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ServiceModule } from './dependency/module/service.module.js';
 import { CacheInterceptor } from './dependency/interceptor/cache.interceptor.js';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import appConfiguration from './configuration/app.configuration.js';
 import { AuthenticationModule } from './application/authentication/authentication.module.js';
@@ -13,6 +13,7 @@ import { TransformInterceptor } from './dependency/interceptor/transform.interce
 import { TimeoutInterceptor } from './dependency/interceptor/timeout.interceptor.js';
 import { LanguageInterceptor } from './dependency/interceptor/language.interceptor.js';
 import { DatabaseModule } from './dependency/module/database.module.js';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -21,7 +22,14 @@ import { DatabaseModule } from './dependency/module/database.module.js';
       envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}`, '.env'],
       load: [appConfiguration],
     }),
-
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60_000,
+          limit: 10,
+        },
+      ],
+    }),
     ServiceModule,
     DatabaseModule,
     AuthenticationModule,
@@ -53,8 +61,12 @@ import { DatabaseModule } from './dependency/module/database.module.js';
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {}
+  configure(consumer: MiddlewareConsumer) { }
 }

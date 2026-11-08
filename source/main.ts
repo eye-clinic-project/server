@@ -11,7 +11,7 @@ class Server {
   async bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
     const { httpAdapter } = app.get(HttpAdapterHost);
-    app.set('query parser', 'extended');
+    app.set('query parser', 'extended','trust proxy', 'loopback');
     const configuration = app.get(ConfigService);
 
     const swaggerConfig = new DocumentBuilder()
