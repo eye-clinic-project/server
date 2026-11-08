@@ -13,7 +13,6 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
-
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

@@ -70,3 +70,4 @@ export class UserRepository extends DatabaseRepository<IUser> {
     });
   }
 }
+

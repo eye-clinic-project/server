@@ -17,9 +17,7 @@ import type { IAuthReq } from '../interface/ctx.interface.js';
 export class CacheInterceptor implements NestInterceptor {
   private readonly logger = new Logger(CacheInterceptor.name);
 
-  constructor(
-    private readonly cacheService: CacheService,
-  ) {}
+  constructor(private readonly cacheService: CacheService) {}
 
   async intercept(
     context: ExecutionContext,
@@ -31,9 +29,7 @@ export class CacheInterceptor implements NestInterceptor {
 
     const httpContext = context.switchToHttp();
 
-    const request = httpContext.getRequest<
-      Request & Partial<IAuthReq>
-    >();
+    const request = httpContext.getRequest<Request & Partial<IAuthReq>>();
 
     const response = httpContext.getResponse<Response>();
 
@@ -47,8 +43,7 @@ export class CacheInterceptor implements NestInterceptor {
     }
 
     const language =
-      request.headers['accept-language']?.split(',')[0] ??
-      'default';
+      request.headers['accept-language']?.split(',')[0] ?? 'default';
 
     const key = `http-cache:${language}:${request.originalUrl}`;
 
@@ -68,10 +63,7 @@ export class CacheInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap((data) => {
-        if (
-          response.statusCode === 200 &&
-          data !== undefined
-        ) {
+        if (response.statusCode === 200 && data !== undefined) {
           void this.cacheService
             .setCache({
               key,

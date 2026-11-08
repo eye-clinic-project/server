@@ -1,7 +1,6 @@
 import { JwtPayload } from 'jsonwebtoken';
 import { SystemRoleEnum } from '../enum/security.enum.js';
 
-
 declare global {
   namespace Express {
     interface Request {

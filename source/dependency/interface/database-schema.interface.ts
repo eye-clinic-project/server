@@ -1,5 +1,8 @@
 import type { Types } from 'mongoose';
-import type { AuthProviderEnum, SystemRoleEnum } from '../enum/security.enum.js';
+import type {
+  AuthProviderEnum,
+  SystemRoleEnum,
+} from '../enum/security.enum.js';
 import {
   AppointmentStatus,
   DRLevel,

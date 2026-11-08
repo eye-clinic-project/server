@@ -11,7 +11,7 @@ class Server {
   async bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
     const { httpAdapter } = app.get(HttpAdapterHost);
-    app.set('query parser', 'extended','trust proxy', 'loopback');
+    app.set('query parser', 'extended', 'trust proxy', 'loopback');
     const configuration = app.get(ConfigService);
 
     const swaggerConfig = new DocumentBuilder()
@@ -35,7 +35,12 @@ class Server {
     });
     const port = configuration.getOrThrow<number>('app.port');
     app.useStaticAssets(join(process.cwd(), 'assets'), { prefix: '/assets/' });
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+      }),
+    );
     app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
     await app.listen(port ?? 3000);
   }

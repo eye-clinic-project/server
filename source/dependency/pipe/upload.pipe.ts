@@ -13,7 +13,10 @@ export interface UploadImageOptions {
 }
 
 @Injectable()
-export class UploadImagePipe implements PipeTransform<Express.Multer.File | undefined,Express.Multer.File | undefined> {
+export class UploadImagePipe implements PipeTransform<
+  Express.Multer.File | undefined,
+  Express.Multer.File | undefined
+> {
   constructor(private readonly options: UploadImageOptions = {}) {}
 
   transform(

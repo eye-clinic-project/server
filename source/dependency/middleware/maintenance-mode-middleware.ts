@@ -7,7 +7,10 @@ export class MaintenanceMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    const maintenance = this.configService.get<boolean>('app.maintenance', false);
+    const maintenance = this.configService.get<boolean>(
+      'app.maintenance',
+      false,
+    );
 
     if (maintenance) {
       return res.status(503).json({

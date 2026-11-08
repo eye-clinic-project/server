@@ -9,12 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
-
 import { RedisKeys, CacheService } from './cache.service.js';
-
 import { TokenEnum, SystemRoleEnum } from '../enum/security.enum.js';
-
-import { UtilService } from './util.service.js';
 import { JwtPayload } from 'jsonwebtoken';
 import { IAuthReq } from '../interface/ctx.interface.js';
 import { HUserDocument, User } from '../../database/model/user.model.js';
@@ -31,7 +27,6 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redis: CacheService,
-    private readonly utilService: UtilService,
     private readonly userRepository: UserRepository,
   ) {
     this.accessTokenExpiresIn = Number(
@@ -88,7 +83,7 @@ export class TokenService {
     return this.jwtService.verifyAsync<JwtPayload>(token, { secret });
   }
 
-  getSignature(tokenType: TokenEnum, _role: SystemRoleEnum): string {
+  getSignature(tokenType: TokenEnum): string {
     return tokenType === TokenEnum.REFRESH
       ? this.refreshUserTokenSignature
       : this.accessUserTokenSignature;
@@ -102,6 +97,7 @@ export class TokenService {
     tokenType?: TokenEnum;
   }): Promise<{ user: HUserDocument; decoded: JwtPayload }> {
     const rawDecoded = this.jwtService.decode(token);
+
     if (!rawDecoded || typeof rawDecoded !== 'object') {
       throw new BadRequestException('Invalid token payload');
     }
@@ -117,13 +113,15 @@ export class TokenService {
         `Invalid token type. Only ${tokenType} is allowed`,
       );
     }
-    if (!Object.values(SystemRoleEnum).includes(claimedRole as SystemRoleEnum)) {
+    if (
+      !Object.values(SystemRoleEnum).includes(claimedRole as SystemRoleEnum)
+    ) {
       throw new BadRequestException('Invalid token role');
     }
 
     const verifiedData = await this.verify({
       token,
-      secret: this.getSignature(tokenType, claimedRole as SystemRoleEnum),
+      secret: this.getSignature(tokenType),
     });
 
     if (!verifiedData.sub || !Types.ObjectId.isValid(verifiedData.sub)) {
@@ -136,6 +134,7 @@ export class TokenService {
     const activeTokenType = await this.redis.getCache<TokenEnum>({
       key: RedisKeys.userToken(verifiedData.sub, verifiedData.jti),
     });
+    
     if (activeTokenType !== tokenType) {
       throw new UnauthorizedException('Invalid login session');
     }
@@ -155,10 +154,7 @@ export class TokenService {
     return { user, decoded: verifiedData };
   }
 
-  async createLoginCredentials(
-    user: Pick<User, 'role'> & { _id: Types.ObjectId },
-    issuer: string,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  async createLoginCredentials(user: Pick<User, 'role'> & { _id: Types.ObjectId },issuer: string,): Promise<{ access_token: string; refresh_token: string }> {
     const subject = user._id.toString();
     const accessJti = randomUUID();
     const refreshJti = randomUUID();

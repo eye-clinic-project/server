@@ -5,6 +5,7 @@ import {
   AuthProviderEnum,
   SystemRoleEnum,
 } from '../../dependency/enum/security.enum.js';
+import { userInfo } from 'node:os';
 
 export type HUserDocument = HydratedDocument<IUser>;
 
@@ -68,3 +69,4 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+

@@ -1,0 +1,29 @@
+@Host = http://127.0.0.1:9090
+###
+POST {{Host}}/authentication/sign-up
+Content-Type: application/json
+
+{
+    "name":"mohamed",
+    "email":"test@gmail.com",
+    "password":"@Aa123456",
+    "city":"cairo"
+
+}
+###
+POST {{Host}}/authentication/login
+Content-Type: application/json
+
+{
+    "email":"test@gmail.com",
+    "password":"@Aa123456"
+}
+
+###
+POST {{Host}}/authentication/login
+Content-Type: application/json
+
+{
+    "email":"test@gmail.com",
+    "password":"@Aa123456"
+}
