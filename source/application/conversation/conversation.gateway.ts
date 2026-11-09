@@ -15,6 +15,7 @@ import { UtilService } from '../../dependency/service/util.service.js';
 import { RealtimeService, conversationRoom, userRoom } from '../../dependency/service/realtime.service.js';
 import { TokenEnum } from '../../dependency/enum/security.enum.js';
 import { ConversationService } from './conversation.service.js';
+import { Localize } from '../../dependency/i18n/localize.js';
 
 type Ack<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -70,7 +71,7 @@ export class ConversationGateway implements OnGatewayInit, OnGatewayConnection {
     try {
       return { ok: true, data: await fn() };
     } catch (error) {
-      return { ok: false, error: (error as Error).message };
+      return { ok: false, error: Localize.text((error as Error).message) };
     }
   }
 
@@ -105,9 +106,9 @@ export class ConversationGateway implements OnGatewayInit, OnGatewayConnection {
 
   @SubscribeMessage('typing')
   async typing(@ConnectedSocket() client: IAuthSocket, @MessageBody() body: { conversationId?: string; isTyping?: boolean }) {
-    if (!isObjectId(body?.conversationId)) return { ok: false, error: 'Invalid conversationId' };
+    if (!isObjectId(body?.conversationId)) return { ok: false, error: Localize.text('Invalid conversationId') };
     if (!client.rooms.has(conversationRoom(body.conversationId))) {
-      return { ok: false, error: 'Join the conversation first' };
+      return { ok: false, error: Localize.text('Join the conversation first') };
     }
     client.to(conversationRoom(body.conversationId)).emit('typing', {
       conversationId: body.conversationId,

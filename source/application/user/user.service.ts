@@ -61,7 +61,7 @@ export class UserService {
     return {
       ...presentUser(user),
       consentAcceptedAt: user.consentAcceptedAt ?? null,
-      lang: user.lang ?? 'en',
+      lang: user.lang ?? null,
       profile,
       profileComplete: user.role !== SystemRoleEnum.DOCTOR || !!profile,
       dashboard: `/${user.role}`,

@@ -8,6 +8,7 @@ import {
 import { Observable, map } from 'rxjs';
 
 import { ApiResponse } from '../interface/interceptor.interface.js';
+import { Localize } from '../i18n/localize.js';
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<
@@ -27,7 +28,7 @@ export class TransformInterceptor<T> implements NestInterceptor<
         data instanceof StreamableFile
           ? data
           : {
-              message: 'request accepted',
+              message: Localize.text('request accepted'),
               data,
             },
       ),

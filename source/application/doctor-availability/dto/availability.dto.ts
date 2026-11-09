@@ -1,10 +1,11 @@
+import { i18nValidationMessage } from '@nestjs/i18n';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsInt, IsMongoId, IsOptional, Max, Min, MinDate } from 'class-validator';
 
 export class CreateAvailabilityDto {
   @Type(() => Date)
   @IsDate()
-  @MinDate(() => new Date(), { message: 'startAt must be in the future' })
+  @MinDate(() => new Date(), { message: i18nValidationMessage('validation.custom.mustBeFuture') })
   startAt!: Date;
 
   @Type(() => Date)
@@ -24,7 +25,7 @@ export class UpdateAvailabilityDto {
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  @MinDate(() => new Date(), { message: 'startAt must be in the future' })
+  @MinDate(() => new Date(), { message: i18nValidationMessage('validation.custom.mustBeFuture') })
   startAt?: Date;
 
   @IsOptional()

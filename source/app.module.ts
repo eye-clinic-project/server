@@ -10,7 +10,19 @@ import { CacheInterceptor } from './dependency/interceptor/cache.interceptor.js'
 import { LoggingInterceptor } from './dependency/interceptor/logging.interceptor.js';
 import { TransformInterceptor } from './dependency/interceptor/transform.interceptor.js';
 import { TimeoutInterceptor } from './dependency/interceptor/timeout.interceptor.js';
-import { LanguageInterceptor } from './dependency/interceptor/language.interceptor.js';
+import {
+  AcceptLanguageLocaleResolver,
+  HeaderLocaleResolver,
+  I18nModule,
+  JsonI18nLoader,
+  QueryLocaleResolver,
+} from '@nestjs/i18n';
+import { UserLocaleResolver } from './dependency/i18n/user-locale.resolver.js';
+import {
+  DEFAULT_LOCALE,
+  I18N_PATH,
+  SUPPORTED_LOCALES,
+} from './dependency/i18n/i18n.constants.js';
 import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
 import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
 
@@ -45,6 +57,19 @@ import { SystemModule } from './application/system/system.module.js';
       // Only for automated tests; never set this in production.
       skipIf: () => process.env.THROTTLE_DISABLED === 'true',
     }),
+    // Language per request: ?lang=ar, then x-lang header, then the user's saved language,
+    // then Accept-Language; English by default.
+    I18nModule.forRoot({
+      loader: new JsonI18nLoader({ path: I18N_PATH }),
+      defaultLocale: DEFAULT_LOCALE,
+      supportedLocales: [...SUPPORTED_LOCALES],
+      resolvers: [
+        new QueryLocaleResolver('lang'),
+        new HeaderLocaleResolver('x-lang'),
+        new UserLocaleResolver(),
+        new AcceptLanguageLocaleResolver(),
+      ],
+    }),
     ServiceModule,
     DatabaseModule,
     AuthenticationModule,
@@ -70,7 +95,6 @@ import { SystemModule } from './application/system/system.module.js';
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TimeoutInterceptor },
-    { provide: APP_INTERCEPTOR, useClass: LanguageInterceptor },
     { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],

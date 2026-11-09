@@ -1,8 +1,9 @@
+import { i18nValidationMessage } from '@nestjs/i18n';
 import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class ResetPasswordDto {
   @IsString()
-  @Matches(/^[A-Za-z0-9_-]{43}$/, { message: 'Invalid reset token' })
+  @Matches(/^[A-Za-z0-9_-]{43}$/, { message: i18nValidationMessage('validation.custom.resetToken') })
   token!: string;
 
   @IsString()

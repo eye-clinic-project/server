@@ -1,1 +1,35 @@
-{}
+{
+  "isString": "{property} must be text",
+  "isNotEmpty": "{property} is required",
+  "isDefined": "{property} is required",
+  "isEmail": "{property} must be a valid email address",
+  "isBoolean": "{property} must be true or false",
+  "isInt": "{property} must be a whole number",
+  "isNumber": "{property} must be a number",
+  "isDate": "{property} must be a valid date",
+  "isMongoId": "{property} must be a valid id",
+  "isEnum": "{property} must be one of: {constraint2}",
+  "isIn": "{property} must be one of: {constraint1}",
+  "min": "{property} must be at least {constraint1}",
+  "max": "{property} must not be greater than {constraint1}",
+  "minLength": {
+    "one": "{property} must be at least {count} character",
+    "other": "{property} must be at least {count} characters"
+  },
+  "maxLength": {
+    "one": "{property} must be at most {count} character",
+    "other": "{property} must be at most {count} characters"
+  },
+  "minDate": "{property} must be on or after {constraint1}",
+  "maxDate": "{property} must be on or before {constraint1}",
+  "matches": "{property} has an invalid format",
+  "whitelistValidation": "{property} is not allowed",
+  "nestedValidation": "{property} is invalid",
+  "custom": {
+    "phone": "{property} must be a valid phone number",
+    "otp": "The verification code must be 6 digits",
+    "resetToken": "Invalid reset token",
+    "notInFuture": "{property} cannot be in the future",
+    "mustBeFuture": "{property} must be in the future"
+  }
+}

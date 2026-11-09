@@ -1,5 +1,5 @@
 import { Controller, ForbiddenException, Get, Header, Param, Query, StreamableFile } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Types } from 'mongoose';
@@ -31,6 +31,10 @@ export class SystemController {
   /** NestJS health (used by uptime monitoring, NFR5). */
   @Get('health')
   @SkipThrottle()
+  @ApiOperation({
+    summary: "API health",
+    description: "Public. Checks MongoDB and Redis. status is ok or degraded. Use it for uptime monitoring (NFR5).",
+  })
   async health() {
     const database = this.connection.readyState === 1;
     const redis = await this.cache
@@ -41,12 +45,20 @@ export class SystemController {
 
   @Get('ai/health')
   @SkipThrottle()
+  @ApiOperation({
+    summary: "AI service health",
+    description: "Public. Shows the AI mode (disabled, mock or remote) and whether the FastAPI service is reachable (NFR15).",
+  })
   aiHealth() {
     return this.ai.health();
   }
 
   @Get('ai/model-info')
   @Auth()
+  @ApiOperation({
+    summary: "AI model information",
+    description: "Any signed-in user. Information reported by the AI service about the current model. 503 when the AI service is not connected.",
+  })
   modelInfo() {
     return this.ai.modelInfo();
   }
@@ -58,6 +70,10 @@ export class SystemController {
   @Get('files/:kind/:id')
   @SkipThrottle()
   @Header('Cache-Control', 'private, max-age=3600')
+  @ApiOperation({
+    summary: "Open a file from a signed URL",
+    description: "Public, but only with a valid signature (NFR9). Serves images, Grad-CAM overlays and avatars from the signed URLs the API returns in fileUrl, gradCamUrl and avatarUrl. Links expire after 1–2 hours; tampered or expired links return 403.",
+  })
   async file(
     @Param('kind') kind: string,
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,

@@ -1,3 +1,4 @@
+import { i18nValidationMessage } from '@nestjs/i18n';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -25,7 +26,7 @@ export class UpdatePatientProfileDto {
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  @MaxDate(() => new Date(), { message: 'dateOfBirth cannot be in the future' })
+  @MaxDate(() => new Date(), { message: i18nValidationMessage('validation.custom.notInFuture') })
   dateOfBirth?: Date;
 
   @IsOptional()
@@ -80,7 +81,7 @@ export class CreatePatientDto extends DoctorUpdatePatientDto {
 
   @Type(() => Date)
   @IsDate()
-  @MaxDate(() => new Date(), { message: 'dateOfBirth cannot be in the future' })
+  @MaxDate(() => new Date(), { message: i18nValidationMessage('validation.custom.notInFuture') })
   declare dateOfBirth: Date;
 
   @IsEnum(GenderEnum)
@@ -88,7 +89,7 @@ export class CreatePatientDto extends DoctorUpdatePatientDto {
 
   @IsOptional()
   @Transform(trim)
-  @Matches(/^\+?[0-9 ()-]{6,20}$/, { message: 'phone must be a valid phone number' })
+  @Matches(/^\+?[0-9 ()-]{6,20}$/, { message: i18nValidationMessage('validation.custom.phone') })
   phone?: string;
 
   @ApiPropertyOptional({ default: true, description: 'Email the patient a link to set their password' })

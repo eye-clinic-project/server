@@ -6,6 +6,7 @@ import {
   DRLevel,
 } from './enum/database.enum.js';
 import { AI_DISCLAIMER } from './constant.js';
+import { Localize } from './i18n/localize.js';
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
@@ -137,7 +138,7 @@ export const presentAnalysis = (analysis: any) => {
           isMock: !!analysis.isMock,
         }
       : null,
-    error: analysis.error ?? null,
+    error: Localize.text(analysis.error) ?? null,
     attempts: analysis.attempts,
     processingMs: analysis.processingMs ?? null,
     completedAt: analysis.completedAt ?? null,

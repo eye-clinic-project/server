@@ -37,7 +37,7 @@ export interface IUser extends Timestamps {
   emailVerifiedAt?: Date | null;
   consentAcceptedAt?: Date | null;
   isActive?: boolean;
-  lang?: string;
+  lang?: string | null;
 }
 
 export interface IDoctor extends Timestamps {

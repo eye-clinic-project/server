@@ -11,13 +11,17 @@ import type { Request, Response } from 'express';
 import { Observable, of, tap } from 'rxjs';
 
 import { CacheService } from '../service/cache.service.js';
+import { I18nContext } from '@nestjs/i18n';
 import type { IAuthReq } from '../interface/ctx.interface.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
   private readonly logger = new Logger(CacheInterceptor.name);
 
-  constructor(private readonly cacheService: CacheService) {}
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly i18n: I18nContext,
+  ) {}
 
   async intercept(
     context: ExecutionContext,
@@ -42,8 +46,8 @@ export class CacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const language =
-      request.headers['accept-language']?.split(',')[0] ?? 'default';
+    // Cached responses differ per language.
+    const language = this.i18n.locale;
 
     const key = `http-cache:${language}:${request.originalUrl}`;
 

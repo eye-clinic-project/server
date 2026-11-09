@@ -78,6 +78,29 @@ All under `/api/v1`. (Auth is also mounted at `/authentication` for the old clie
 | Admin | `GET admin/dashboard`, `admin/users` (+ `/:id`, `/:id/status`, `/:id/role`, `DELETE`), `admin/analyses`, `admin/reports` | — |
 | System | `GET health`, `GET ai/health`, `GET ai/model-info`, `GET files/:kind/:id` (signed) | NFR5, NFR15 |
 
+## Languages (English / Arabic)
+
+Validation errors, API error messages and the response `message` come back in English or Arabic
+(`@nestjs/i18n`). The language is picked per request, first match wins:
+
+1. `?lang=ar` query parameter (also works on the Socket.IO connection URL)
+2. `x-lang: ar` header
+3. the signed-in user's saved language: `PATCH /api/v1/users/me { "lang": "ar" }` (`null` to clear)
+4. `Accept-Language` header
+5. English
+
+The response carries `Content-Language`. Translations live in `source/i18n/<en|ar>/`:
+
+- `validation.json`: one message per class-validator rule (`isEmail`, `maxLength`, …), plus `custom.*`
+  for DTO-specific messages (`i18nValidationMessage('validation.custom.phone')`).
+- `errors.json`: every message the API throws. Services keep throwing plain English
+  (`new NotFoundException('Patient not found')`); `AllExceptionsFilter` looks the English text up in
+  `en/errors.json` and returns the same key from the request's language. `{placeholders}` are matched,
+  e.g. `A {status} appointment cannot be changed`. A new error message must be added to both files;
+  `i18n-catalogs.spec.ts` fails if `en` and `ar` keys or placeholders differ.
+
+Not translated yet: email bodies and the text of stored notifications (they are written once, in English).
+
 ### Socket.IO
 
 Connect to the API origin with `io(API_URL, { auth: { token: accessToken } })`.

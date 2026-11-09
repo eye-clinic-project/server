@@ -1,1 +1,43 @@
-{}
+{
+  "isString": "يجب أن يكون الحقل «{property}» نصًا",
+  "isNotEmpty": "الحقل «{property}» مطلوب",
+  "isDefined": "الحقل «{property}» مطلوب",
+  "isEmail": "يجب أن يكون «{property}» بريدًا إلكترونيًا صحيحًا",
+  "isBoolean": "يجب أن تكون قيمة «{property}» صحيحة أو خاطئة (true أو false)",
+  "isInt": "يجب أن يكون «{property}» عددًا صحيحًا",
+  "isNumber": "يجب أن يكون «{property}» رقمًا",
+  "isDate": "يجب أن يكون «{property}» تاريخًا صحيحًا",
+  "isMongoId": "المعرّف «{property}» غير صالح",
+  "isEnum": "يجب أن تكون قيمة «{property}» واحدة من: {constraint2}",
+  "isIn": "يجب أن تكون قيمة «{property}» واحدة من: {constraint1}",
+  "min": "يجب ألا تقل قيمة «{property}» عن {constraint1}",
+  "max": "يجب ألا تزيد قيمة «{property}» عن {constraint1}",
+  "minLength": {
+    "zero": "يجب ألا يقل «{property}» عن {count} حرف",
+    "one": "يجب ألا يقل «{property}» عن حرف واحد",
+    "two": "يجب ألا يقل «{property}» عن حرفين",
+    "few": "يجب ألا يقل «{property}» عن {count} أحرف",
+    "many": "يجب ألا يقل «{property}» عن {count} حرفًا",
+    "other": "يجب ألا يقل «{property}» عن {count} حرف"
+  },
+  "maxLength": {
+    "zero": "يجب ألا يزيد «{property}» عن {count} حرف",
+    "one": "يجب ألا يزيد «{property}» عن حرف واحد",
+    "two": "يجب ألا يزيد «{property}» عن حرفين",
+    "few": "يجب ألا يزيد «{property}» عن {count} أحرف",
+    "many": "يجب ألا يزيد «{property}» عن {count} حرفًا",
+    "other": "يجب ألا يزيد «{property}» عن {count} حرف"
+  },
+  "minDate": "يجب أن يكون «{property}» في {constraint1} أو بعده",
+  "maxDate": "يجب أن يكون «{property}» في {constraint1} أو قبله",
+  "matches": "صيغة «{property}» غير صحيحة",
+  "whitelistValidation": "الحقل «{property}» غير مسموح به",
+  "nestedValidation": "الحقل «{property}» غير صالح",
+  "custom": {
+    "phone": "يجب أن يكون «{property}» رقم هاتف صحيحًا",
+    "otp": "يجب أن يتكون رمز التحقق من 6 أرقام",
+    "resetToken": "رمز إعادة التعيين غير صالح",
+    "notInFuture": "لا يمكن أن يكون «{property}» في المستقبل",
+    "mustBeFuture": "يجب أن يكون «{property}» في المستقبل"
+  }
+}

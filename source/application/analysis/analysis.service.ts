@@ -19,6 +19,7 @@ import { NotifierService } from '../../dependency/service/notifier.service.js';
 import { AnalysisStatus, NotificationType } from '../../dependency/enum/database.enum.js';
 import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { presentAnalysis } from '../../dependency/presenter.js';
+import { Localize } from '../../dependency/i18n/localize.js';
 import { AnalysisQueryDto } from './dto/analysis.dto.js';
 
 /** A run stuck in "processing" longer than this is considered dead and may be retried. */
@@ -251,7 +252,7 @@ export class AnalysisService {
 
   async history(viewer: HUserDocument, id: Types.ObjectId) {
     const analysis = await this.load(viewer, id);
-    return (analysis.history ?? []).map((h) => ({ status: h.status, message: h.message, at: h.at }));
+    return (analysis.history ?? []).map((h) => ({ status: h.status, message: Localize.text(h.message), at: h.at }));
   }
 
   async remove(actor: HUserDocument, id: Types.ObjectId) {

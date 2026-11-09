@@ -27,9 +27,9 @@ describe('AuthenticationController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('registers both the documented and legacy authentication prefixes', () => {
-    expect(Reflect.getMetadata(PATH_METADATA, AuthenticationController)).toEqual(
-      ['authentication', 'api/v1/auth'],
+  it('is mounted under the documented api/v1/auth prefix', () => {
+    expect(Reflect.getMetadata(PATH_METADATA, AuthenticationController)).toBe(
+      'api/v1/auth',
     );
   });
 });

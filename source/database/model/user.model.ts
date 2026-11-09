@@ -57,8 +57,9 @@ export class User {
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
-  @Prop({ type: String, default: 'en' })
-  lang?: string;
+  /** Preferred language (en | ar). Unset = use the request's Accept-Language. */
+  @Prop({ type: String, enum: ['en', 'ar', null], default: null })
+  lang?: string | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,6 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { NextFunction, Request, Response } from 'express';
+import { Localize } from '../i18n/localize.js';
 
 @Injectable()
 export class MaintenanceMiddleware implements NestMiddleware {
@@ -14,7 +15,7 @@ export class MaintenanceMiddleware implements NestMiddleware {
 
     if (maintenance) {
       return res.status(503).json({
-        message: 'Server is under maintenance',
+        message: Localize.text('Server is under maintenance'),
       });
     }
 

@@ -1,3 +1,4 @@
+import { i18nValidationMessage } from '@nestjs/i18n';
 import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsMongoId, IsOptional, IsString, MaxLength, MinDate } from 'class-validator';
@@ -30,7 +31,7 @@ export class CreateDoctorReviewDto {
   @IsOptional()
   @Type(() => Date)
   @IsDate()
-  @MinDate(() => new Date(), { message: 'followUpDate must be in the future' })
+  @MinDate(() => new Date(), { message: i18nValidationMessage('validation.custom.mustBeFuture') })
   followUpDate?: Date;
 }
 

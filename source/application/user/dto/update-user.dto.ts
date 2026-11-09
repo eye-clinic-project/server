@@ -1,3 +1,4 @@
+import { i18nValidationMessage } from '@nestjs/i18n';
 import { Transform } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
@@ -21,12 +22,13 @@ export class UpdateUserDto {
 
   @IsOptional()
   @Transform(trim)
-  @Matches(/^\+?[0-9 ()-]{6,20}$/, { message: 'phone must be a valid phone number' })
+  @Matches(/^\+?[0-9 ()-]{6,20}$/, { message: i18nValidationMessage('validation.custom.phone') })
   phone?: string;
 
+  /** Preferred language for API messages; null = follow Accept-Language. */
   @IsOptional()
-  @IsIn(['en', 'ar'])
-  lang?: string;
+  @IsIn(['en', 'ar', null])
+  lang?: string | null;
 }
 
 export class DeleteAccountDto {
