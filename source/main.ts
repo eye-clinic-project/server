@@ -17,7 +17,7 @@ class Server {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('DR Detection API')
       .setDescription(
-        'REST API for authentication, patient and doctor profiles, appointments, analyses, reports, chat, and notifications.',
+        'REST API for authentication, patient and doctor profiles, fundus images, AI analyses, reviews, reports, appointments, chat, notifications and hardware. Every response is wrapped as { message, data }.',
       )
       .setVersion('1.0')
       .addBearerAuth(
@@ -34,6 +34,12 @@ class Server {
       jsonDocumentUrl: 'api/docs-json',
     });
     const port = configuration.getOrThrow<number>('app.port');
+    app.enableCors({
+      origin: configuration.get<string[]>('app.corsOrigin'),
+      credentials: true,
+    });
+    app.disable('x-powered-by');
+    app.enableShutdownHooks();
     app.useStaticAssets(join(process.cwd(), 'assets'), { prefix: '/assets/' });
     app.useGlobalPipes(
       new ValidationPipe({

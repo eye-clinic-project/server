@@ -1,65 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-
 import { DatabaseRepository } from './base.repository.js';
-
 import { DoctorPatient } from '../model/doctor-patient.model.js';
 import { IDoctorPatient } from '../../dependency/interface/database-schema.interface.js';
+import { AssignmentStatus } from '../../dependency/enum/database.enum.js';
 
 @Injectable()
 export class DoctorPatientRepository extends DatabaseRepository<IDoctorPatient> {
   constructor(
     @InjectModel(DoctorPatient.name)
-    private readonly doctorPatientModel: Model<IDoctorPatient>,
+    readonly typedModel: Model<IDoctorPatient>,
   ) {
-    super(doctorPatientModel);
+    super(typedModel);
   }
 
-  async findByDoctorAndPatient(
-    doctorId: Types.ObjectId,
-    patientId: Types.ObjectId,
-  ) {
-    return this.doctorPatientModel
-      .findOne({ doctor: doctorId, patient: patientId })
+  /** Active assignment between a doctor and a patient (the basis of doctor access control). */
+  isActiveAssignment(doctorId: Types.ObjectId, patientId: Types.ObjectId) {
+    return this.typedModel
+      .exists({ doctor: doctorId, patient: patientId, status: AssignmentStatus.ACTIVE })
       .exec();
   }
 
-  async isAssigned(doctorId: Types.ObjectId, patientId: Types.ObjectId) {
-    return this.doctorPatientModel.exists({
-      doctor: doctorId,
-      patient: patientId,
-    });
-  }
-
-  async findPatientsByDoctor(doctorId: Types.ObjectId) {
-    return this.doctorPatientModel
-      .find({ doctor: doctorId })
-      .populate('patient')
-      .sort({ assignedAt: -1 })
+  async activePatientIds(doctorId: Types.ObjectId): Promise<Types.ObjectId[]> {
+    const rows = await this.typedModel
+      .find({ doctor: doctorId, status: AssignmentStatus.ACTIVE }, { patient: 1 })
+      .lean()
       .exec();
+    return rows.map((row) => row.patient);
   }
 
-  async findDoctorsByPatient(patientId: Types.ObjectId) {
-    return this.doctorPatientModel
-      .find({ patient: patientId })
-      .populate('doctor')
-      .sort({ assignedAt: -1 })
+  async activeDoctorIds(patientId: Types.ObjectId): Promise<Types.ObjectId[]> {
+    const rows = await this.typedModel
+      .find({ patient: patientId, status: AssignmentStatus.ACTIVE }, { doctor: 1 })
+      .lean()
       .exec();
-  }
-
-  async removeAssignment(doctorId: Types.ObjectId, patientId: Types.ObjectId) {
-    return this.doctorPatientModel
-      .findOneAndDelete({
-        doctor: doctorId,
-        patient: patientId,
-      })
-      .exec();
-  }
-
-  async countPatientsByDoctor(doctorId: Types.ObjectId) {
-    return this.doctorPatientModel.countDocuments({
-      doctor: doctorId,
-    });
+    return rows.map((row) => row.doctor);
   }
 }

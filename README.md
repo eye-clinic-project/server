@@ -1,126 +1,99 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# RetinaCare API (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend for the Diabetic Retinopathy Detection System. It implements the API in
+`design/_API_.txt` against the requirements in `DR_Requirements_Acceptance_Criteria`.
+The AI step is behind a client (`AiService`) so the backend works today without the model.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Run
 
 ```bash
-$ npm install
+npm install
+cp .env.example .env.development   # fill in the secrets
+npm run start:dev                  # http://localhost:9090
 ```
 
-## Compile and run the project
+Swagger UI: `http://localhost:9090/api/docs` (JSON: `/api/docs-json`).
+Every response is wrapped as `{ "message": "request accepted", "data": ... }`.
 
-```bash
-# development
-$ npm run start
+Requires MongoDB and Redis. Tests: `npm test` (unit), `NODE_ENV=test npm run test:e2e`
+(needs Mongo + Redis from `.env.test`).
 
-# watch mode
-$ npm run start:dev
+## AI modes (`AI_MODE`)
 
-# production mode
-$ npm run start:prod
+| Mode | Behaviour |
+|---|---|
+| `disabled` (default) | Image is stored, analysis is created and marked **failed** with "AI detection service is not available yet". It can be retried later with `POST /analyses/:id/retry`. |
+| `mock` | Deterministic fake grade per image, flagged `isMock: true` everywhere and "DEMO RESULT" in PDFs. For UI demos only. |
+| `remote` | Sends the original image to the FastAPI service at `AI_SERVICE_URL`. |
+
+### Contract for the FastAPI service in `/core`
+
 ```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+POST /predict        multipart/form-data, field "file" (JPEG/PNG, unmodified)
+200 {
+  "stage1": { "has_dr": true, "confidence": 0.93 },
+  "stage2": { "level": 3, "confidence": 0.81, "probabilities": [0.02,0.05,0.12,0.81,0.0] } | null,
+  "grad_cam_png_base64": "<base64 PNG overlay>" | null,
+  "model_version": "effnet-b3-ensemble-v4"
+}
+422 { "detail": "Not a fundus image" }     -> analysis fails with that message (NFR6)
+GET /health          200 when the model is loaded
+GET /model-info      any JSON
 ```
+Preprocessing (resize, crop, CLAHE), TTA and Grad-CAM run inside the AI service (FR3.3–FR3.7).
+Optional header `x-api-key` is sent when `AI_SERVICE_API_KEY` is set.
 
-## Deployment
+## Roles and access rules
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- **patient**: only their own data; sees reports only after the doctor sends them.
+- **doctor**: only patients with an *active* assignment (`doctor-patient`).
+- **admin**: everything; first admin is created from `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+- No token → 401, wrong role or not assigned → 403 (NFR10).
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Images, Grad-CAM overlays and avatars are AES-256-GCM encrypted on disk (`STORAGE_DIR`) and are
+returned either through authenticated routes or short-lived **signed URLs**
+(`/api/v1/files/:kind/:id?exp&sig`) that the API puts in `fileUrl` / `gradCamUrl` / `avatarUrl`
+so `<img>` tags work (NFR9).
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## Endpoints
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+All under `/api/v1`. (Auth is also mounted at `/authentication` for the old client.)
 
-## Observability
+| Area | Endpoints | Requirements |
+|---|---|---|
+| Auth | `POST auth/signup` (role `patient`/`doctor`, doctors send `clinicName`, `clinicAddress`; `acceptTerms`), `login`, `google`, `verify-email`, `resend-verification`, `refresh-token`, `logout`, `forgot-password`, `reset-password`, `PATCH change-password`, `GET me` | FR1.1–FR1.5, NFR8, NFR11 |
+| Users | `GET/PATCH/DELETE users/me`, `PATCH/DELETE users/me/avatar`, `GET users/:id`, `GET users/:id/avatar` | FR1.5 |
+| Doctors | `GET/PATCH doctors/me`, `GET doctors/me/dashboard`, `GET doctors?search&city&specialty`, `GET doctors/:id`, `GET doctors/:id/patients?search`, `GET doctors/:id/appointments` | FR2 |
+| Patients | `POST patients` (doctor creates + invites), `GET patients?search=` (name, email, `P-XXXXXX` ID, user id), `GET/PATCH patients/me`, `GET/PATCH patients/:id`, `GET patients/:id/doctors`, `/analyses`, `/reports`, `/history` | FR2.1–FR2.5 |
+| Assignment | `POST doctor-patient` (doctor: `patientId`/`patientEmail` → active; patient: `doctorId` → pending), `GET`, `GET/PATCH/DELETE doctor-patient/:id` | FR2.3 |
+| Fundus images | `POST fundus-images` (multipart `file`, `patientId`, `eye`, `analyze`=true), `GET`, `GET :id`, `GET :id/file`, `PATCH`, `DELETE` | FR3.1, FR3.2, NFR18 |
+| Analyses | `POST analyses`, `POST :id/predict`, `POST :id/retry`, `GET`, `GET :id`, `GET :id/result`, `GET :id/grad-cam`, `GET :id/history`, `DELETE` | FR3.2–FR3.7, FR4.1, FR4.2 |
+| Doctor reviews | `POST/GET doctor-reviews`, `GET/PATCH/DELETE :id` (confirmed grade, notes, recommendations, follow-up) | — |
+| Reports | `POST reports`, `GET`, `GET :id`, `GET :id/pdf`, `PATCH`, `DELETE`, `POST :id/send` | FR4.3–FR4.6, NFR19 |
+| Appointments | `POST appointments` (`slotId`, or `doctorId`+`scheduledAt`), `GET`, `GET :id`, `PATCH :id` (reschedule), `PATCH :id/confirm`, `/cancel`, `/complete` | FR5.1, FR5.2 |
+| Availability | `POST doctor-availability` (`startAt`, `endAt`, optional `slotMinutes`), `GET ?doctorId`, `GET/PATCH/DELETE :id` | FR5.1 |
+| Chat | `POST/GET conversations`, `GET :id`, `GET/POST :id/messages`, `PATCH :id/read`, `DELETE :id` + Socket.IO | FR6.1 |
+| Notifications | `GET notifications?unread&type`, `GET :id`, `PATCH :id/read`, `PATCH read-all`, `DELETE :id`, `DELETE` | FR4.4, FR4.6, FR5.2 |
+| Hardware | Doctor: `hardware/devices` CRUD + `:id/rotate-key`, `hardware/capture-sessions` CRUD. Device (header `x-device-key`): `POST hardware/device/heartbeat`, `GET hardware/device/capture-sessions`, `POST .../:id/image`, `POST .../:id/fail` | FR7.1 |
+| Admin | `GET admin/dashboard`, `admin/users` (+ `/:id`, `/:id/status`, `/:id/role`, `DELETE`), `admin/analyses`, `admin/reports` | — |
+| System | `GET health`, `GET ai/health`, `GET ai/model-info`, `GET files/:kind/:id` (signed) | NFR5, NFR15 |
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+### Socket.IO
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+Connect to the API origin with `io(API_URL, { auth: { token: accessToken } })`.
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+| Event | Direction | Payload |
+|---|---|---|
+| `join_conversation` / `leave_conversation` | client → server | `{ conversationId }` (ack `{ ok, data \| error }`) |
+| `send_message` | client → server | `{ conversationId, message }` |
+| `typing` | both | `{ conversationId, isTyping }` |
+| `mark_read` | client → server | `{ conversationId }` |
+| `receive_message`, `message_read`, `conversation_updated` | server → client | message / read info |
+| `notification` | server → client | a new notification (every user joins their own room) |
+| `capture_session_updated` | server → doctor | fundus camera upload/failure |
 
-This project is already instrumented. To connect it, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
+## Not done yet
 
-```bash
-$ npx @nestjs/observe link
-```
-
-It writes the app key and secret into `.env` and makes every `nest start` script (`start`, `start:dev`, `start:debug`) load it. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
-
-Or do it by hand: create an application and an API key at [observe.nestjs.com](https://observe.nestjs.com), and set the pair as `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment the app runs in.
-
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Real AI predictions (waiting for the model in `/core`).
+- Load/uptime testing (NFR1, NFR2, NFR5) and usability testing (NFR12) are measurements to run on a deployed build.
+- HTTPS/TLS termination (NFR9) belongs to the deployment (reverse proxy).

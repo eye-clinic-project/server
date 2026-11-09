@@ -12,7 +12,6 @@ import type {
 
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { optional } from 'zod';
 
 const INCR_WITH_TTL = `
 local v = redis.call('INCRBY', KEYS[1], ARGV[1])

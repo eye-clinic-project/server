@@ -1,5 +1,14 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { SignUpRoleEnum } from '../../../dependency/enum/security.enum.js';
 
 export class GoogleCredentialDto {
   @IsString()
@@ -10,7 +19,15 @@ export class GoogleCredentialDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
-  @MinLength(1)
   @MaxLength(100)
   city!: string;
+
+  /** Only used when the Google sign-in creates a new account. Doctors complete their clinic details later via PATCH /doctors/me. */
+  @IsOptional()
+  @IsEnum(SignUpRoleEnum)
+  role?: SignUpRoleEnum;
+
+  @IsOptional()
+  @IsBoolean()
+  acceptTerms?: boolean;
 }

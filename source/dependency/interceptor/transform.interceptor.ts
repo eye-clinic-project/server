@@ -3,6 +3,7 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  StreamableFile,
 } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 
@@ -22,10 +23,14 @@ export class TransformInterceptor<T> implements NestInterceptor<
     }
 
     return next.handle().pipe(
-      map((data: T) => ({
-        message: 'request accepted',
-        data,
-      })),
+      map((data: T) =>
+        data instanceof StreamableFile
+          ? data
+          : {
+              message: 'request accepted',
+              data,
+            },
+      ),
     );
   }
 }

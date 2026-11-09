@@ -5,42 +5,28 @@ import { IDoctor } from '../../dependency/interface/database-schema.interface.js
 
 export type HDoctorDocument = HydratedDocument<IDoctor>;
 
-@Schema({
-  timestamps: true,
-  collection: 'doctors',
-})
+@Schema({ timestamps: true, collection: 'doctors' })
 export class Doctor {
-  @Prop({
-    type: Types.ObjectId,
-    ref: User.name,
-    required: true,
-    unique: true,
-  })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true, unique: true })
   user: Types.ObjectId;
 
-  @Prop({
-    required: true,
-    trim: true,
-  })
+  @Prop({ required: true, trim: true })
   clinicName: string;
 
-  @Prop({
-    required: true,
-    trim: true,
-  })
+  @Prop({ required: true, trim: true })
   clinicAddress: string;
 
-  @Prop({
-    trim: true,
-  })
+  @Prop({ trim: true })
   specialty?: string;
 
-  @Prop({
-    trim: true,
-    unique: true,
-    sparse: true,
-  })
+  @Prop({ trim: true, unique: true, sparse: true })
   licenseNumber?: string;
+
+  @Prop({ trim: true })
+  bio?: string;
+
+  @Prop({ type: Number, min: 0 })
+  yearsOfExperience?: number;
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

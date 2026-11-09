@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../source/app.module.js';
 
+// Needs MongoDB + Redis from .env.test (NODE_ENV=test npm run test:e2e).
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
@@ -20,7 +21,11 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect({ message: 'request accepted', data: { message: 'hello from backend side' } });
+  });
+
+  it('rejects protected routes without a token', () => {
+    return request(app.getHttpServer()).get('/api/v1/patients').expect(401);
   });
 
   afterEach(async () => {

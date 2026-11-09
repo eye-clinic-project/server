@@ -1,3 +1,4 @@
+import { escapeRegex } from '../../dependency/service/util.service.js';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -27,8 +28,12 @@ export class UserRepository extends DatabaseRepository<IUser> {
   async findByEmail(email: string): Promise<HUserDocument | null> {
     return this.userModel
       .findOne({ email: email.toLowerCase().trim() })
-      .select('+passwordHash')
+      .select('+passwordHash +googleId')
       .exec();
+  }
+
+  get rawModel(): Model<IUser> {
+    return this.userModel;
   }
 
   async findByRole(role: SystemRoleEnum) {
@@ -37,7 +42,7 @@ export class UserRepository extends DatabaseRepository<IUser> {
 
   updateUserProfile(
     userId: Types.ObjectId,
-    profile: { name?: string; city?: string; avatarUrl?: string },
+    profile: Partial<Pick<IUser, 'name' | 'city' | 'phone' | 'avatarUrl' | 'avatarKey' | 'lang'>>,
   ) {
     return this.userModel
       .findByIdAndUpdate(
@@ -59,7 +64,7 @@ export class UserRepository extends DatabaseRepository<IUser> {
 
   async searchByName(name: string, limit = 10) {
     return this.userModel
-      .find({ name: { $regex: name, $options: 'i' } })
+      .find({ name: { $regex: escapeRegex(name), $options: 'i' } })
       .limit(limit)
       .exec();
   }

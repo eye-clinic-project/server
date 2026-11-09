@@ -73,6 +73,25 @@ export class SecurityService {
     return decrypted.toString('utf8');
   }
 
+  /** Encrypts binary data (images) with AES-256-GCM. Layout: iv(12) | tag(16) | ciphertext. */
+  encryptBuffer(data: Buffer): Buffer {
+    const iv = randomBytes(12);
+    const cipher = createCipheriv(this.algorithm, this.key, iv);
+    const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
+    return Buffer.concat([iv, cipher.getAuthTag(), encrypted]);
+  }
+
+  decryptBuffer(payload: Buffer): Buffer {
+    if (payload.length < 28) {
+      throw new Error('Invalid encrypted payload');
+    }
+    const iv = payload.subarray(0, 12);
+    const authTag = payload.subarray(12, 28);
+    const decipher = createDecipheriv(this.algorithm, this.key, iv);
+    decipher.setAuthTag(authTag);
+    return Buffer.concat([decipher.update(payload.subarray(28)), decipher.final()]);
+  }
+
   async hash(value: string): Promise<string> {
     return bcrypt.hash(value, this.saltRounds);
   }

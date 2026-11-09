@@ -4,6 +4,7 @@ import { AuthenticationService } from './authentication.service.js';
 import { UtilService } from '../../dependency/service/util.service.js';
 import { TokenService } from '../../dependency/service/token.service.js';
 import { PATH_METADATA } from '@nestjs/common/constants';
+import { UserService } from '../user/user.service.js';
 
 describe('AuthenticationController', () => {
   let controller: AuthenticationController;
@@ -15,6 +16,7 @@ describe('AuthenticationController', () => {
         { provide: AuthenticationService, useValue: {} },
         { provide: UtilService, useValue: {} },
         { provide: TokenService, useValue: {} },
+        { provide: UserService, useValue: {} },
       ],
     }).compile();
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  HydratedDocument,
   CreateOptions,
   DeleteResult,
   InsertManyOptions,
@@ -24,8 +25,8 @@ export abstract class DatabaseRepository<T> {
   }: {
     data: Partial<T>;
     options?: CreateOptions;
-  }) {
-    return new this.model(data).save(options);
+  }): Promise<HydratedDocument<T>> {
+    return (await new this.model(data).save(options)) as HydratedDocument<T>;
   }
 
   async createMany({
@@ -40,6 +41,16 @@ export abstract class DatabaseRepository<T> {
       : this.model.insertMany(data);
   }
 
+  findById(args: {
+    _id: Types.ObjectId | string;
+    projection?: ProjectionType<T>;
+    options: QueryOptions<T> & { lean: true };
+  }): Promise<any>;
+  findById(args: {
+    _id: Types.ObjectId | string;
+    projection?: ProjectionType<T>;
+    options?: QueryOptions<T>;
+  }): Promise<HydratedDocument<T> | null>;
   async findById({
     _id,
     projection,
@@ -62,6 +73,16 @@ export abstract class DatabaseRepository<T> {
     return query.exec();
   }
 
+  findOne(args: {
+    filter?: QueryFilter<T>;
+    projection?: ProjectionType<T>;
+    options: QueryOptions<T> & { lean: true };
+  }): Promise<any>;
+  findOne(args: {
+    filter?: QueryFilter<T>;
+    projection?: ProjectionType<T>;
+    options?: QueryOptions<T>;
+  }): Promise<HydratedDocument<T> | null>;
   async findOne({
     filter = {},
     projection,
@@ -88,6 +109,16 @@ export abstract class DatabaseRepository<T> {
     return query.exec();
   }
 
+  find(args: {
+    filter?: QueryFilter<T>;
+    projection?: ProjectionType<T>;
+    options: QueryOptions<T> & { lean: true };
+  }): Promise<any[]>;
+  find(args: {
+    filter?: QueryFilter<T>;
+    projection?: ProjectionType<T>;
+    options?: QueryOptions<T>;
+  }): Promise<HydratedDocument<T>[]>;
   async find({
     filter = {},
     projection,
@@ -134,14 +165,14 @@ export abstract class DatabaseRepository<T> {
     options?: QueryOptions<T>;
     page?: number | string;
     size?: number | string;
-  }) {
+  }): Promise<{ docs: any[]; count: number; currentPage: number; size: number; pages: number }> {
     const currentPage = Math.max(1, Math.floor(Number(page) || 1));
     const limit = Math.max(1, Math.floor(Number(size) || 5));
     const skip = (currentPage - 1) * limit;
 
     const [count, docs] = await Promise.all([
       this.model.countDocuments(filter).exec(),
-      this.find({
+      (this.find as any)({
         filter,
         projection,
         options: {

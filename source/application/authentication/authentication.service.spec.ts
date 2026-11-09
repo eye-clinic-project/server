@@ -12,6 +12,7 @@ import type { HUserDocument } from '../../database/model/user.model.js';
 import { Types } from 'mongoose';
 import { createHash } from 'node:crypto';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { ProfileService } from '../../dependency/service/profile.service.js';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
@@ -45,9 +46,10 @@ describe('AuthenticationService', () => {
         { provide: SecurityService, useValue: security },
         { provide: TokenService, useValue: tokens },
         { provide: CacheService, useValue: cache },
-        { provide: UtilService, useValue: {} },
+        { provide: UtilService, useValue: { frontendUrl: (path: string) => `http://app${path}` } },
         { provide: MailService, useValue: mail },
         { provide: ConfigService, useValue: {} },
+        { provide: ProfileService, useValue: {} },
       ],
     }).compile();
 
@@ -68,7 +70,7 @@ describe('AuthenticationService', () => {
     expect(mail.sendPasswordResetToken).not.toHaveBeenCalled();
   });
 
-  it('stores only a hash of the emailed reset token with a ten-minute expiry', async () => {
+  it('stores only a hash of the emailed reset token with a fifteen-minute expiry', async () => {
     const userId = new Types.ObjectId();
     userRepository.findByEmail.mockResolvedValue({
       _id: userId,
@@ -81,14 +83,16 @@ describe('AuthenticationService', () => {
     ).resolves.toEqual({ sent: true });
 
     const [[cacheEntry]] = cache.setCache.mock.calls;
-    const [[email, token]] = mail.sendPasswordResetToken.mock.calls;
+    const [[email, token, link, minutes]] = mail.sendPasswordResetToken.mock.calls;
     expect(email).toBe('person@example.com');
+    expect(link).toBe(`http://app/reset-password?token=${token}`);
+    expect(minutes).toBe(15);
     expect(cacheEntry).toEqual({
       key: RedisKeys.passwordReset(
         createHash('sha256').update(token).digest('hex'),
       ),
       value: userId.toString(),
-      options: { EX: 600 },
+      options: { EX: 900 },
     });
   });
 
@@ -97,6 +101,7 @@ describe('AuthenticationService', () => {
     const user = {
       _id: userId,
       provider: AuthProviderEnum.SYSTEM,
+      emailVerifiedAt: new Date(),
     } as HUserDocument;
     const token = 'a'.repeat(43);
     cache.getAndDelete.mockResolvedValue(userId.toString());
@@ -118,6 +123,23 @@ describe('AuthenticationService', () => {
       update: { $set: { passwordHash: 'new-password-hash' } },
     });
     expect(tokens.logout).toHaveBeenCalledWith(userId);
+  });
+
+  it('verifies the email of an invited patient who sets a first password', async () => {
+    const userId = new Types.ObjectId();
+    cache.getAndDelete.mockResolvedValue(userId.toString());
+    userRepository.findHydratedById.mockResolvedValue({
+      _id: userId,
+      provider: AuthProviderEnum.SYSTEM,
+      emailVerifiedAt: null,
+    });
+    security.hash.mockResolvedValue('first-hash');
+    userRepository.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+    await service.resetPassword({ token: 'b'.repeat(43), password: 'first-password' });
+    const update = userRepository.updateOne.mock.calls[0][0].update.$set;
+    expect(update.passwordHash).toBe('first-hash');
+    expect(update.emailVerifiedAt).toBeInstanceOf(Date);
   });
 
   it('rejects a missing or expired reset token', async () => {

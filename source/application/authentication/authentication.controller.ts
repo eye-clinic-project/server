@@ -17,6 +17,7 @@ import { Throttle, minutes, hours } from '@nestjs/throttler';
 import type { Response } from 'express';
 
 import { AuthenticationService } from './authentication.service.js';
+import { UserService } from '../user/user.service.js';
 import { UtilService } from '../../dependency/service/util.service.js';
 import { TokenService } from '../../dependency/service/token.service.js';
 
@@ -44,7 +45,8 @@ export class AuthenticationController {
     private readonly authenticationService: AuthenticationService,
     private readonly UtilService: UtilService,
     private readonly tokenService: TokenService,
-  ) { }
+    private readonly userService: UserService,
+  ) {}
 
   @Throttle({
     default: {
@@ -190,18 +192,7 @@ export class AuthenticationController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('bearerAuth')
   currentUser(@User() user: HUserDocument) {
-    return {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      city: user.city,
-      avatarUrl: user.avatarUrl,
-      role: user.role,
-      provider: user.provider,
-      emailVerifiedAt: user.emailVerifiedAt ?? null,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+    return this.userService.getMe(user);
   }
 
   @Throttle({

@@ -6,25 +6,35 @@ import { LoggerService } from '../service/logger.service.js';
 import { MailService } from '../service/mail.service.js';
 import { SecurityService } from '../service/security.service.js';
 import { TokenService } from '../service/token.service.js';
-import { UploadService } from '../service/upload.service.js';
+import { StorageService } from '../service/storage.service.js';
 import { UtilService } from '../service/util.service.js';
+import { AiService } from '../service/ai.service.js';
+import { AccessService } from '../service/access.service.js';
+import { NotifierService } from '../service/notifier.service.js';
+import { RealtimeService } from '../service/realtime.service.js';
+import { PdfService } from '../service/pdf.service.js';
+import { ProfileService } from '../service/profile.service.js';
 import { CacheModule } from './cache.module.js';
-import { UserRepository } from '../../database/repository/user.repository.js';
 
 const services = [
   LoggerService,
   MailService,
   TokenService,
-  UploadService,
+  StorageService,
   SecurityService,
   UtilService,
-  LoggerService,
+  AiService,
+  AccessService,
+  NotifierService,
+  RealtimeService,
+  PdfService,
+  ProfileService,
 ];
 
 @Global()
 @Module({
   imports: [ConfigModule, JwtModule.register({}), CacheModule],
-  providers: [UserRepository, ...services],
-  exports: [...services, UserRepository],
+  providers: services,
+  exports: services,
 })
 export class ServiceModule {}
