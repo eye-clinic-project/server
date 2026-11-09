@@ -31,4 +31,30 @@ export class MailService {
       html: `<p>Your email verification code is <strong>${code}</strong>.</p><p>It expires in 2 minutes.</p>`,
     });
   }
+
+  async sendPasswordResetToken(email: string, token: string): Promise<void> {
+    const host = this.configService.get<string>('mail.host');
+    const from = this.configService.get<string>('mail.from');
+
+    if (!host || !from) {
+      throw new ServiceUnavailableException('Email delivery is not configured');
+    }
+
+    const user = this.configService.get<string>('mail.user');
+    const password = this.configService.get<string>('mail.password');
+    const transporter = nodemailer.createTransport({
+      host,
+      port: this.configService.get<number>('mail.port', 587),
+      secure: this.configService.get<boolean>('mail.secure', false),
+      ...(user && password ? { auth: { user, pass: password } } : {}),
+    });
+
+    await transporter.sendMail({
+      from,
+      to: email,
+      subject: 'Reset your password',
+      text: `Your password reset token is ${token}. It expires in 10 minutes.`,
+      html: `<p>Your password reset token is <strong>${token}</strong>.</p><p>It expires in 10 minutes.</p>`,
+    });
+  }
 }

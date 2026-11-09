@@ -10,7 +10,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
+import { createHash, randomBytes } from 'node:crypto';
 import { UserRepository } from '../../database/repository/user.repository.js';
+import type { HUserDocument } from '../../database/model/user.model.js';
 import { SecurityService } from '../../dependency/service/security.service.js';
 import { TokenService } from '../../dependency/service/token.service.js';
 import {
@@ -28,7 +30,12 @@ import {
 import { SignUpDto } from './dto/signup.dto.js';
 import { GoogleCredentialDto } from './dto/google-credential.dto.js';
 import { EmailDto, VerifyEmailDto } from './dto/email.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { GoogleTokenClaims } from '../../dependency/interface/security.interface.js';
+
+const PASSWORD_RESET_TTL_SECONDS = 10 * 60;
 
 function isDuplicateKeyError(error: unknown): error is { code: number } {
   return (
@@ -247,6 +254,104 @@ export class AuthenticationService {
         ? await this.tokens.logout(userId)
         : await this.tokens.revokeToken(userId, tokenId);
     return { revoked };
+  }
+
+  async forgotPassword({
+    email,
+  }: ForgotPasswordDto): Promise<{ sent: true }> {
+    const user = await this.userRepository.findByEmail(email);
+    if (
+      !user ||
+      user.provider !== AuthProviderEnum.SYSTEM ||
+      !user.passwordHash
+    ) {
+      return { sent: true };
+    }
+
+    const token = randomBytes(32).toString('base64url');
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const key = RedisKeys.passwordReset(tokenHash);
+
+    await this.cache.setCache({
+      key,
+      value: user._id.toString(),
+      options: { EX: PASSWORD_RESET_TTL_SECONDS },
+    });
+
+    try {
+      await this.mail.sendPasswordResetToken(email, token);
+    } catch (error) {
+      await this.cache.deleteCache({ key });
+      throw error;
+    }
+
+    return { sent: true };
+  }
+
+  async resetPassword({
+    token,
+    password,
+  }: ResetPasswordDto): Promise<{ reset: true }> {
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const userId = await this.cache.getAndDelete<string>({
+      key: RedisKeys.passwordReset(tokenHash),
+    });
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid or expired password reset token');
+    }
+
+    const user = await this.userRepository.findHydratedById(
+      new Types.ObjectId(userId),
+    );
+    if (!user || user.provider !== AuthProviderEnum.SYSTEM) {
+      throw new BadRequestException('Invalid or expired password reset token');
+    }
+
+    const passwordHash = await this.security.hash(password);
+    const update = await this.userRepository.updateOne({
+      filter: { _id: user._id },
+      update: { $set: { passwordHash } },
+    });
+    if (update.modifiedCount !== 1) {
+      throw new NotFoundException('Account not found');
+    }
+
+    await this.tokens.logout(user._id);
+    return { reset: true };
+  }
+
+  async changePassword(
+    user: HUserDocument,
+    { currentPassword, newPassword }: ChangePasswordDto,
+  ): Promise<{ changed: true }> {
+    const account = await this.userRepository.findByEmail(user.email);
+    if (
+      !account ||
+      account.provider !== AuthProviderEnum.SYSTEM ||
+      !account.passwordHash
+    ) {
+      throw new BadRequestException(
+        'Password changes are unavailable for this sign-in method',
+      );
+    }
+    if (
+      !(await this.security.compare(currentPassword, account.passwordHash))
+    ) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await this.security.hash(newPassword);
+    const update = await this.userRepository.updateOne({
+      filter: { _id: account._id, passwordHash: account.passwordHash },
+      update: { $set: { passwordHash } },
+    });
+    if (update.modifiedCount !== 1) {
+      throw new ConflictException(
+        'Password changed before this request could be completed',
+      );
+    }
+
+    return { changed: true };
   }
 
   private async verifyGoogleCredential(
