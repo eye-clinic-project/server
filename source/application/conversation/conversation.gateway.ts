@@ -15,7 +15,8 @@ import { UtilService } from '../../dependency/service/util.service.js';
 import { RealtimeService, conversationRoom, userRoom } from '../../dependency/service/realtime.service.js';
 import { TokenEnum } from '../../dependency/enum/security.enum.js';
 import { ConversationService } from './conversation.service.js';
-import { Localize } from '../../dependency/i18n/localize.js';
+import { Localize } from '../../dependency/language/localize.js';
+
 
 type Ack<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 
