@@ -62,6 +62,8 @@ class Server {
     app.enableCors({
       origin: configuration.get<string[]>('app.corsOrigin'),
       credentials: true,
+      // Lets the browser client read how long a rate-limit block lasts (429 responses).
+      exposedHeaders: ['Retry-After'],
     });
     app.disable('x-powered-by');
     app.enableShutdownHooks();
