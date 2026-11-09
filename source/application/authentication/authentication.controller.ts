@@ -21,14 +21,17 @@ import { UserService } from '../user/user.service.js';
 import { UtilService } from '../../dependency/service/util.service.js';
 import { TokenService } from '../../dependency/service/token.service.js';
 
-import { SignUpDto } from './dto/signup.dto.js';
-import { GoogleCredentialDto } from './dto/google-credential.dto.js';
-import { LoginDto } from './dto/login.dto.js';
-import { EmailDto, VerifyEmailDto } from './dto/email.dto.js';
-import { LogoutDto } from './dto/logout.dto.js';
-import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
-import { ResetPasswordDto } from './dto/reset-password.dto.js';
-import { ChangePasswordDto } from './dto/change-password.dto.js';
+import {
+  ChangePasswordDto,
+  EmailDto,
+  ForgotPasswordDto,
+  GoogleCredentialDto,
+  LoginDto,
+  LogoutDto,
+  ResetPasswordDto,
+  SignUpDto,
+  VerifyEmailDto,
+} from './dto/authentication.dto.js';
 
 import { Token } from '../../dependency/decorator/token.decorator.js';
 import { TokenEnum } from '../../dependency/enum/security.enum.js';

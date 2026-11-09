@@ -21,19 +21,22 @@ import {
 } from '../../dependency/service/cache.service.js';
 import { UtilService } from '../../dependency/service/util.service.js';
 import { MailService } from '../../dependency/service/mail.service.js';
-import { LoginDto } from './dto/login.dto.js';
+import {
+  ChangePasswordDto,
+  EmailDto,
+  ForgotPasswordDto,
+  GoogleCredentialDto,
+  LoginDto,
+  ResetPasswordDto,
+  SignUpDto,
+  VerifyEmailDto,
+} from './dto/authentication.dto.js';
 import {
   AuthProviderEnum,
   LogoutTypeEnum,
   SignUpRoleEnum,
   SystemRoleEnum,
 } from '../../dependency/enum/security.enum.js';
-import { SignUpDto } from './dto/signup.dto.js';
-import { GoogleCredentialDto } from './dto/google-credential.dto.js';
-import { EmailDto, VerifyEmailDto } from './dto/email.dto.js';
-import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
-import { ResetPasswordDto } from './dto/reset-password.dto.js';
-import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { GoogleTokenClaims } from '../../dependency/interface/security.interface.js';
 
 import { ProfileService, isDuplicateKeyError } from '../../dependency/service/profile.service.js';
