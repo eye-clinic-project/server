@@ -12,6 +12,7 @@ import type {
 
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';
+import { optional } from 'zod';
 
 const INCR_WITH_TTL = `
 local v = redis.call('INCRBY', KEYS[1], ARGV[1])
@@ -40,10 +41,7 @@ export const RedisKeys = {
 export class CacheService implements OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
 
-  constructor(
-    @Inject('REDIS_CLIENT')
-    private readonly cacheClient: Redis,
-  ) {}
+  constructor(@Inject('REDIS_CLIENT')private readonly cacheClient: Redis) {}
 
   async onModuleDestroy() {
     await this.cacheClient.quit();

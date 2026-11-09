@@ -21,6 +21,15 @@ import { DatabaseModule } from './dependency/module/database.module.js';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
 import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
+import { PatientModule } from './application/patient/patient.module.js';
+import { DoctorPatientModule } from './application/doctor-patient/doctor-patient.module.js';
+import { Module } from './fundus-image/application/.module.js';
+import { FundusImageModule } from './application/fundus-image/fundus-image.module.js';
+import { ReportModule } from './application/report/report.module.js';
+import { AppointmentModule } from './application/appointment/appointment.module.js';
+import { NotificationModule } from './application/notification/notification.module.js';
+import { ConversationModule } from './application/conversation/conversation.module.js';
+import { MessageModule } from './application/message/message.module.js';
 
 @Module({
   imports: [
@@ -41,6 +50,15 @@ import { SlowRequestMiddleware } from './dependency/middleware/response-time.mid
     DatabaseModule,
     AuthenticationModule,
     UserModule,
+    PatientModule,
+    DoctorPatientModule,
+    Module,
+    FundusImageModule,
+    ReportModule,
+    AppointmentModule,
+    NotificationModule,
+    ConversationModule,
+    MessageModule,
   ],
 
   controllers: [AppController],
