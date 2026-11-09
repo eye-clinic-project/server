@@ -8,6 +8,7 @@ import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { DoctorReviewService } from './doctor-review.service.js';
 import { CreateDoctorReviewDto, DoctorReviewQueryDto, UpdateDoctorReviewDto } from './dto/doctor-review.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Doctor reviews')
 @Controller('api/v1/doctor-reviews')
@@ -15,6 +16,7 @@ import { CreateDoctorReviewDto, DoctorReviewQueryDto, UpdateDoctorReviewDto } fr
 export class DoctorReviewController {
   constructor(private readonly service: DoctorReviewService) {}
 
+  @RateLimit.create()
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({

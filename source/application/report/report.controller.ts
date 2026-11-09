@@ -8,6 +8,7 @@ import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { ReportService } from './report.service.js';
 import { CreateReportDto, ReportQueryDto, UpdateReportDto } from './dto/report.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Medical reports')
 @Controller('api/v1/reports')
@@ -15,6 +16,7 @@ import { CreateReportDto, ReportQueryDto, UpdateReportDto } from './dto/report.d
 export class ReportController {
   constructor(private readonly service: ReportService) {}
 
+  @RateLimit.create()
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
@@ -43,6 +45,7 @@ export class ReportController {
     return this.service.findOne(user, id);
   }
 
+  @RateLimit.fileGeneration()
   @Get(':reportId/pdf')
   @ApiOperation({
     summary: "Download the report as PDF",
@@ -76,6 +79,7 @@ export class ReportController {
     return this.service.remove(user, id);
   }
 
+  @RateLimit.outboundEmail()
   @Post(':reportId/send')
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({

@@ -35,6 +35,7 @@ import {
   UpdateCaptureSessionDto,
   UpdateDeviceDto,
 } from './dto/hardware.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Hardware (doctor)')
 @Controller('api/v1/hardware')
@@ -42,6 +43,7 @@ import {
 export class HardwareController {
   constructor(private readonly service: HardwareService) {}
 
+  @RateLimit.create()
   @Post('devices')
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
@@ -79,6 +81,7 @@ export class HardwareController {
     return this.service.updateDevice(user, id, dto);
   }
 
+  @RateLimit.sensitive()
   @Post('devices/:deviceId/rotate-key')
   @ApiOperation({
     summary: "Generate a new device key",
@@ -97,6 +100,7 @@ export class HardwareController {
     return this.service.removeDevice(user, id);
   }
 
+  @RateLimit.create()
   @Post('capture-sessions')
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({

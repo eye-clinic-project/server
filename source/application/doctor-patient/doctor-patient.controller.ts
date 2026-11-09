@@ -7,6 +7,7 @@ import type { HUserDocument } from '../../database/model/user.model.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { DoctorPatientService } from './doctor-patient.service.js';
 import { AssignmentQueryDto, CreateAssignmentDto, UpdateAssignmentDto } from './dto/doctor-patient.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Doctor-Patient assignment')
 @Controller('api/v1/doctor-patient')
@@ -14,6 +15,7 @@ import { AssignmentQueryDto, CreateAssignmentDto, UpdateAssignmentDto } from './
 export class DoctorPatientController {
   constructor(private readonly service: DoctorPatientService) {}
 
+  @RateLimit.create()
   @Post()
   @ApiOperation({
     summary: "Assign a patient to a doctor",

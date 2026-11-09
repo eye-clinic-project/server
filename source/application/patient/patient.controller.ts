@@ -16,6 +16,7 @@ import {
 } from './dto/patient.dto.js';
 import { AnalysisService } from '../analysis/analysis.service.js';
 import { ReportService } from '../report/report.service.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Patients')
 @Controller('api/v1/patients')
@@ -26,6 +27,7 @@ export class PatientController {
     private readonly reportService: ReportService,
   ) {}
 
+  @RateLimit.create()
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
@@ -36,6 +38,7 @@ export class PatientController {
     return this.patientService.create(user, dto);
   }
 
+  @RateLimit.search()
   @Get()
   @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
   @ApiOperation({

@@ -9,6 +9,7 @@ import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { AnalysisService } from './analysis.service.js';
 import { AnalysisQueryDto, CreateAnalysisDto } from './dto/analysis.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Analyses (AI)')
 @Controller('api/v1/analyses')
@@ -16,6 +17,7 @@ import { AnalysisQueryDto, CreateAnalysisDto } from './dto/analysis.dto.js';
 export class AnalysisController {
   constructor(private readonly service: AnalysisService) {}
 
+  @RateLimit.create()
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
@@ -26,6 +28,7 @@ export class AnalysisController {
     return this.service.create(user, new Types.ObjectId(dto.imageId));
   }
 
+  @RateLimit.aiInference()
   @Post(':analysisId/predict')
   @Auth([SystemRoleEnum.DOCTOR])
   @RequestTimeout(60_000)
@@ -37,6 +40,7 @@ export class AnalysisController {
     return this.service.run(user, id);
   }
 
+  @RateLimit.aiInference()
   @Post(':analysisId/retry')
   @Auth([SystemRoleEnum.DOCTOR])
   @RequestTimeout(60_000)
@@ -75,6 +79,7 @@ export class AnalysisController {
     return this.service.result(user, id);
   }
 
+  @RateLimit.aiInference()
   @Get(':analysisId/grad-cam')
   @ApiOperation({
     summary: "Download the Grad-CAM heatmap",

@@ -12,6 +12,7 @@ import { PatientService } from '../patient/patient.service.js';
 import { PatientSearchQueryDto } from '../patient/dto/patient.dto.js';
 import { AppointmentService } from '../appointment/appointment.service.js';
 import { AppointmentQueryDto } from '../appointment/dto/appointment.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Doctors')
 @Controller('api/v1/doctors')
@@ -52,6 +53,7 @@ export class DoctorsController {
     return this.doctorsService.dashboard(user);
   }
 
+  @RateLimit.search()
   @Get()
   @Auth()
   @ApiOperation({

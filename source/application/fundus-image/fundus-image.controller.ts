@@ -23,6 +23,7 @@ import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { UploadImagePipe } from '../../dependency/pipe/upload.pipe.js';
 import { FundusImageService } from './fundus-image.service.js';
 import { FundusImageQueryDto, UpdateFundusImageDto, UploadFundusImageDto } from './dto/fundus-image.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 export const MAX_FUNDUS_IMAGE_BYTES =
   (parseInt(process.env.MAX_IMAGE_SIZE_MB ?? '', 10) || 10) * 1024 * 1024;
@@ -34,6 +35,7 @@ export class FundusImageController {
   constructor(private readonly service: FundusImageService) {}
 
   /** FR3.1: upload a JPEG/PNG fundus image for an assigned patient (and analyse it). */
+  @RateLimit.upload()
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiConsumes('multipart/form-data')

@@ -37,6 +37,7 @@ import { User } from '../../dependency/decorator/user.decorator.js';
 
 import type { HUserDocument } from '../../database/model/user.model.js';
 import type { IAuthReq } from '../../dependency/interface/ctx.interface.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @Controller('api/v1/auth')
 @ApiTags('Authentication')
@@ -207,6 +208,7 @@ export class AuthenticationController {
     return this.authenticationService.resetPassword(body);
   }
 
+  @RateLimit.passwordCheck()
   @Patch('change-password')
   @HttpCode(HttpStatus.OK)
   @Token(TokenEnum.ACCESS)

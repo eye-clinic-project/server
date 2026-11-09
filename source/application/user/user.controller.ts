@@ -19,6 +19,7 @@ import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { UploadImagePipe } from '../../dependency/pipe/upload.pipe.js';
 import { UserService } from './user.service.js';
 import { DeleteAccountDto, UpdateUserDto } from './dto/update-user.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Users')
 @Controller('api/v1/users')
@@ -44,6 +45,7 @@ export class UserController {
     return this.userService.updateMe(user, dto);
   }
 
+  @RateLimit.passwordCheck()
   @Delete('me')
   @ApiOperation({
     summary: "Delete my account",
@@ -53,6 +55,7 @@ export class UserController {
     return this.userService.deleteMe(user, dto);
   }
 
+  @RateLimit.upload()
   @Patch('me/avatar')
   @ApiConsumes('multipart/form-data')
   @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })

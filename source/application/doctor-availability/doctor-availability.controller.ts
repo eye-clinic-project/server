@@ -8,6 +8,7 @@ import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { DoctorAvailabilityService } from './doctor-availability.service.js';
 import { AvailabilityQueryDto, CreateAvailabilityDto, UpdateAvailabilityDto } from './dto/availability.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Doctor availability')
 @Controller('api/v1/doctor-availability')
@@ -15,6 +16,7 @@ import { AvailabilityQueryDto, CreateAvailabilityDto, UpdateAvailabilityDto } fr
 export class DoctorAvailabilityController {
   constructor(private readonly service: DoctorAvailabilityService) {}
 
+  @RateLimit.create()
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({

@@ -13,6 +13,7 @@ import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
 } from './dto/appointment.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Appointments')
 @Controller('api/v1/appointments')
@@ -20,6 +21,7 @@ import {
 export class AppointmentController {
   constructor(private readonly service: AppointmentService) {}
 
+  @RateLimit.create()
   @Post()
   @ApiOperation({
     summary: "Book an appointment",

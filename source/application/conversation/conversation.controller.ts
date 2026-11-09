@@ -7,6 +7,7 @@ import type { HUserDocument } from '../../database/model/user.model.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { ConversationService } from './conversation.service.js';
 import { CreateConversationDto, MessagesQueryDto, SendMessageDto } from './dto/conversation.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Chat')
 @Controller('api/v1/conversations')
@@ -14,6 +15,7 @@ import { CreateConversationDto, MessagesQueryDto, SendMessageDto } from './dto/c
 export class ConversationController {
   constructor(private readonly service: ConversationService) {}
 
+  @RateLimit.create()
   @Post()
   @ApiOperation({
     summary: "Open a conversation",
@@ -50,6 +52,7 @@ export class ConversationController {
     return this.service.listMessages(user, id, query);
   }
 
+  @RateLimit.message()
   @Post(':conversationId/messages')
   @ApiOperation({
     summary: "Send a message",

@@ -12,6 +12,7 @@ import { AnalysisService } from '../analysis/analysis.service.js';
 import { AnalysisQueryDto } from '../analysis/dto/analysis.dto.js';
 import { ReportService } from '../report/report.service.js';
 import { ReportQueryDto } from '../report/dto/report.dto.js';
+import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Admin')
 @Controller('api/v1/admin')
@@ -32,6 +33,7 @@ export class AdminController {
     return this.service.dashboard();
   }
 
+  @RateLimit.search()
   @Get('users')
   @ApiOperation({
     summary: "List users",
@@ -50,6 +52,7 @@ export class AdminController {
     return this.service.getUser(id);
   }
 
+  @RateLimit.adminWrite()
   @Patch('users/:userId/status')
   @ApiOperation({
     summary: "Enable or disable a user",
@@ -59,6 +62,7 @@ export class AdminController {
     return this.service.setStatus(admin, id, dto.isActive);
   }
 
+  @RateLimit.adminWrite()
   @Patch('users/:userId/role')
   @ApiOperation({
     summary: "Change a user's role",
@@ -68,6 +72,7 @@ export class AdminController {
     return this.service.setRole(admin, id, dto.role);
   }
 
+  @RateLimit.adminWrite()
   @Delete('users/:userId')
   @ApiOperation({
     summary: "Delete a user",
