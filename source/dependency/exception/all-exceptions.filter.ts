@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, HttpException } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import { Localize } from '../i18n/localize.js';
+import { Localize } from '../language/localize.js';
 
 /**
  * Translates the `message` and `error` of every HTTP error into the request's language

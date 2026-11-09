@@ -6,9 +6,10 @@ import {
   DRLevel,
 } from './enum/database.enum.js';
 import { AI_DISCLAIMER } from './constant.js';
-import { Localize } from './i18n/localize.js';
+
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { Localize } from './language/localize.js';
 
 export const API_PREFIX = '/api/v1';
 

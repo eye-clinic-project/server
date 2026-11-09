@@ -17,12 +17,12 @@ import {
   JsonI18nLoader,
   QueryLocaleResolver,
 } from '@nestjs/i18n';
-import { UserLocaleResolver } from './dependency/i18n/user-locale.resolver.js';
+import { UserLocaleResolver } from './dependency/language/user-locale.resolver.js';
 import {
   DEFAULT_LOCALE,
   I18N_PATH,
   SUPPORTED_LOCALES,
-} from './dependency/i18n/i18n.constants.js';
+} from './dependency/language/i18n.constants.js';
 import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
 import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
 

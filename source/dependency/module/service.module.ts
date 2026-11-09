@@ -14,7 +14,7 @@ import { NotifierService } from '../service/notifier.service.js';
 import { RealtimeService } from '../service/realtime.service.js';
 import { PdfService } from '../service/pdf.service.js';
 import { ProfileService } from '../service/profile.service.js';
-import { Localize } from '../i18n/localize.js';
+import { Localize } from '../language/localize.js';
 import { CacheModule } from './cache.module.js';
 
 const services = [

@@ -8,7 +8,7 @@ import {
 import { Observable, map } from 'rxjs';
 
 import { ApiResponse } from '../interface/interceptor.interface.js';
-import { Localize } from '../i18n/localize.js';
+import { Localize } from '../language/localize.js';
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<

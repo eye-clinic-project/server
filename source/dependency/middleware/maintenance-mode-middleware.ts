@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { NextFunction, Request, Response } from 'express';
-import { Localize } from '../i18n/localize.js';
+import { Localize } from '../language/localize.js';
 
 @Injectable()
 export class MaintenanceMiddleware implements NestMiddleware {
