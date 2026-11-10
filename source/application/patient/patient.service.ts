@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { HUserDocument } from '../../database/model/user.model.js';
 import { UserRepository } from '../../database/repository/user.repository.js';
@@ -18,20 +13,10 @@ import { AccessService } from '../../dependency/service/access.service.js';
 import { ProfileService, isDuplicateKeyError } from '../../dependency/service/profile.service.js';
 import { escapeRegex } from '../../dependency/service/util.service.js';
 import { AuthProviderEnum, SystemRoleEnum } from '../../dependency/enum/security.enum.js';
-import {
-  AnalysisStatus,
-  AppointmentStatus,
-  AssignmentStatus,
-  ReportStatus,
-} from '../../dependency/enum/database.enum.js';
+import { AnalysisStatus, AppointmentStatus, AssignmentStatus, ReportStatus } from '../../dependency/enum/database.enum.js';
 import { presentAnalysis, presentImage, presentUser } from '../../dependency/presenter.js';
 import { AuthenticationService } from '../authentication/authentication.service.js';
-import {
-  CreatePatientDto,
-  DoctorUpdatePatientDto,
-  PatientSearchQueryDto,
-  UpdatePatientProfileDto,
-} from './dto/patient.dto.js';
+import { CreatePatientDto, DoctorUpdatePatientDto, PatientSearchQueryDto, UpdatePatientProfileDto } from './dto/patient.dto.js';
 
 @Injectable()
 export class PatientService {
@@ -52,9 +37,7 @@ export class PatientService {
   ) {}
 
   private async present(userDoc: any, profile?: any) {
-    const p =
-      profile ??
-      (await this.patients.findOne({ filter: { user: userDoc._id }, options: { lean: true } }));
+    const p = profile ?? (await this.patients.findOne({ filter: { user: userDoc._id }, options: { lean: true } }));
     return { ...presentUser(userDoc), profile: p ?? null };
   }
 
@@ -62,9 +45,7 @@ export class PatientService {
   async create(doctor: HUserDocument, dto: CreatePatientDto) {
     const { name, email, city, phone, sendInvitation, ...profile } = dto;
     if (await this.users.findByEmailWithoutPassword(email)) {
-      throw new ConflictException(
-        'A user with this email already exists. Use "assign patient" to add an existing patient.',
-      );
+      throw new ConflictException('A user with this email already exists. Use "assign patient" to add an existing patient.');
     }
     let user: HUserDocument;
     try {
@@ -81,12 +62,10 @@ export class PatientService {
       if (isDuplicateKeyError(error)) throw new ConflictException('A user with this email already exists');
       throw error;
     }
-    const patientProfile = await this.profiles
-      .createPatientProfile(user._id, { ...profile, createdBy: doctor._id })
-      .catch(async (error) => {
-        await this.users.deleteOne({ filter: { _id: user._id } });
-        throw error;
-      });
+    const patientProfile = await this.profiles.createPatientProfile(user._id, { ...profile, createdBy: doctor._id }).catch(async (error) => {
+      await this.users.deleteOne({ filter: { _id: user._id } });
+      throw error;
+    });
     await this.assignments.create({
       data: {
         doctor: doctor._id,
@@ -97,9 +76,7 @@ export class PatientService {
       },
     });
     if (sendInvitation !== false) {
-      await this.auth
-        .sendInvitation(user._id, email, doctor.name)
-        .catch((error: Error) => this.logger.error(`Invitation email failed: ${error.message}`));
+      await this.auth.sendInvitation(user._id, email, doctor.name).catch((error: Error) => this.logger.error(`Invitation email failed: ${error.message}`));
     }
     return this.present(user, patientProfile.toObject());
   }

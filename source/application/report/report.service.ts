@@ -11,14 +11,7 @@ import { AccessService } from '../../dependency/service/access.service.js';
 import { NotifierService } from '../../dependency/service/notifier.service.js';
 import { PdfService } from '../../dependency/service/pdf.service.js';
 import { StorageService } from '../../dependency/service/storage.service.js';
-import {
-  AnalysisStatus,
-  DR_LEVEL_DESCRIPTIONS,
-  DR_LEVEL_LABELS,
-  DRLevel,
-  NotificationType,
-  ReportStatus,
-} from '../../dependency/enum/database.enum.js';
+import { AnalysisStatus, DR_LEVEL_DESCRIPTIONS, DR_LEVEL_LABELS, DRLevel, NotificationType, ReportStatus } from '../../dependency/enum/database.enum.js';
 import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { AI_DISCLAIMER } from '../../dependency/constant.js';
 import { presentAnalysis, presentUser } from '../../dependency/presenter.js';
@@ -56,7 +49,6 @@ export class ReportService {
     };
   }
 
-  /** FR4.3: report with patient details, image, grade, heatmap, doctor notes. */
   async create(doctor: HUserDocument, dto: CreateReportDto) {
     const analysis = await this.analyses.findById({ _id: dto.analysisId });
     if (!analysis) throw new NotFoundException('Analysis not found');
@@ -89,7 +81,7 @@ export class ReportService {
       filter.patient = id;
     }
     if (query.status) filter.status = query.status;
-    // Patients only see reports that were sent to them (FR4.4).
+
     if (viewer.role === SystemRoleEnum.PATIENT) filter.status = ReportStatus.SENT;
     const page = await this.reports.paginate({
       filter,

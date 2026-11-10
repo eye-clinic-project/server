@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  StreamableFile,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Types } from 'mongoose';
@@ -25,8 +13,7 @@ import { FundusImageService } from './fundus-image.service.js';
 import { FundusImageQueryDto, UpdateFundusImageDto, UploadFundusImageDto } from './dto/fundus-image.dto.js';
 import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
-export const MAX_FUNDUS_IMAGE_BYTES =
-  (parseInt(process.env.MAX_IMAGE_SIZE_MB ?? '', 10) || 10) * 1024 * 1024;
+export const MAX_FUNDUS_IMAGE_BYTES = (parseInt(process.env.MAX_IMAGE_SIZE_MB ?? '', 10) || 10) * 1024 * 1024;
 
 @ApiTags('Fundus images')
 @Controller('api/v1/fundus-images')
@@ -42,8 +29,9 @@ export class FundusImageController {
   @RequestTimeout(60_000)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_FUNDUS_IMAGE_BYTES + 1 } }))
   @ApiOperation({
-    summary: "Upload a fundus image",
-    description: "Assigned doctor only (FR3.1). multipart/form-data: file (JPEG or PNG, up to MAX_IMAGE_SIZE_MB, default 10 MB), patientId, optional eye, notes, capturedAt and analyze (default true). Unsupported formats, oversized and corrupted files return 400 with a clear message (NFR6, NFR18). The original bytes are stored encrypted and unmodified (FR3.2). With analyze = true the AI analysis runs right away and is returned in `analysis`.",
+    summary: 'Upload a fundus image',
+    description:
+      'Assigned doctor only (FR3.1). multipart/form-data: file (JPEG or PNG, up to MAX_IMAGE_SIZE_MB, default 10 MB), patientId, optional eye, notes, capturedAt and analyze (default true). Unsupported formats, oversized and corrupted files return 400 with a clear message (NFR6, NFR18). The original bytes are stored encrypted and unmodified (FR3.2). With analyze = true the AI analysis runs right away and is returned in `analysis`.',
   })
   upload(
     @User() user: HUserDocument,
@@ -55,8 +43,9 @@ export class FundusImageController {
 
   @Get()
   @ApiOperation({
-    summary: "List fundus images",
-    description: "Patient: their own. Doctor: their assigned patients. Admin: all. Filter by patientId and eye. Each image includes a short-lived signed fileUrl for <img> tags.",
+    summary: 'List fundus images',
+    description:
+      'Patient: their own. Doctor: their assigned patients. Admin: all. Filter by patientId and eye. Each image includes a short-lived signed fileUrl for <img> tags.',
   })
   list(@User() user: HUserDocument, @Query() query: FundusImageQueryDto) {
     return this.service.list(user, query);
@@ -64,8 +53,8 @@ export class FundusImageController {
 
   @Get(':imageId')
   @ApiOperation({
-    summary: "Get a fundus image",
-    description: "The patient, an assigned doctor or an admin. Image metadata plus the analyses run on it.",
+    summary: 'Get a fundus image',
+    description: 'The patient, an assigned doctor or an admin. Image metadata plus the analyses run on it.',
   })
   findOne(@User() user: HUserDocument, @Param('imageId', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.service.findOne(user, id);
@@ -73,14 +62,10 @@ export class FundusImageController {
 
   @Get(':imageId/file')
   @ApiOperation({
-    summary: "Download the original image",
-    description: "The patient, an assigned doctor or an admin. Returns the original bytes. Add ?download=1 to download as an attachment.",
+    summary: 'Download the original image',
+    description: 'The patient, an assigned doctor or an admin. Returns the original bytes. Add ?download=1 to download as an attachment.',
   })
-  async file(
-    @User() user: HUserDocument,
-    @Param('imageId', ParseObjectIdPipe) id: Types.ObjectId,
-    @Query('download') download?: string,
-  ) {
+  async file(@User() user: HUserDocument, @Param('imageId', ParseObjectIdPipe) id: Types.ObjectId, @Query('download') download?: string) {
     const file = await this.service.file(user, id);
     return new StreamableFile(file.data, {
       type: file.mimeType,
@@ -91,21 +76,17 @@ export class FundusImageController {
   @Patch(':imageId')
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
-    summary: "Edit image details",
-    description: "Assigned doctor only. Changes eye, notes or capture date. The image itself cannot be replaced.",
+    summary: 'Edit image details',
+    description: 'Assigned doctor only. Changes eye, notes or capture date. The image itself cannot be replaced.',
   })
-  update(
-    @User() user: HUserDocument,
-    @Param('imageId', ParseObjectIdPipe) id: Types.ObjectId,
-    @Body() dto: UpdateFundusImageDto,
-  ) {
+  update(@User() user: HUserDocument, @Param('imageId', ParseObjectIdPipe) id: Types.ObjectId, @Body() dto: UpdateFundusImageDto) {
     return this.service.update(user, id, dto);
   }
 
   @Delete(':imageId')
   @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
   @ApiOperation({
-    summary: "Delete a fundus image",
+    summary: 'Delete a fundus image',
     description: "Assigned doctor or admin. Delete the image's analyses first (409 otherwise). The stored file is removed.",
   })
   remove(@User() user: HUserDocument, @Param('imageId', ParseObjectIdPipe) id: Types.ObjectId) {

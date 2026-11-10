@@ -18,10 +18,7 @@ export class AccessService {
     return user.role === SystemRoleEnum.ADMIN;
   }
 
-  async canAccessPatient(
-    user: HUserDocument,
-    patientId: Types.ObjectId,
-  ): Promise<boolean> {
+  async canAccessPatient(user: HUserDocument, patientId: Types.ObjectId): Promise<boolean> {
     switch (user.role) {
       case SystemRoleEnum.ADMIN:
         return true;

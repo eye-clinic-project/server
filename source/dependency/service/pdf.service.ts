@@ -38,8 +38,7 @@ export interface ReportPdfData {
   disclaimer: string;
 }
 
-const fmtDate = (d?: Date | null) =>
-  d ? new Date(d).toISOString().slice(0, 10) : '—';
+const fmtDate = (d?: Date | null) => (d ? new Date(d).toISOString().slice(0, 10) : '—');
 
 /** Renders the medical report PDF (FR4.3, FR4.5, NFR19). */
 @Injectable()
@@ -55,20 +54,26 @@ export class PdfService {
       const teal = '#0e7490';
       const muted = '#64748b';
 
-      doc.fillColor(teal).fontSize(20).text('RetinaCare', { continued: true })
-        .fillColor(muted).fontSize(11).text('   Diabetic Retinopathy Report');
+      doc.fillColor(teal).fontSize(20).text('RetinaCare', { continued: true }).fillColor(muted).fontSize(11).text('   Diabetic Retinopathy Report');
       doc.moveDown(0.3).fillColor('#0f172a').fontSize(16).text(data.title);
-      doc.fillColor(muted).fontSize(9)
-        .text(`Report ${data.reportId} · Created ${fmtDate(data.createdAt)} · ${data.status.toUpperCase()}${data.sentAt ? ` · Sent ${fmtDate(data.sentAt)}` : ''}`);
+      doc
+        .fillColor(muted)
+        .fontSize(9)
+        .text(
+          `Report ${data.reportId} · Created ${fmtDate(data.createdAt)} · ${data.status.toUpperCase()}${data.sentAt ? ` · Sent ${fmtDate(data.sentAt)}` : ''}`,
+        );
       doc.moveDown();
 
       const section = (title: string) => {
         doc.moveDown(0.6).fillColor(teal).fontSize(12).text(title.toUpperCase());
-        doc.moveTo(doc.x, doc.y + 2).lineTo(547, doc.y + 2).strokeColor('#cbd5e1').stroke();
+        doc
+          .moveTo(doc.x, doc.y + 2)
+          .lineTo(547, doc.y + 2)
+          .strokeColor('#cbd5e1')
+          .stroke();
         doc.moveDown(0.5).fillColor('#0f172a').fontSize(10);
       };
-      const row = (label: string, value: string) =>
-        doc.font('Helvetica-Bold').text(`${label}: `, { continued: true }).font('Helvetica').text(value);
+      const row = (label: string, value: string) => doc.font('Helvetica-Bold').text(`${label}: `, { continued: true }).font('Helvetica').text(value);
 
       section('Patient');
       row('Name', data.patient.name);
@@ -112,7 +117,10 @@ export class PdfService {
         if (data.image) {
           try {
             doc.image(data.image, 48, top, { fit: [width, width] });
-            doc.fontSize(8).fillColor(muted).text('Fundus image', 48, top + width + 4);
+            doc
+              .fontSize(8)
+              .fillColor(muted)
+              .text('Fundus image', 48, top + width + 4);
           } catch {
             doc.text('Fundus image could not be embedded.');
           }
@@ -120,12 +128,18 @@ export class PdfService {
         if (data.gradCam) {
           try {
             doc.image(data.gradCam, 48 + width + 20, top, { fit: [width, width] });
-            doc.fontSize(8).fillColor(muted).text('Grad-CAM heatmap', 48 + width + 20, top + width + 4);
+            doc
+              .fontSize(8)
+              .fillColor(muted)
+              .text('Grad-CAM heatmap', 48 + width + 20, top + width + 4);
           } catch {
             /* ignore */
           }
         } else {
-          doc.fontSize(9).fillColor(muted).text('Grad-CAM heatmap not available.', 48 + width + 20, top + 10);
+          doc
+            .fontSize(9)
+            .fillColor(muted)
+            .text('Grad-CAM heatmap not available.', 48 + width + 20, top + 10);
         }
         doc.x = 48;
         doc.y = top + width + 24;

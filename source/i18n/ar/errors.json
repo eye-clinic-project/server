@@ -158,18 +158,5 @@
   },
   "notifications": {
     "notificationNotFound": "الإشعار غير موجود"
-  },
-  "hardware": {
-    "deviceExists": "يوجد جهاز بهذا الرقم التسلسلي بالفعل",
-    "deviceNotFound": "الجهاز غير موجود",
-    "deviceOtherDoctor": "هذا الجهاز تابع لطبيب آخر",
-    "deviceInactive": "الجهاز غير مفعّل",
-    "sessionNotFound": "جلسة التصوير غير موجودة",
-    "sessionOtherDoctor": "جلسة التصوير هذه تابعة لطبيب آخر",
-    "sessionFinished": "جلسة التصوير هذه انتهت بالفعل",
-    "sessionExpired": "انتهت صلاحية جلسة التصوير",
-    "sessionState": "حالة جلسة التصوير: {status}",
-    "missingDeviceKey": "مفتاح الجهاز مفقود أو غير صالح",
-    "invalidDeviceKey": "مفتاح الجهاز غير صالح"
   }
 }

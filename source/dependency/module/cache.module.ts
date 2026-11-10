@@ -19,9 +19,7 @@ const redisClient = {
 
     client.on('connect', () => logger.log('connected'));
     client.on('ready', () => logger.log('ready'));
-    client.on('error', (error: Error) =>
-      logger.error(error.message, error.stack),
-    );
+    client.on('error', (error: Error) => logger.error(error.message, error.stack));
 
     return client;
   },

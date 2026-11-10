@@ -1,9 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
@@ -22,11 +17,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const tokenType =
-      this.reflector.getAllAndOverride<TokenEnum>(tokenTypeName, [
-        context.getHandler(),
-        context.getClass(),
-      ]) ?? TokenEnum.ACCESS;
+    const tokenType = this.reflector.getAllAndOverride<TokenEnum>(tokenTypeName, [context.getHandler(), context.getClass()]) ?? TokenEnum.ACCESS;
 
     let req: IAuthReq | IAuthSocket;
     let authorization: string | undefined;
@@ -51,11 +42,7 @@ export class AuthGuard implements CanActivate {
 
         const socketToken = this.utilService.getAuthSocket(client);
 
-        authorization = socketToken
-          ? socketToken.startsWith('Bearer ')
-            ? socketToken
-            : `Bearer ${socketToken}`
-          : undefined;
+        authorization = socketToken ? (socketToken.startsWith('Bearer ') ? socketToken : `Bearer ${socketToken}`) : undefined;
 
         break;
       }

@@ -20,8 +20,6 @@ export interface IngestImageInput {
   notes?: string;
   capturedAt?: Date;
   source: ImageSource;
-  deviceId?: Types.ObjectId;
-  captureSessionId?: Types.ObjectId;
   analyze: boolean;
 }
 
@@ -38,7 +36,7 @@ export class FundusImageService {
 
   /**
    * Stores an image (encrypted, unmodified) and optionally runs the AI analysis.
-   * Shared by manual uploads (FR3.1) and the fundus camera (FR7.1) so both use the same flow.
+   * Used by manual uploads (FR3.1).
    */
   async ingest(input: IngestImageInput) {
     await this.access.assertTreatingDoctor(input.doctor, input.patientId);
@@ -56,8 +54,6 @@ export class FundusImageService {
         originalName: input.file.originalname?.slice(0, 200),
         notes: input.notes,
         capturedAt: input.capturedAt ?? new Date(),
-        device: input.deviceId ?? null,
-        captureSession: input.captureSessionId ?? null,
       },
     });
 
@@ -137,9 +133,7 @@ export class FundusImageService {
   }
 
   async file(viewer: HUserDocument | null, id: Types.ObjectId) {
-    const image = viewer
-      ? await this.load(viewer, id)
-      : await this.images.findById({ _id: id, projection: '+storageKey' });
+    const image = viewer ? await this.load(viewer, id) : await this.images.findById({ _id: id, projection: '+storageKey' });
     if (!image) throw new NotFoundException('Image not found');
     return {
       data: await this.storage.read(image.storageKey),

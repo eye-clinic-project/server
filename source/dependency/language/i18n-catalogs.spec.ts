@@ -21,8 +21,7 @@ const messages = (tree: Tree, prefix = '', out = new Map<string, string[]>()) =>
   return out;
 };
 
-const load = (locale: string, file: string) =>
-  messages(JSON.parse(readFileSync(join(I18N_PATH, locale, file), 'utf8')) as Tree);
+const load = (locale: string, file: string) => messages(JSON.parse(readFileSync(join(I18N_PATH, locale, file), 'utf8')) as Tree);
 
 describe('translation files', () => {
   const files = readdirSync(join(I18N_PATH, 'en')).filter((f) => f.endsWith('.json'));

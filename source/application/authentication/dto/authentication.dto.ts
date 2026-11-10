@@ -2,25 +2,10 @@ import { i18nValidationMessage } from '@nestjs/i18n';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import {
-  IsBoolean,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-  ValidateIf,
-} from 'class-validator';
-import {
-  LogoutTypeEnum,
-  SignUpRoleEnum,
-} from '../../../dependency/enum/security.enum.js';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { LogoutTypeEnum, SignUpRoleEnum } from '../../../dependency/enum/security.enum.js';
 
-const trim = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? value.trim() : value;
+const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
 export class SignUpDto {
   @Transform(trim)
@@ -29,9 +14,7 @@ export class SignUpDto {
   @MaxLength(100)
   name!: string;
 
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   @MaxLength(254)
   email!: string;
@@ -81,9 +64,11 @@ export class SignUpDto {
   @MaxLength(100)
   specialty?: string;
 
-  @IsOptional()
+  @ApiPropertyOptional({ description: 'Required when role = doctor. An admin checks it before the doctor panel opens.' })
+  @ValidateIf((o: SignUpDto) => o.role === SignUpRoleEnum.DOCTOR)
   @Transform(trim)
   @IsString()
+  @IsNotEmpty()
   @MaxLength(50)
   licenseNumber?: string;
 }
@@ -96,9 +81,7 @@ export class SignUpResponseDto {
 export class UpdateAuthenticationDto extends PartialType(SignUpDto) {}
 
 export class LoginDto {
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   @MaxLength(254)
   email!: string;
@@ -132,9 +115,7 @@ export class GoogleCredentialDto {
 }
 
 export class EmailDto {
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   @MaxLength(254)
   email!: string;
@@ -147,9 +128,7 @@ export class VerifyEmailDto extends EmailDto {
 }
 
 export class ForgotPasswordDto {
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toLowerCase() : value,
-  )
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   @MaxLength(254)
   email!: string;

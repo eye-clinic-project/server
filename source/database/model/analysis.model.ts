@@ -3,10 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
 import { FundusImage } from './fundus-image.model.js';
 import { IAnalysis } from '../../dependency/interface/database-schema.interface.js';
-import {
-  AnalysisStatus,
-  DR_LEVEL_VALUES,
-} from '../../dependency/enum/database.enum.js';
+import { AnalysisStatus, DR_LEVEL_VALUES } from '../../dependency/enum/database.enum.js';
 
 export type HAnalysisDocument = HydratedDocument<IAnalysis>;
 
@@ -24,8 +21,7 @@ class AnalysisHistoryEntry {
   @Prop({ type: Types.ObjectId, ref: User.name, default: null })
   by?: Types.ObjectId | null;
 }
-const AnalysisHistoryEntrySchema =
-  SchemaFactory.createForClass(AnalysisHistoryEntry);
+const AnalysisHistoryEntrySchema = SchemaFactory.createForClass(AnalysisHistoryEntry);
 
 @Schema({ timestamps: true, collection: 'analyses' })
 export class Analysis {

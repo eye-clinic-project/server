@@ -158,18 +158,5 @@
   },
   "notifications": {
     "notificationNotFound": "Notification not found"
-  },
-  "hardware": {
-    "deviceExists": "A device with this serial number already exists",
-    "deviceNotFound": "Device not found",
-    "deviceOtherDoctor": "This device belongs to another doctor",
-    "deviceInactive": "Device is not active",
-    "sessionNotFound": "Capture session not found",
-    "sessionOtherDoctor": "This capture session belongs to another doctor",
-    "sessionFinished": "This capture session is already finished",
-    "sessionExpired": "Capture session expired",
-    "sessionState": "Capture session is {status}",
-    "missingDeviceKey": "Missing or invalid device key",
-    "invalidDeviceKey": "Invalid device key"
   }
 }

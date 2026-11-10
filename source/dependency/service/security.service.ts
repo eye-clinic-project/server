@@ -19,9 +19,7 @@ export class SecurityService {
     this.key = Buffer.from(key, 'base64');
 
     if (this.key.length !== 32) {
-      throw new InternalServerErrorException(
-        'ENCRYPTION_KEY must decode to 32 bytes',
-      );
+      throw new InternalServerErrorException('ENCRYPTION_KEY must decode to 32 bytes');
     }
   }
 
@@ -30,18 +28,11 @@ export class SecurityService {
 
     const cipher = createCipheriv(this.algorithm, this.key, iv);
 
-    const encrypted = Buffer.concat([
-      cipher.update(value, 'utf8'),
-      cipher.final(),
-    ]);
+    const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
 
     const authTag = cipher.getAuthTag();
 
-    return [
-      iv.toString('base64'),
-      authTag.toString('base64'),
-      encrypted.toString('base64'),
-    ].join(':');
+    return [iv.toString('base64'), authTag.toString('base64'), encrypted.toString('base64')].join(':');
   }
 
   decrypt(encryptedValue: string): string {
@@ -65,10 +56,7 @@ export class SecurityService {
 
     decipher.setAuthTag(authTag);
 
-    const decrypted = Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]);
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
 
     return decrypted.toString('utf8');
   }

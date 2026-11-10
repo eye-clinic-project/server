@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Types } from 'mongoose';
@@ -29,18 +23,10 @@ export class TokenService {
     private readonly redis: CacheService,
     private readonly userRepository: UserRepository,
   ) {
-    this.accessTokenExpiresIn = Number(
-      this.configService.getOrThrow<string>('ACCESS_TOKEN_EXPIRES_IN'),
-    );
-    this.refreshTokenExpiresIn = Number(
-      this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN'),
-    );
-    this.accessUserTokenSignature = this.configService.getOrThrow<string>(
-      'ACCESS_USER_TOKEN_SIGNATURE',
-    );
-    this.refreshUserTokenSignature = this.configService.getOrThrow<string>(
-      'REFRESH_USER_TOKEN_SIGNATURE',
-    );
+    this.accessTokenExpiresIn = Number(this.configService.getOrThrow<string>('ACCESS_TOKEN_EXPIRES_IN'));
+    this.refreshTokenExpiresIn = Number(this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN'));
+    this.accessUserTokenSignature = this.configService.getOrThrow<string>('ACCESS_USER_TOKEN_SIGNATURE');
+    this.refreshUserTokenSignature = this.configService.getOrThrow<string>('REFRESH_USER_TOKEN_SIGNATURE');
 
     if (
       !Number.isSafeInteger(this.accessTokenExpiresIn) ||
@@ -61,41 +47,19 @@ export class TokenService {
     return token;
   }
 
-  async sign({
-    payload,
-    secret = this.accessUserTokenSignature,
-    options,
-  }: {
-    payload: object;
-    secret?: string;
-    options?: JwtSignOptions;
-  }): Promise<string> {
+  async sign({ payload, secret = this.accessUserTokenSignature, options }: { payload: object; secret?: string; options?: JwtSignOptions }): Promise<string> {
     return this.jwtService.signAsync(payload, { ...options, secret });
   }
 
-  async verify({
-    token,
-    secret = this.accessUserTokenSignature,
-  }: {
-    token: string;
-    secret?: string;
-  }): Promise<JwtPayload> {
+  async verify({ token, secret = this.accessUserTokenSignature }: { token: string; secret?: string }): Promise<JwtPayload> {
     return this.jwtService.verifyAsync<JwtPayload>(token, { secret });
   }
 
   getSignature(tokenType: TokenEnum): string {
-    return tokenType === TokenEnum.REFRESH
-      ? this.refreshUserTokenSignature
-      : this.accessUserTokenSignature;
+    return tokenType === TokenEnum.REFRESH ? this.refreshUserTokenSignature : this.accessUserTokenSignature;
   }
 
-  async decodeToken({
-    token,
-    tokenType = TokenEnum.ACCESS,
-  }: {
-    token: string;
-    tokenType?: TokenEnum;
-  }): Promise<{ user: HUserDocument; decoded: JwtPayload }> {
+  async decodeToken({ token, tokenType = TokenEnum.ACCESS }: { token: string; tokenType?: TokenEnum }): Promise<{ user: HUserDocument; decoded: JwtPayload }> {
     const rawDecoded = this.jwtService.decode(token);
 
     if (!rawDecoded || typeof rawDecoded !== 'object') {
@@ -109,13 +73,9 @@ export class TokenService {
 
     const [claimedTokenType, claimedRole] = decoded.aud;
     if (claimedTokenType !== tokenType) {
-      throw new BadRequestException(
-        `Invalid token type. Only ${tokenType} is allowed`,
-      );
+      throw new BadRequestException(`Invalid token type. Only ${tokenType} is allowed`);
     }
-    if (
-      !Object.values(SystemRoleEnum).includes(claimedRole as SystemRoleEnum)
-    ) {
+    if (!Object.values(SystemRoleEnum).includes(claimedRole as SystemRoleEnum)) {
       throw new BadRequestException('Invalid token role');
     }
 
@@ -134,14 +94,12 @@ export class TokenService {
     const activeTokenType = await this.redis.getCache<TokenEnum>({
       key: RedisKeys.userToken(verifiedData.sub, verifiedData.jti),
     });
-    
+
     if (activeTokenType !== tokenType) {
       throw new UnauthorizedException('Invalid login session');
     }
 
-    const user = await this.userRepository.findHydratedById(
-      new Types.ObjectId(verifiedData.sub),
-    );
+    const user = await this.userRepository.findHydratedById(new Types.ObjectId(verifiedData.sub));
 
     if (!user) {
       throw new NotFoundException('Account not found');
@@ -154,7 +112,7 @@ export class TokenService {
     return { user, decoded: verifiedData };
   }
 
-  async createLoginCredentials(user: Pick<User, 'role'> & { _id: Types.ObjectId },issuer: string,): Promise<{ access_token: string; refresh_token: string }> {
+  async createLoginCredentials(user: Pick<User, 'role'> & { _id: Types.ObjectId }, issuer: string): Promise<{ access_token: string; refresh_token: string }> {
     const subject = user._id.toString();
     const accessJti = randomUUID();
     const refreshJti = randomUUID();
@@ -207,22 +165,13 @@ export class TokenService {
     });
   }
 
-  async revokeToken(
-    userId: Types.ObjectId | string,
-    tokenId: string,
-  ): Promise<number> {
+  async revokeToken(userId: Types.ObjectId | string, tokenId: string): Promise<number> {
     return this.redis.deleteCache({
       key: RedisKeys.userToken(userId.toString(), tokenId),
     });
   }
 
-  async rotateRefreshToken({
-    token,
-    issuer,
-  }: {
-    token: string;
-    issuer: string;
-  }): Promise<{ access_token: string; refresh_token: string }> {
+  async rotateRefreshToken({ token, issuer }: { token: string; issuer: string }): Promise<{ access_token: string; refresh_token: string }> {
     const { user, decoded } = await this.decodeToken({
       token,
       tokenType: TokenEnum.REFRESH,
@@ -237,18 +186,14 @@ export class TokenService {
       throw new UnauthorizedException('Refresh token expired');
     }
     if (ttl > 5 * 60) {
-      throw new ConflictException(
-        'Refresh token can only be renewed within 5 minutes of expiry',
-      );
+      throw new ConflictException('Refresh token can only be renewed within 5 minutes of expiry');
     }
 
     const activeTokenType = await this.redis.getAndDelete<TokenEnum>({
       key: RedisKeys.userToken(decoded.sub, decoded.jti),
     });
     if (activeTokenType !== TokenEnum.REFRESH) {
-      throw new UnauthorizedException(
-        'Refresh token already used or no longer active',
-      );
+      throw new UnauthorizedException('Refresh token already used or no longer active');
     }
 
     return this.createLoginCredentials(user, issuer);

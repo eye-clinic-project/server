@@ -1,12 +1,5 @@
 import { Logger } from '@nestjs/common';
-import {
-  ConnectedSocket,
-  MessageBody,
-  OnGatewayConnection,
-  OnGatewayInit,
-  SubscribeMessage,
-  WebSocketGateway,
-} from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Types } from 'mongoose';
 import type { Server } from 'socket.io';
 import type { IAuthSocket } from '../../dependency/interface/ctx.interface.js';
@@ -17,11 +10,9 @@ import { TokenEnum } from '../../dependency/enum/security.enum.js';
 import { ConversationService } from './conversation.service.js';
 import { Localize } from '../../dependency/language/localize.js';
 
-
 type Ack<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 
-const isObjectId = (value: unknown): value is string =>
-  typeof value === 'string' && /^[a-f\d]{24}$/i.test(value);
+const isObjectId = (value: unknown): value is string => typeof value === 'string' && /^[a-f\d]{24}$/i.test(value);
 
 /**
  * Socket.IO gateway (FR6.1). Connect with `auth: { token: "<access token>" }`.

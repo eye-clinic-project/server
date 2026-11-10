@@ -8,7 +8,7 @@ import { AnalysisRepository } from '../../database/repository/analysis.repositor
 import { AppointmentRepository } from '../../database/repository/appointment.repository.js';
 import { ReportRepository } from '../../database/repository/report.repository.js';
 import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
-import { AnalysisStatus, AppointmentStatus, AssignmentStatus, ReportStatus } from '../../dependency/enum/database.enum.js';
+import { AnalysisStatus, AppointmentStatus, AssignmentStatus, DoctorVerificationStatus, ReportStatus } from '../../dependency/enum/database.enum.js';
 import { ProfileService, isDuplicateKeyError } from '../../dependency/service/profile.service.js';
 import { escapeRegex } from '../../dependency/service/util.service.js';
 import { presentAnalysis, presentUser } from '../../dependency/presenter.js';
@@ -47,12 +47,28 @@ export class DoctorsService {
     const existing = await this.doctors.findOne({ filter: { user: user._id } });
     try {
       if (!existing) {
-        if (!dto.clinicName || !dto.clinicAddress) {
-          throw new BadRequestException('clinicName and clinicAddress are required to complete your profile');
+        if (!dto.clinicName || !dto.clinicAddress || !dto.licenseNumber) {
+          throw new BadRequestException('clinicName, clinicAddress and licenseNumber are required to complete your profile');
         }
         await this.profiles.createDoctorProfile(user._id, { ...dto, clinicName: dto.clinicName, clinicAddress: dto.clinicAddress });
       } else {
-        await this.doctors.updateOne({ filter: { _id: existing._id }, update: { $set: dto } });
+        // A new license number, or resending it after a rejection, sends the profile back to admin review.
+        const status = existing.verificationStatus ?? DoctorVerificationStatus.PENDING;
+        const resubmit = dto.licenseNumber !== undefined && (dto.licenseNumber !== existing.licenseNumber || status === DoctorVerificationStatus.REJECTED);
+        if (resubmit && !dto.licenseNumber) {
+          throw new BadRequestException('licenseNumber cannot be empty');
+        }
+        const review = resubmit
+          ? {
+              verificationStatus: DoctorVerificationStatus.PENDING,
+              verificationSubmittedAt: new Date(),
+              verifiedAt: null,
+              verifiedBy: null,
+              rejectionReason: null,
+            }
+          : {};
+        await this.doctors.updateOne({ filter: { _id: existing._id }, update: { $set: { ...dto, ...review } } });
+        if (resubmit) await this.profiles.notifyAdminsOfLicenseReview(user._id);
       }
     } catch (error) {
       if (isDuplicateKeyError(error)) throw new ConflictException('This license number is already registered');
@@ -69,14 +85,15 @@ export class DoctorsService {
     };
     if (query.search) userFilter.name = { $regex: escapeRegex(query.search), $options: 'i' };
     if (query.city) userFilter.city = { $regex: `^${escapeRegex(query.city)}$`, $options: 'i' };
-    if (query.specialty) {
-      const matching = await this.doctors.find({
-        filter: { specialty: { $regex: escapeRegex(query.specialty), $options: 'i' } },
-        projection: { user: 1 },
-        options: { lean: true },
-      });
-      userFilter._id = { $in: matching.map((d: any) => d.user) };
-    }
+    // Patients only see doctors whose license an admin has approved.
+    const doctorFilter: Record<string, any> = { verificationStatus: DoctorVerificationStatus.APPROVED };
+    if (query.specialty) doctorFilter.specialty = { $regex: escapeRegex(query.specialty), $options: 'i' };
+    const matching = await this.doctors.find({
+      filter: doctorFilter,
+      projection: { user: 1 },
+      options: { lean: true },
+    });
+    userFilter._id = { $in: matching.map((d: any) => d.user) };
     const page = await this.users.paginate({
       filter: userFilter,
       options: { sort: { name: 1 }, lean: true },
@@ -105,24 +122,27 @@ export class DoctorsService {
     const endOfDay = new Date(startOfDay.getTime() + 24 * 3600 * 1000);
     const patientIds = await this.assignments.activePatientIds(doctor._id);
 
-    const [pendingRequests, analysesTotal, referable, failed, todayAppointments, pendingAppointments, draftReports, recent] =
-      await Promise.all([
-        this.assignments.typedModel.countDocuments({ doctor: doctor._id, status: AssignmentStatus.PENDING }),
-        this.analyses.typedModel.countDocuments({ doctor: doctor._id }),
-        this.analyses.typedModel.countDocuments({ doctor: doctor._id, status: AnalysisStatus.COMPLETED, predictedLevel: { $gte: 2 } }),
-        this.analyses.typedModel.countDocuments({ doctor: doctor._id, status: AnalysisStatus.FAILED }),
-        this.appointments.find({
-          filter: { doctor: doctor._id, scheduledAt: { $gte: startOfDay, $lt: endOfDay }, status: { $in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED] } },
-          options: { sort: { scheduledAt: 1 }, populate: [{ path: 'patient' }], lean: true },
-        }),
-        this.appointments.typedModel.countDocuments({ doctor: doctor._id, status: AppointmentStatus.PENDING, scheduledAt: { $gte: now } }),
-        this.reports.typedModel.countDocuments({ doctor: doctor._id, status: ReportStatus.DRAFT }),
-        this.analyses.find({
-          filter: { doctor: doctor._id },
-          projection: { history: 0 },
-          options: { sort: { createdAt: -1 }, limit: 5, populate: [{ path: 'patient' }], lean: true },
-        }),
-      ]);
+    const [pendingRequests, analysesTotal, referable, failed, todayAppointments, pendingAppointments, draftReports, recent] = await Promise.all([
+      this.assignments.typedModel.countDocuments({ doctor: doctor._id, status: AssignmentStatus.PENDING }),
+      this.analyses.typedModel.countDocuments({ doctor: doctor._id }),
+      this.analyses.typedModel.countDocuments({ doctor: doctor._id, status: AnalysisStatus.COMPLETED, predictedLevel: { $gte: 2 } }),
+      this.analyses.typedModel.countDocuments({ doctor: doctor._id, status: AnalysisStatus.FAILED }),
+      this.appointments.find({
+        filter: {
+          doctor: doctor._id,
+          scheduledAt: { $gte: startOfDay, $lt: endOfDay },
+          status: { $in: [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED] },
+        },
+        options: { sort: { scheduledAt: 1 }, populate: [{ path: 'patient' }], lean: true },
+      }),
+      this.appointments.typedModel.countDocuments({ doctor: doctor._id, status: AppointmentStatus.PENDING, scheduledAt: { $gte: now } }),
+      this.reports.typedModel.countDocuments({ doctor: doctor._id, status: ReportStatus.DRAFT }),
+      this.analyses.find({
+        filter: { doctor: doctor._id },
+        projection: { history: 0 },
+        options: { sort: { createdAt: -1 }, limit: 5, populate: [{ path: 'patient' }], lean: true },
+      }),
+    ]);
 
     return {
       patients: patientIds.length,

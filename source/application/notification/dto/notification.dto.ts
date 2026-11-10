@@ -5,7 +5,7 @@ import { NotificationType } from '../../../dependency/enum/database.enum.js';
 
 export class NotificationQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @Transform(({ value }) => value === undefined ? undefined : value === true || value === 'true')
+  @Transform(({ value }) => (value === undefined ? undefined : value === true || value === 'true'))
   @IsBoolean()
   unread?: boolean;
 

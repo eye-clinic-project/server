@@ -1,17 +1,10 @@
-import {
-  Injectable,
-  Logger,
-  ServiceUnavailableException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 
 export interface AiPrediction {
-  /** Stage-1: DR vs No DR. */
   hasDR: boolean;
   stage1Confidence: number;
-  /** Stage-2: 0..4 (No DR, Mild, Moderate, Severe, Proliferative). */
   predictedLevel: number;
   confidence: number;
   probabilities: number[];
@@ -20,25 +13,8 @@ export interface AiPrediction {
   isMock: boolean;
 }
 
-/** Thrown when the AI service says the picture is not a usable fundus image (NFR6). */
 export class InvalidFundusImageError extends UnprocessableEntityException {}
 
-/**
- * Client for the FastAPI AI module (NFR15: the AI runs as its own service).
- *
- * Expected remote contract (AI_MODE=remote):
- *   POST {AI_SERVICE_URL}/predict   multipart/form-data, field "file" (JPEG/PNG)
- *   200 {
- *     "stage1": { "has_dr": bool, "confidence": 0..1 },
- *     "stage2": { "level": 0..4, "confidence": 0..1, "probabilities": [5 floats] } | null,
- *     "grad_cam_png_base64": "<base64 png>" | null,
- *     "model_version": "effnet-b3-ensemble-v4"
- *   }
- *   422 { "detail": "Not a fundus image" }   -> rejected input
- *   GET  {AI_SERVICE_URL}/health  -> 200 when the model is loaded
- *   GET  {AI_SERVICE_URL}/model-info -> any JSON
- * Preprocessing (resize, crop, CLAHE), TTA and Grad-CAM all happen inside the AI service.
- */
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
@@ -102,9 +78,7 @@ export class AiService {
       case 'remote':
         return this.remotePredict(image, mimeType);
       default:
-        throw new ServiceUnavailableException(
-          'AI detection service is not available yet. Please retry later.',
-        );
+        throw new ServiceUnavailableException('AI detection service is not available yet. Please retry later.');
     }
   }
 
@@ -113,13 +87,10 @@ export class AiService {
       throw new ServiceUnavailableException('AI_SERVICE_URL is not configured');
     }
     const form = new FormData();
-    form.append(
-      'file',
-      new Blob([new Uint8Array(image)], { type: mimeType }),
-      mimeType === 'image/png' ? 'fundus.png' : 'fundus.jpg',
-    );
+    form.append('file', new Blob([new Uint8Array(image)], { type: mimeType }), mimeType === 'image/png' ? 'fundus.png' : 'fundus.jpg');
 
     let response: Response;
+
     try {
       response = await fetch(`${this.baseUrl}/predict`, {
         method: 'POST',
@@ -133,15 +104,12 @@ export class AiService {
 
     const body = (await response.json().catch(() => ({}))) as Record<string, any>;
     if (response.status === 422 || response.status === 400) {
-      throw new InvalidFundusImageError(
-        typeof body.detail === 'string' ? body.detail : 'The image is not a valid fundus image',
-      );
+      throw new InvalidFundusImageError(typeof body.detail === 'string' ? body.detail : 'The image is not a valid fundus image');
     }
     if (!response.ok) {
       this.logger.error(`AI service responded ${response.status}`);
       throw new ServiceUnavailableException('AI service failed to analyse the image');
     }
-
     const stage1 = body.stage1 ?? {};
     const stage2 = body.stage2 ?? null;
     const hasDR = Boolean(stage1.has_dr);
@@ -155,15 +123,12 @@ export class AiService {
       predictedLevel: level,
       confidence: Number(stage2?.confidence ?? stage1.confidence ?? 0),
       probabilities: Array.isArray(stage2?.probabilities) ? stage2.probabilities.map(Number) : [],
-      gradCam: body.grad_cam_png_base64
-        ? { data: Buffer.from(body.grad_cam_png_base64, 'base64'), mimeType: 'image/png' }
-        : null,
+      gradCam: body.grad_cam_png_base64 ? { data: Buffer.from(body.grad_cam_png_base64, 'base64'), mimeType: 'image/png' } : null,
       modelVersion: String(body.model_version ?? 'unknown'),
       isMock: false,
     };
   }
 
-  /** Deterministic fake output for UI demos. Never use for clinical decisions. */
   private mockPredict(image: Buffer): AiPrediction {
     const digest = createHash('sha256').update(image).digest();
     const level = digest[0] % 5;

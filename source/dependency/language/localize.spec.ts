@@ -3,9 +3,7 @@ import { Localize } from './localize.js';
 
 describe('Localize', () => {
   const i18n = {
-    translate: vi.fn((key: string, options?: { args?: Record<string, unknown> }) =>
-      `${key}${options?.args ? ' ' + JSON.stringify(options.args) : ''}`,
-    ),
+    translate: vi.fn((key: string, options?: { args?: Record<string, unknown> }) => `${key}${options?.args ? ' ' + JSON.stringify(options.args) : ''}`),
   } as unknown as I18nService;
   const localize = new Localize(i18n);
   localize.onModuleInit();
@@ -18,9 +16,7 @@ describe('Localize', () => {
     expect(localize.translate('Cannot change a cancelled appointment to confirmed')).toBe(
       'errors.appointments.cannotTransition {"status":"cancelled","to":"confirmed"}',
     );
-    expect(localize.translate('Image is too large. The maximum size is 10 MB')).toBe(
-      'errors.images.tooLarge {"size":"10"}',
-    );
+    expect(localize.translate('Image is too large. The maximum size is 10 MB')).toBe('errors.images.tooLarge {"size":"10"}');
   });
 
   it('leaves unknown messages unchanged', () => {

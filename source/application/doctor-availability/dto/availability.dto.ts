@@ -51,7 +51,7 @@ export class AvailabilityQueryDto {
 
   /** Only free slots (default true). */
   @IsOptional()
-  @Transform(({ value }) => value === undefined ? undefined : value === true || value === 'true')
+  @Transform(({ value }) => (value === undefined ? undefined : value === true || value === 'true'))
   @IsBoolean()
   onlyAvailable?: boolean;
 }

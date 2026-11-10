@@ -1,3 +1,4 @@
+import { AllowPendingDoctor } from '../../dependency/decorator/doctor-approval.decorator.js';
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
@@ -25,9 +26,10 @@ export class DoctorsController {
 
   @Get('me')
   @Auth([SystemRoleEnum.DOCTOR])
+  @AllowPendingDoctor()
   @ApiOperation({
-    summary: "Get my doctor profile",
-    description: "Doctor only. Account plus clinic profile.",
+    summary: 'Get my doctor profile',
+    description: 'Doctor only. Account plus clinic profile.',
   })
   me(@User() user: HUserDocument) {
     return this.doctorsService.getById(user._id);
@@ -35,9 +37,11 @@ export class DoctorsController {
 
   @Patch('me')
   @Auth([SystemRoleEnum.DOCTOR])
+  @AllowPendingDoctor()
   @ApiOperation({
-    summary: "Update my doctor profile",
-    description: "Doctor only. Edits clinic name, address, specialty, license number, bio and experience. The first save creates the profile (clinicName and clinicAddress required), for example after Google sign-up.",
+    summary: 'Update my doctor profile',
+    description:
+      'Doctor only. Edits clinic name, address, specialty, license number, bio and experience. The first save creates the profile (clinicName and clinicAddress required), for example after Google sign-up.',
   })
   update(@User() user: HUserDocument, @Body() dto: UpdateDoctorDto) {
     return this.doctorsService.updateMe(user, dto);
@@ -46,8 +50,9 @@ export class DoctorsController {
   @Get('me/dashboard')
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
-    summary: "Doctor dashboard summary",
-    description: "Doctor only. Counts of patients, pending patient requests, analyses, referable cases (Moderate and above), failed analyses, pending appointments and draft reports, plus today's appointments and the 5 latest analyses.",
+    summary: 'Doctor dashboard summary',
+    description:
+      "Doctor only. Counts of patients, pending patient requests, analyses, referable cases (Moderate and above), failed analyses, pending appointments and draft reports, plus today's appointments and the 5 latest analyses.",
   })
   dashboard(@User() user: HUserDocument) {
     return this.doctorsService.dashboard(user);
@@ -57,8 +62,9 @@ export class DoctorsController {
   @Get()
   @Auth()
   @ApiOperation({
-    summary: "Search doctors",
-    description: "Any signed-in user. Lists active, verified doctors with their profile. Filter by `search` (name), `city` and `specialty`. Paginated with page and size.",
+    summary: 'Search doctors',
+    description:
+      'Any signed-in user. Lists active, verified doctors with their profile. Filter by `search` (name), `city` and `specialty`. Paginated with page and size.',
   })
   search(@Query() query: DoctorSearchQueryDto) {
     return this.doctorsService.search(query);
@@ -67,8 +73,8 @@ export class DoctorsController {
   @Get(':doctorId')
   @Auth()
   @ApiOperation({
-    summary: "Get a doctor",
-    description: "Any signed-in user. Public doctor profile used when choosing or booking a doctor.",
+    summary: 'Get a doctor',
+    description: 'Any signed-in user. Public doctor profile used when choosing or booking a doctor.',
   })
   findOne(@Param('doctorId', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.doctorsService.getById(id);
@@ -78,13 +84,10 @@ export class DoctorsController {
   @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
   @ApiOperation({
     summary: "List a doctor's patients",
-    description: "The doctor themself or an admin. Actively assigned patients with their profile and latest completed result. `search` matches name, email, patient ID (P-XXXXXX) or user id (FR2.2). Returns message \"No patients found\" when empty.",
+    description:
+      'The doctor themself or an admin. Actively assigned patients with their profile and latest completed result. `search` matches name, email, patient ID (P-XXXXXX) or user id (FR2.2). Returns message "No patients found" when empty.',
   })
-  patients(
-    @User() user: HUserDocument,
-    @Param('doctorId', ParseObjectIdPipe) id: Types.ObjectId,
-    @Query() query: PatientSearchQueryDto,
-  ) {
+  patients(@User() user: HUserDocument, @Param('doctorId', ParseObjectIdPipe) id: Types.ObjectId, @Query() query: PatientSearchQueryDto) {
     this.doctorsService.assertSelfOrAdmin(user, id);
     return this.patientService.search(user, query, id);
   }
@@ -93,13 +96,9 @@ export class DoctorsController {
   @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
   @ApiOperation({
     summary: "List a doctor's appointments",
-    description: "The doctor themself or an admin. Filter by status and date range (from, to).",
+    description: 'The doctor themself or an admin. Filter by status and date range (from, to).',
   })
-  appointments(
-    @User() user: HUserDocument,
-    @Param('doctorId', ParseObjectIdPipe) id: Types.ObjectId,
-    @Query() query: AppointmentQueryDto,
-  ) {
+  appointments(@User() user: HUserDocument, @Param('doctorId', ParseObjectIdPipe) id: Types.ObjectId, @Query() query: AppointmentQueryDto) {
     this.doctorsService.assertSelfOrAdmin(user, id);
     return this.appointmentService.list(user, { ...query, doctorId: id.toString() });
   }

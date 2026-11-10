@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -42,10 +37,7 @@ export class LoggingInterceptor implements NestInterceptor {
         const data = wsContext.getData();
 
         method = 'WS';
-        url =
-          typeof data?.event === 'string'
-            ? data.event
-            : context.getHandler().name;
+        url = typeof data?.event === 'string' ? data.event : context.getHandler().name;
         break;
       }
 
@@ -59,14 +51,10 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         next: () => {
-          this.logger.log(
-            `Completed: ${method} ${url} - ${Date.now() - startedAt}ms`,
-          );
+          this.logger.log(`Completed: ${method} ${url} - ${Date.now() - startedAt}ms`);
         },
         error: () => {
-          this.logger.error(
-            `Failed: ${method} ${url} - ${Date.now() - startedAt}ms`,
-          );
+          this.logger.error(`Failed: ${method} ${url} - ${Date.now() - startedAt}ms`);
         },
       }),
     );

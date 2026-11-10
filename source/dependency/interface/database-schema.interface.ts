@@ -1,16 +1,12 @@
 import type { Types } from 'mongoose';
-import type {
-  AuthProviderEnum,
-  SystemRoleEnum,
-} from '../enum/security.enum.js';
+import type { AuthProviderEnum, SystemRoleEnum } from '../enum/security.enum.js';
 import type {
   AnalysisStatus,
   AppointmentStatus,
   AssignmentStatus,
-  CaptureSessionStatus,
   DRLevel,
-  DeviceStatus,
   DiabetesType,
+  DoctorVerificationStatus,
   EyeSide,
   ImageSource,
   NotificationType,
@@ -49,6 +45,11 @@ export interface IDoctor extends Timestamps {
   licenseNumber?: string;
   bio?: string;
   yearsOfExperience?: number;
+  verificationStatus?: DoctorVerificationStatus;
+  verificationSubmittedAt?: Date | null;
+  verifiedAt?: Date | null;
+  verifiedBy?: Types.ObjectId | null;
+  rejectionReason?: string | null;
 }
 
 export interface IPatient extends Timestamps {
@@ -111,8 +112,6 @@ export interface IFundusImage extends Timestamps {
   originalName?: string;
   notes?: string;
   capturedAt?: Date;
-  device?: Types.ObjectId | null;
-  captureSession?: Types.ObjectId | null;
 }
 
 export interface IAnalysisHistoryEntry {
@@ -201,31 +200,4 @@ export interface IReport extends Timestamps {
   status: ReportStatus;
   sentAt?: Date | null;
   viewedAt?: Date | null;
-}
-
-export interface IDevice extends Timestamps {
-  _id?: Types.ObjectId;
-  name: string;
-  serialNumber: string;
-  model?: string;
-  location?: string;
-  owner: Types.ObjectId;
-  apiKeyHash: string;
-  apiKeyPrefix: string;
-  status: DeviceStatus;
-  lastSeenAt?: Date | null;
-}
-
-export interface ICaptureSession extends Timestamps {
-  _id?: Types.ObjectId;
-  device: Types.ObjectId;
-  doctor: Types.ObjectId;
-  patient: Types.ObjectId;
-  eye: EyeSide;
-  status: CaptureSessionStatus;
-  image?: Types.ObjectId | null;
-  analysis?: Types.ObjectId | null;
-  autoAnalyze: boolean;
-  error?: string | null;
-  expiresAt: Date;
 }

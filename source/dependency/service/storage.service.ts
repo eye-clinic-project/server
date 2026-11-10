@@ -6,12 +6,6 @@ import { isAbsolute, join, resolve, sep } from 'node:path';
 import { SecurityService } from './security.service.js';
 import { SignedUrl } from '../presenter.js';
 
-/**
- * Private file storage for medical images (NFR9).
- * Files are encrypted at rest and never exposed under a public URL: they are read back
- * only through authorised endpoints (e.g. GET /fundus-images/:id/file).
- * Swap this class for an S3/@nestjs/storage implementation in production.
- */
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
@@ -22,9 +16,8 @@ export class StorageService {
     private readonly security: SecurityService,
   ) {
     const directory = config.get<string>('storage.directory', 'storage');
-    this.root = isAbsolute(directory)
-      ? directory
-      : resolve(process.cwd(), directory);
+    this.root = isAbsolute(directory) ? directory : resolve(process.cwd(), directory);
+
     SignedUrl.configure(
       createHash('sha256')
         .update(`signed-url:${config.getOrThrow<string>('encryption.key')}`)
@@ -46,12 +39,7 @@ export class StorageService {
 
   async save(folder: string, data: Buffer, extension: string): Promise<string> {
     const now = new Date();
-    const key = join(
-      folder,
-      String(now.getUTCFullYear()),
-      String(now.getUTCMonth() + 1).padStart(2, '0'),
-      `${randomUUID()}.${extension}.enc`,
-    );
+    const key = join(folder, String(now.getUTCFullYear()), String(now.getUTCMonth() + 1).padStart(2, '0'), `${randomUUID()}.${extension}.enc`);
     const path = this.pathFor(key);
     await mkdir(resolve(path, '..'), { recursive: true });
     await writeFile(path, this.security.encryptBuffer(data), { mode: 0o600 });
@@ -73,5 +61,4 @@ export class StorageService {
   }
 }
 
-export const extensionForMime = (mime: string): string =>
-  mime === 'image/png' ? 'png' : 'jpg';
+export const extensionForMime = (mime: string): string => (mime === 'image/png' ? 'png' : 'jpg');

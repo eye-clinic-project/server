@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { HUserDocument } from '../../database/model/user.model.js';
 import { DoctorPatientRepository } from '../../database/repository/doctor-patient.repository.js';
@@ -38,11 +33,7 @@ export class DoctorPatientService {
   }
 
   private async findUser(id: string | undefined, email: string | undefined, role: SystemRoleEnum) {
-    const user = id
-      ? await this.users.findById({ _id: id })
-      : email
-        ? await this.users.findByEmailWithoutPassword(email)
-        : null;
+    const user = id ? await this.users.findById({ _id: id }) : email ? await this.users.findByEmailWithoutPassword(email) : null;
     if (!user || user.role !== role) {
       throw new NotFoundException(role === SystemRoleEnum.PATIENT ? 'Patient not found' : 'Doctor not found');
     }
@@ -76,10 +67,7 @@ export class DoctorPatientService {
       return this.findOne(actor, existing._id);
     }
     // A patient re-requesting a pending link changes nothing; a doctor accepting a pending request activates it.
-    const nextStatus =
-      existing?.status === AssignmentStatus.PENDING && actor.role === SystemRoleEnum.PATIENT
-        ? AssignmentStatus.PENDING
-        : status;
+    const nextStatus = existing?.status === AssignmentStatus.PENDING && actor.role === SystemRoleEnum.PATIENT ? AssignmentStatus.PENDING : status;
 
     const row = await this.assignments.findOneAndUpdate({
       filter: { doctor: doctor._id, patient: patient._id },

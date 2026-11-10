@@ -1,8 +1,7 @@
 import { ServiceUnavailableException } from '@nestjs/common';
 import { AiService } from './ai.service.js';
 
-const service = (mode: string) =>
-  new AiService({ get: (key: string, fallback?: unknown) => (key === 'ai.mode' ? mode : fallback) } as any);
+const service = (mode: string) => new AiService({ get: (key: string, fallback?: unknown) => (key === 'ai.mode' ? mode : fallback) } as any);
 
 describe('AiService', () => {
   it('disabled mode fails with a retryable 503', async () => {

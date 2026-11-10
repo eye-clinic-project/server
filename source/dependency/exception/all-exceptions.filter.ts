@@ -28,13 +28,8 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
                       : body.message,
                 }
               : {}),
-            ...('error' in body && typeof body.error === 'string'
-              ? { error: Localize.text(body.error) }
-              : {}),
+            ...('error' in body && typeof body.error === 'string' ? { error: Localize.text(body.error) } : {}),
           };
-    return super.catch(
-      new HttpException(translated, exception.getStatus(), { cause: exception }),
-      host,
-    );
+    return super.catch(new HttpException(translated, exception.getStatus(), { cause: exception }), host);
   }
 }

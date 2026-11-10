@@ -10,9 +10,7 @@ export class SlowRequestMiddleware implements NestMiddleware {
       const duration = performance.now() - start;
 
       if (duration > 1000) {
-        console.warn(
-          `SLOW REQUEST: ${req.method} ${req.url} - ${duration.toFixed(2)}ms`,
-        );
+        console.warn(`SLOW REQUEST: ${req.method} ${req.url} - ${duration.toFixed(2)}ms`);
       }
     });
 

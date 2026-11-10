@@ -19,47 +19,17 @@ import {
 export abstract class DatabaseRepository<T> {
   constructor(protected readonly model: Model<T>) {}
 
-  async create({
-    data,
-    options,
-  }: {
-    data: Partial<T>;
-    options?: CreateOptions;
-  }): Promise<HydratedDocument<T>> {
+  async create({ data, options }: { data: Partial<T>; options?: CreateOptions }): Promise<HydratedDocument<T>> {
     return (await new this.model(data).save(options)) as HydratedDocument<T>;
   }
 
-  async createMany({
-    data,
-    options,
-  }: {
-    data: Partial<T>[];
-    options?: InsertManyOptions;
-  }) {
-    return options
-      ? this.model.insertMany(data, options)
-      : this.model.insertMany(data);
+  async createMany({ data, options }: { data: Partial<T>[]; options?: InsertManyOptions }) {
+    return options ? this.model.insertMany(data, options) : this.model.insertMany(data);
   }
 
-  findById(args: {
-    _id: Types.ObjectId | string;
-    projection?: ProjectionType<T>;
-    options: QueryOptions<T> & { lean: true };
-  }): Promise<any>;
-  findById(args: {
-    _id: Types.ObjectId | string;
-    projection?: ProjectionType<T>;
-    options?: QueryOptions<T>;
-  }): Promise<HydratedDocument<T> | null>;
-  async findById({
-    _id,
-    projection,
-    options,
-  }: {
-    _id: Types.ObjectId | string;
-    projection?: ProjectionType<T>;
-    options?: QueryOptions<T>;
-  }) {
+  findById(args: { _id: Types.ObjectId | string; projection?: ProjectionType<T>; options: QueryOptions<T> & { lean: true } }): Promise<any>;
+  findById(args: { _id: Types.ObjectId | string; projection?: ProjectionType<T>; options?: QueryOptions<T> }): Promise<HydratedDocument<T> | null>;
+  async findById({ _id, projection, options }: { _id: Types.ObjectId | string; projection?: ProjectionType<T>; options?: QueryOptions<T> }) {
     const query = this.model.findById(_id, projection);
 
     if (options?.populate) {
@@ -73,25 +43,9 @@ export abstract class DatabaseRepository<T> {
     return query.exec();
   }
 
-  findOne(args: {
-    filter?: QueryFilter<T>;
-    projection?: ProjectionType<T>;
-    options: QueryOptions<T> & { lean: true };
-  }): Promise<any>;
-  findOne(args: {
-    filter?: QueryFilter<T>;
-    projection?: ProjectionType<T>;
-    options?: QueryOptions<T>;
-  }): Promise<HydratedDocument<T> | null>;
-  async findOne({
-    filter = {},
-    projection,
-    options,
-  }: {
-    filter?: QueryFilter<T>;
-    projection?: ProjectionType<T>;
-    options?: QueryOptions<T>;
-  }) {
+  findOne(args: { filter?: QueryFilter<T>; projection?: ProjectionType<T>; options: QueryOptions<T> & { lean: true } }): Promise<any>;
+  findOne(args: { filter?: QueryFilter<T>; projection?: ProjectionType<T>; options?: QueryOptions<T> }): Promise<HydratedDocument<T> | null>;
+  async findOne({ filter = {}, projection, options }: { filter?: QueryFilter<T>; projection?: ProjectionType<T>; options?: QueryOptions<T> }) {
     const query = this.model.findOne(filter, projection);
 
     if (options?.populate) {
@@ -109,25 +63,9 @@ export abstract class DatabaseRepository<T> {
     return query.exec();
   }
 
-  find(args: {
-    filter?: QueryFilter<T>;
-    projection?: ProjectionType<T>;
-    options: QueryOptions<T> & { lean: true };
-  }): Promise<any[]>;
-  find(args: {
-    filter?: QueryFilter<T>;
-    projection?: ProjectionType<T>;
-    options?: QueryOptions<T>;
-  }): Promise<HydratedDocument<T>[]>;
-  async find({
-    filter = {},
-    projection,
-    options = {},
-  }: {
-    filter?: QueryFilter<T>;
-    projection?: ProjectionType<T>;
-    options?: QueryOptions<T>;
-  }) {
+  find(args: { filter?: QueryFilter<T>; projection?: ProjectionType<T>; options: QueryOptions<T> & { lean: true } }): Promise<any[]>;
+  find(args: { filter?: QueryFilter<T>; projection?: ProjectionType<T>; options?: QueryOptions<T> }): Promise<HydratedDocument<T>[]>;
+  async find({ filter = {}, projection, options = {} }: { filter?: QueryFilter<T>; projection?: ProjectionType<T>; options?: QueryOptions<T> }) {
     const query = this.model.find(filter, projection);
 
     if (options.populate) {
@@ -266,15 +204,7 @@ export abstract class DatabaseRepository<T> {
       .exec();
   }
 
-  async findByIdAndUpdate({
-    _id,
-    update,
-    options = {},
-  }: {
-    _id: Types.ObjectId | string;
-    update: UpdateQuery<T>;
-    options?: QueryOptions<T>;
-  }) {
+  async findByIdAndUpdate({ _id, update, options = {} }: { _id: Types.ObjectId | string; update: UpdateQuery<T>; options?: QueryOptions<T> }) {
     return this.model
       .findByIdAndUpdate(
         _id,
@@ -294,19 +224,11 @@ export abstract class DatabaseRepository<T> {
       .exec();
   }
 
-  async deleteOne({
-    filter,
-  }: {
-    filter: QueryFilter<T>;
-  }): Promise<DeleteResult> {
+  async deleteOne({ filter }: { filter: QueryFilter<T> }): Promise<DeleteResult> {
     return this.model.deleteOne(filter).exec();
   }
 
-  async deleteMany({
-    filter,
-  }: {
-    filter: QueryFilter<T>;
-  }): Promise<DeleteResult> {
+  async deleteMany({ filter }: { filter: QueryFilter<T> }): Promise<DeleteResult> {
     return this.model.deleteMany(filter).exec();
   }
 

@@ -6,8 +6,7 @@ import { IAuthReq } from '../interface/ctx.interface.js';
 import { ConfigService } from '@nestjs/config';
 
 /** Escapes user input before using it inside a MongoDB $regex. */
-export const escapeRegex = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const MRN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -15,13 +14,9 @@ const MRN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export class UtilService {
   constructor(private readonly configService: ConfigService) {}
 
-  toObjectId = (id: string) => {
-    return Types.ObjectId.createFromHexString(id);
-  };
-  createNumberOtp = (): number => {
-    return randomInt(100_000, 1_000_000);
-  };
-  /** Short human-friendly patient ID, e.g. "P-7K3Q9D". */
+  toObjectId = (id: string) => Types.ObjectId.createFromHexString(id);
+  generateSlug = (value: string) => value.replaceAll(/\s+/g, '-');
+  createNumberOtp = (): number => randomInt(100_000, 1_000_000);
   createMedicalRecordNumber = (): string => {
     let id = '';
     for (let i = 0; i < 6; i++) {
@@ -29,21 +24,14 @@ export class UtilService {
     }
     return `P-${id}`;
   };
-  generateSlug = (value: string) => {
-    return value.replaceAll(/\s+/g, '-');
-  };
   getAuthSocket = (client: Socket): string | undefined => {
     const auth = client.handshake.auth as Record<string, unknown> | undefined;
     const fromAuth = auth?.authorization ?? auth?.token;
-    return (
-      (typeof fromAuth === 'string' ? fromAuth : undefined) ||
-      client.handshake.headers.authorization
-    );
+    return (typeof fromAuth === 'string' ? fromAuth : undefined) || client.handshake.headers.authorization;
   };
+
   frontendUrl(path = ''): string {
-    const base = this.configService
-      .get<string>('app.frontendUrl', 'http://localhost:3000')
-      .replace(/\/$/, '');
+    const base = this.configService.get<string>('app.frontendUrl', 'http://localhost:3000').replace(/\/$/, '');
     return `${base}${path}`;
   }
   issuer(request: IAuthReq): string {

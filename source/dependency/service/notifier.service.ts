@@ -43,17 +43,11 @@ export class NotifierService {
         read: false,
       },
     });
-    this.realtime.emitToUser(
-      input.recipient.toString(),
-      'notification',
-      notification.toJSON(),
-    );
+    this.realtime.emitToUser(input.recipient.toString(), 'notification', notification.toJSON());
 
     if (input.email) {
       // Sent immediately in the background so the API call is not delayed.
-      void this.sendEmail(notification._id, input).catch((error: Error) =>
-        this.logger.error(`Notification email failed: ${error.message}`),
-      );
+      void this.sendEmail(notification._id, input).catch((error: Error) => this.logger.error(`Notification email failed: ${error.message}`));
     }
     return notification;
   }
@@ -61,12 +55,7 @@ export class NotifierService {
   private async sendEmail(notificationId: Types.ObjectId, input: NotifyInput) {
     const user = await this.users.findById({ _id: input.recipient });
     if (!user || user.isActive === false) return;
-    await this.mail.sendNotification(
-      user.email,
-      user.name,
-      input.title,
-      this.util.frontendUrl('/login'),
-    );
+    await this.mail.sendNotification(user.email, user.name, input.title, this.util.frontendUrl('/login'));
     await this.notifications.updateOne({
       filter: { _id: notificationId },
       update: { $set: { emailedAt: new Date() } },

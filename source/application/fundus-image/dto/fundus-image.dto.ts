@@ -4,8 +4,7 @@ import { IsBoolean, IsDate, IsEnum, IsMongoId, IsOptional, IsString, MaxLength }
 import { EyeSide } from '../../../dependency/enum/database.enum.js';
 import { PaginationQueryDto } from '../../../dependency/dto/pagination.dto.js';
 
-const toBool = ({ value }: { value: unknown }) =>
-  value === undefined ? undefined : value === true || value === 'true' || value === '1';
+const toBool = ({ value }: { value: unknown }) => (value === undefined ? undefined : value === true || value === 'true' || value === '1');
 
 export class UploadFundusImageDto {
   @ApiProperty({ type: 'string', format: 'binary' })

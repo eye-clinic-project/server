@@ -24,6 +24,5 @@ export class DoctorAvailability {
   appointment?: Types.ObjectId | null;
 }
 
-export const DoctorAvailabilitySchema =
-  SchemaFactory.createForClass(DoctorAvailability);
+export const DoctorAvailabilitySchema = SchemaFactory.createForClass(DoctorAvailability);
 DoctorAvailabilitySchema.index({ doctor: 1, startAt: 1 }, { unique: true });

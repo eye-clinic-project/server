@@ -26,10 +26,7 @@ export class UserRepository extends DatabaseRepository<IUser> {
   }
 
   async findByEmail(email: string): Promise<HUserDocument | null> {
-    return this.userModel
-      .findOne({ email: email.toLowerCase().trim() })
-      .select('+passwordHash +googleId')
-      .exec();
+    return this.userModel.findOne({ email: email.toLowerCase().trim() }).select('+passwordHash +googleId').exec();
   }
 
   get rawModel(): Model<IUser> {
@@ -40,26 +37,12 @@ export class UserRepository extends DatabaseRepository<IUser> {
     return this.userModel.find({ role }).exec();
   }
 
-  updateUserProfile(
-    userId: Types.ObjectId,
-    profile: Partial<Pick<IUser, 'name' | 'city' | 'phone' | 'avatarUrl' | 'avatarKey' | 'lang'>>,
-  ) {
-    return this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $set: profile },
-        { new: true, runValidators: true },
-      )
-      .exec();
+  updateUserProfile(userId: Types.ObjectId, profile: Partial<Pick<IUser, 'name' | 'city' | 'phone' | 'avatarUrl' | 'avatarKey' | 'lang'>>) {
+    return this.userModel.findByIdAndUpdate(userId, { $set: profile }, { new: true, runValidators: true }).exec();
   }
 
-  async findByEmailWithoutPassword(
-    email: string,
-  ): Promise<HUserDocument | null> {
-    return this.userModel
-      .findOne({ email: email.toLowerCase().trim() })
-      .select('+googleId')
-      .exec();
+  async findByEmailWithoutPassword(email: string): Promise<HUserDocument | null> {
+    return this.userModel.findOne({ email: email.toLowerCase().trim() }).select('+googleId').exec();
   }
 
   async searchByName(name: string, limit = 10) {
@@ -75,4 +58,3 @@ export class UserRepository extends DatabaseRepository<IUser> {
     });
   }
 }
-

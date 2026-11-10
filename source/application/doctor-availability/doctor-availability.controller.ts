@@ -20,8 +20,9 @@ export class DoctorAvailabilityController {
   @Post()
   @Auth([SystemRoleEnum.DOCTOR])
   @ApiOperation({
-    summary: "Add available time",
-    description: "Doctor only. Adds one slot (startAt to endAt) or, with slotMinutes, splits the range into slots (up to 200). Times must be in the future and must not overlap existing slots.",
+    summary: 'Add available time',
+    description:
+      'Doctor only. Adds one slot (startAt to endAt) or, with slotMinutes, splits the range into slots (up to 200). Times must be in the future and must not overlap existing slots.',
   })
   create(@User() user: HUserDocument, @Body() dto: CreateAvailabilityDto) {
     return this.service.create(user, dto);
@@ -30,7 +31,8 @@ export class DoctorAvailabilityController {
   @Get()
   @ApiOperation({
     summary: "List a doctor's slots",
-    description: "Any signed-in user. Send doctorId (doctors can omit it for their own). Patients see only free future slots; the doctor also sees booked ones. Filter by from, to and onlyAvailable.",
+    description:
+      'Any signed-in user. Send doctorId (doctors can omit it for their own). Patients see only free future slots; the doctor also sees booked ones. Filter by from, to and onlyAvailable.',
   })
   list(@User() user: HUserDocument, @Query() query: AvailabilityQueryDto) {
     return this.service.list(user, query);
@@ -38,8 +40,8 @@ export class DoctorAvailabilityController {
 
   @Get(':slotId')
   @ApiOperation({
-    summary: "Get a slot",
-    description: "Any signed-in user.",
+    summary: 'Get a slot',
+    description: 'Any signed-in user.',
   })
   findOne(@Param('slotId', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.service.findOne(id);
@@ -48,7 +50,7 @@ export class DoctorAvailabilityController {
   @Patch(':slotId')
   @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
   @ApiOperation({
-    summary: "Change a slot",
+    summary: 'Change a slot',
     description: "The slot's doctor or an admin. Booked slots cannot be changed (409); reschedule the appointment instead.",
   })
   update(@User() user: HUserDocument, @Param('slotId', ParseObjectIdPipe) id: Types.ObjectId, @Body() dto: UpdateAvailabilityDto) {
@@ -58,7 +60,7 @@ export class DoctorAvailabilityController {
   @Delete(':slotId')
   @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
   @ApiOperation({
-    summary: "Delete a slot",
+    summary: 'Delete a slot',
     description: "The slot's doctor or an admin. Booked slots cannot be deleted (409).",
   })
   remove(@User() user: HUserDocument, @Param('slotId', ParseObjectIdPipe) id: Types.ObjectId) {

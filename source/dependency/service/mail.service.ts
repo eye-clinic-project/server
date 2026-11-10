@@ -2,10 +2,7 @@ import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 import nodemailer, { type Transporter } from 'nodemailer';
 
-const escapeHtml = (value: string) =>
-  value.replace(/[&<>"']/g, (ch) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]!,
-  );
+const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]!);
 
 @Injectable()
 export class MailService {
@@ -15,10 +12,7 @@ export class MailService {
   constructor(private readonly configService: ConfigService) {}
 
   get isConfigured(): boolean {
-    return !!(
-      this.configService.get<string>('mail.host') &&
-      this.configService.get<string>('mail.from')
-    );
+    return !!(this.configService.get<string>('mail.host') && this.configService.get<string>('mail.from'));
   }
 
   private get isProduction() {
@@ -42,17 +36,7 @@ export class MailService {
     return this.transporter;
   }
 
-  async send({
-    to,
-    subject,
-    text,
-    html,
-  }: {
-    to: string;
-    subject: string;
-    text: string;
-    html: string;
-  }): Promise<void> {
+  async send({ to, subject, text, html }: { to: string; subject: string; text: string; html: string }): Promise<void> {
     if (!this.isConfigured && !this.isProduction) {
       // Development without SMTP: log instead of failing so flows can be tested.
       this.logger.warn(`[mail disabled] to=${to} subject="${subject}"\n${text}`);
@@ -85,12 +69,7 @@ export class MailService {
     });
   }
 
-  async sendPasswordResetToken(
-    email: string,
-    token: string,
-    link: string,
-    minutes: number,
-  ): Promise<void> {
+  async sendPasswordResetToken(email: string, token: string, link: string, minutes: number): Promise<void> {
     await this.send({
       to: email,
       subject: 'Reset your password',
@@ -102,11 +81,7 @@ export class MailService {
     });
   }
 
-  async sendInvitation(
-    email: string,
-    doctorName: string,
-    link: string,
-  ): Promise<void> {
+  async sendInvitation(email: string, doctorName: string, link: string): Promise<void> {
     await this.send({
       to: email,
       subject: 'Your RetinaCare account is ready',
@@ -122,12 +97,7 @@ export class MailService {
    * Notification email (FR4.6). Deliberately contains NO medical details,
    * only a generic title and a link to log in.
    */
-  async sendNotification(
-    email: string,
-    name: string,
-    title: string,
-    loginLink: string,
-  ): Promise<void> {
+  async sendNotification(email: string, name: string, title: string, loginLink: string): Promise<void> {
     await this.send({
       to: email,
       subject: title,

@@ -8,8 +8,8 @@ export class AppController {
 
   @Get()
   @ApiOperation({
-    summary: "Welcome message",
-    description: "Public. Simple check that the API is reachable. Use GET /api/v1/health for monitoring.",
+    summary: 'Welcome message',
+    description: 'Public. Simple check that the API is reachable. Use GET /api/v1/health for monitoring.',
   })
   getHello(): object {
     return this.appService.getHello();

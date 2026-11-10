@@ -6,6 +6,17 @@ const limit = (max: number, ttl: number, blockDuration?: number) =>
   });
 
 export const RateLimit = {
+  signUp: () => limit(3, hours(1), hours(5)),
+
+  login: () => limit(5, minutes(1), hours(5)),
+
+  authAttempt: () => limit(5, minutes(1), hours(1)),
+
+  verificationEmail: () => limit(3, hours(1), hours(5)),
+
+  passwordResetRequest: () => limit(3, minutes(1), hours(1)),
+
+  session: () => limit(10, minutes(1), minutes(15)),
 
   passwordCheck: () => limit(5, minutes(15), hours(1)),
 

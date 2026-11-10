@@ -10,19 +10,9 @@ import { CacheInterceptor } from './dependency/interceptor/cache.interceptor.js'
 import { LoggingInterceptor } from './dependency/interceptor/logging.interceptor.js';
 import { TransformInterceptor } from './dependency/interceptor/transform.interceptor.js';
 import { TimeoutInterceptor } from './dependency/interceptor/timeout.interceptor.js';
-import {
-  AcceptLanguageLocaleResolver,
-  HeaderLocaleResolver,
-  I18nModule,
-  JsonI18nLoader,
-  QueryLocaleResolver,
-} from '@nestjs/i18n';
+import { AcceptLanguageLocaleResolver, HeaderLocaleResolver, I18nModule, JsonI18nLoader, QueryLocaleResolver } from '@nestjs/i18n';
 import { UserLocaleResolver } from './dependency/language/user-locale.resolver.js';
-import {
-  DEFAULT_LOCALE,
-  I18N_PATH,
-  SUPPORTED_LOCALES,
-} from './dependency/language/i18n.constants.js';
+import { DEFAULT_LOCALE, I18N_PATH, SUPPORTED_LOCALES } from './dependency/language/i18n.constants.js';
 import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
 import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
 
@@ -41,7 +31,6 @@ import { AppointmentModule } from './application/appointment/appointment.module.
 import { DoctorAvailabilityModule } from './application/doctor-availability/doctor-availability.module.js';
 import { ConversationModule } from './application/conversation/conversation.module.js';
 import { NotificationModule } from './application/notification/notification.module.js';
-import { HardwareModule } from './application/hardware/hardware.module.js';
 import { AdminModule } from './application/admin/admin.module.js';
 import { SystemModule } from './application/system/system.module.js';
 
@@ -54,21 +43,13 @@ import { SystemModule } from './application/system/system.module.js';
     }),
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: parseInt(process.env.THROTTLE_LIMIT ?? '', 10) || 120 }],
-      // Only for automated tests; never set this in production.
       skipIf: () => process.env.THROTTLE_DISABLED === 'true',
     }),
-    // Language per request: ?lang=ar, then x-lang header, then the user's saved language,
-    // then Accept-Language; English by default.
     I18nModule.forRoot({
       loader: new JsonI18nLoader({ path: I18N_PATH }),
       defaultLocale: DEFAULT_LOCALE,
       supportedLocales: [...SUPPORTED_LOCALES],
-      resolvers: [
-        new QueryLocaleResolver('lang'),
-        new HeaderLocaleResolver('x-lang'),
-        new UserLocaleResolver(),
-        new AcceptLanguageLocaleResolver(),
-      ],
+      resolvers: [new QueryLocaleResolver('lang'), new HeaderLocaleResolver('x-lang'), new UserLocaleResolver(), new AcceptLanguageLocaleResolver()],
     }),
     ServiceModule,
     DatabaseModule,
@@ -85,7 +66,6 @@ import { SystemModule } from './application/system/system.module.js';
     DoctorAvailabilityModule,
     ConversationModule,
     NotificationModule,
-    HardwareModule,
     AdminModule,
     SystemModule,
   ],

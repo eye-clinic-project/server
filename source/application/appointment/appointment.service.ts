@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { HUserDocument } from '../../database/model/user.model.js';
 import { AppointmentRepository } from '../../database/repository/appointment.repository.js';
@@ -15,12 +9,7 @@ import { NotifierService } from '../../dependency/service/notifier.service.js';
 import { AppointmentStatus, NotificationType } from '../../dependency/enum/database.enum.js';
 import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
 import { presentUser } from '../../dependency/presenter.js';
-import {
-  AppointmentQueryDto,
-  CancelAppointmentDto,
-  CreateAppointmentDto,
-  UpdateAppointmentDto,
-} from './dto/appointment.dto.js';
+import { AppointmentQueryDto, CancelAppointmentDto, CreateAppointmentDto, UpdateAppointmentDto } from './dto/appointment.dto.js';
 
 const ACTIVE = [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED];
 const fmt = (d: Date) => d.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
@@ -163,7 +152,12 @@ export class AppointmentService {
     return this.present(a);
   }
 
-  private async notifyOther(actor: HUserDocument, appointment: { _id: Types.ObjectId; doctor: Types.ObjectId; patient: Types.ObjectId }, title: string, body: string) {
+  private async notifyOther(
+    actor: HUserDocument,
+    appointment: { _id: Types.ObjectId; doctor: Types.ObjectId; patient: Types.ObjectId },
+    title: string,
+    body: string,
+  ) {
     const toPatient = !appointment.patient.equals(actor._id);
     await this.notifier.notify({
       recipient: toPatient ? appointment.patient : appointment.doctor,
@@ -214,13 +208,7 @@ export class AppointmentService {
     return this.findOne(actor, id);
   }
 
-  private async transition(
-    actor: HUserDocument,
-    id: Types.ObjectId,
-    from: AppointmentStatus[],
-    to: AppointmentStatus,
-    extra: Record<string, unknown> = {},
-  ) {
+  private async transition(actor: HUserDocument, id: Types.ObjectId, from: AppointmentStatus[], to: AppointmentStatus, extra: Record<string, unknown> = {}) {
     const appointment = await this.load(actor, id);
     const updated = await this.appointments.findOneAndUpdate({
       filter: { _id: id, status: { $in: from } },

@@ -9,18 +9,12 @@ export interface UploadImageOptions {
 }
 
 /** Detects the real image type from the file's magic bytes. */
-export const sniffImageType = (
-  buffer: Buffer | undefined,
-): 'image/jpeg' | 'image/png' | null => {
+export const sniffImageType = (buffer: Buffer | undefined): 'image/jpeg' | 'image/png' | null => {
   if (!buffer || buffer.length < 8) return null;
   if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
     return 'image/jpeg';
   }
-  if (
-    buffer.subarray(0, 8).equals(
-      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    )
-  ) {
+  if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
     return 'image/png';
   }
   return null;
@@ -32,15 +26,10 @@ export const sniffImageType = (
  * rejected with a clear message instead of reaching the AI service).
  */
 @Injectable()
-export class UploadImagePipe implements PipeTransform<
-  Express.Multer.File | undefined,
-  Express.Multer.File | undefined
-> {
+export class UploadImagePipe implements PipeTransform<Express.Multer.File | undefined, Express.Multer.File | undefined> {
   constructor(private readonly options: UploadImageOptions = {}) {}
 
-  transform(
-    file: Express.Multer.File | undefined,
-  ): Express.Multer.File | undefined {
+  transform(file: Express.Multer.File | undefined): Express.Multer.File | undefined {
     if (!file) {
       if (this.options.required !== false) {
         throw new BadRequestException('Image file is required');
@@ -49,23 +38,17 @@ export class UploadImagePipe implements PipeTransform<
     }
 
     if (!IMAGE_MIME_TYPES.has(file.mimetype)) {
-      throw new BadRequestException(
-        'Unsupported file format. Only JPEG and PNG images are allowed',
-      );
+      throw new BadRequestException('Unsupported file format. Only JPEG and PNG images are allowed');
     }
 
     const maxSize = this.options.maxSize ?? 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      throw new BadRequestException(
-        `Image is too large. The maximum size is ${Math.floor(maxSize / 1024 / 1024)} MB`,
-      );
+      throw new BadRequestException(`Image is too large. The maximum size is ${Math.floor(maxSize / 1024 / 1024)} MB`);
     }
 
     const realType = sniffImageType(file.buffer);
     if (!realType) {
-      throw new BadRequestException(
-        'The image file is corrupted or is not a valid JPEG/PNG image',
-      );
+      throw new BadRequestException('The image file is corrupted or is not a valid JPEG/PNG image');
     }
     file.mimetype = realType;
     return file;

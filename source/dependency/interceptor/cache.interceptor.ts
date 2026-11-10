@@ -1,10 +1,4 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  Logger,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 
 import type { Request, Response } from 'express';
 
@@ -23,10 +17,7 @@ export class CacheInterceptor implements NestInterceptor {
     private readonly i18n: I18nContext,
   ) {}
 
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Promise<Observable<unknown>> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     if (context.getType() !== 'http') {
       return next.handle();
     }
@@ -37,12 +28,7 @@ export class CacheInterceptor implements NestInterceptor {
 
     const response = httpContext.getResponse<Response>();
 
-    if (
-      request.method !== 'GET' ||
-      request.headers.authorization ||
-      request.credentials ||
-      request.user
-    ) {
+    if (request.method !== 'GET' || request.headers.authorization || request.credentials || request.user) {
       return next.handle();
     }
 

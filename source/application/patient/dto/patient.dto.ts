@@ -1,26 +1,11 @@
 import { i18nValidationMessage } from '@nestjs/i18n';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsDate,
-  IsEmail,
-  IsEnum,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Matches,
-  Max,
-  MaxDate,
-  MaxLength,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Matches, Max, MaxDate, MaxLength, Min } from 'class-validator';
 import { DiabetesType, GenderEnum } from '../../../dependency/enum/database.enum.js';
 import { SearchQueryDto } from '../../../dependency/dto/pagination.dto.js';
 
-const trim = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? value.trim() : value;
+const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
 export class UpdatePatientProfileDto {
   @IsOptional()

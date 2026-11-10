@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Server } from 'socket.io';
 
 export const userRoom = (userId: string) => `user:${userId}`;
-export const conversationRoom = (conversationId: string) =>
-  `conversation:${conversationId}`;
+export const conversationRoom = (conversationId: string) => `conversation:${conversationId}`;
 
 /** Lets any service push Socket.IO events; the gateway registers the server on init. */
 @Injectable()

@@ -2,8 +2,7 @@ import { i18nValidationMessage } from '@nestjs/i18n';
 import { Transform } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
-const trim = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? value.trim() : value;
+const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
 export class UpdateUserDto {
   @IsOptional()

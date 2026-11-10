@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { HUserDocument } from '../../database/model/user.model.js';
 import { UserRepository } from '../../database/repository/user.repository.js';
@@ -18,7 +12,8 @@ import { ReportRepository } from '../../database/repository/report.repository.js
 import { DoctorAvailabilityRepository } from '../../database/repository/doctor-availability.repository.js';
 import { DoctorReviewRepository } from '../../database/repository/doctor-review.repository.js';
 import { AuthProviderEnum, SystemRoleEnum } from '../../dependency/enum/security.enum.js';
-import { AssignmentStatus } from '../../dependency/enum/database.enum.js';
+import { AssignmentStatus, DoctorVerificationStatus } from '../../dependency/enum/database.enum.js';
+import type { IDoctor } from '../../dependency/interface/database-schema.interface.js';
 import { presentUser } from '../../dependency/presenter.js';
 import { SecurityService } from '../../dependency/service/security.service.js';
 import { StorageService, extensionForMime } from '../../dependency/service/storage.service.js';
@@ -58,13 +53,27 @@ export class UserService {
   /** Current user with role profile; tells the client which dashboard to open (FR1.2). */
   async getMe(user: HUserDocument) {
     const profile = await this.profileOf(user);
+    const isDoctor = user.role === SystemRoleEnum.DOCTOR;
+    const doctor = isDoctor ? (profile as IDoctor | null) : null;
+    // Doctors wait on /doctor/pending until an admin approves their license.
+    const verification = isDoctor
+      ? {
+          status: doctor ? (doctor.verificationStatus ?? DoctorVerificationStatus.PENDING) : null,
+          licenseNumber: doctor?.licenseNumber ?? null,
+          submittedAt: doctor?.verificationSubmittedAt ?? doctor?.createdAt ?? null,
+          reviewedAt: doctor?.verifiedAt ?? null,
+          rejectionReason: doctor?.rejectionReason ?? null,
+        }
+      : null;
+    const approved = !isDoctor || verification?.status === DoctorVerificationStatus.APPROVED;
     return {
       ...presentUser(user),
       consentAcceptedAt: user.consentAcceptedAt ?? null,
       lang: user.lang ?? null,
       profile,
-      profileComplete: user.role !== SystemRoleEnum.DOCTOR || !!profile,
-      dashboard: `/${user.role}`,
+      profileComplete: !isDoctor || !!profile,
+      verification,
+      dashboard: approved ? `/${user.role}` : '/doctor/pending',
     };
   }
 
@@ -97,10 +106,6 @@ export class UserService {
     return { data: await this.storage.read(user.avatarKey), mimeType: user.avatarKey.includes('.png.') ? 'image/png' : 'image/jpeg' };
   }
 
-  /**
-   * Profile of another user. Anyone signed in can see a doctor's public profile;
-   * patient profiles are limited to assigned doctors and admins.
-   */
   async getUser(viewer: HUserDocument, userId: Types.ObjectId) {
     const user = await this.users.findById({ _id: userId });
     if (!user) throw new NotFoundException('User not found');
@@ -115,7 +120,6 @@ export class UserService {
     return { ...presentUser(user), profile: await this.profileOf(user) };
   }
 
-  /** Deletes the account and, for patients, all their medical data and files. */
   async deleteMe(user: HUserDocument, dto: DeleteAccountDto) {
     if (user.provider === AuthProviderEnum.SYSTEM) {
       const account = await this.users.findByEmail(user.email);
@@ -145,10 +149,7 @@ export class UserService {
         projection: { gradCamKey: 1 },
         options: { lean: true },
       });
-      await Promise.all([
-        ...images.map((img: any) => this.storage.remove(img.storageKey)),
-        ...analyses.map((a: any) => this.storage.remove(a.gradCamKey)),
-      ]);
+      await Promise.all([...images.map((img: any) => this.storage.remove(img.storageKey)), ...analyses.map((a: any) => this.storage.remove(a.gradCamKey))]);
       await Promise.all([
         this.images.deleteMany({ filter: { patient: userId } }),
         this.analyses.deleteMany({ filter: { patient: userId } }),

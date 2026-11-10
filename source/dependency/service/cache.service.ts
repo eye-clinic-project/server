@@ -29,8 +29,7 @@ return { c, ttl }`;
 
 export const RedisKeys = {
   otpKey: (email: string) => `otp:${email.toLowerCase()}`,
-  emailVerification: (email: string) =>
-    `auth:email-verification:${email.toLowerCase()}`,
+  emailVerification: (email: string) => `auth:email-verification:${email.toLowerCase()}`,
   passwordReset: (tokenHash: string) => `auth:password-reset:${tokenHash}`,
   rateLimitKey: (scope: string, id: string) => `rate:${scope}:${id}`,
   userToken: (userId: string, jti: string) => `auth:token:${userId}:${jti}`,
@@ -41,7 +40,7 @@ export const RedisKeys = {
 export class CacheService implements OnModuleDestroy {
   private readonly logger = new Logger(CacheService.name);
 
-  constructor(@Inject('REDIS_CLIENT')private readonly cacheClient: Redis) {}
+  constructor(@Inject('REDIS_CLIENT') private readonly cacheClient: Redis) {}
 
   async onModuleDestroy() {
     await this.cacheClient.quit();
@@ -63,16 +62,10 @@ export class CacheService implements OnModuleDestroy {
     }
   }
 
-  async setCache<T = unknown>({
-    key,
-    value,
-    options = {},
-  }: SetCache<T>): Promise<boolean> {
+  async setCache<T = unknown>({ key, value, options = {} }: SetCache<T>): Promise<boolean> {
     const { EX, PX, NX, XX, KEEPTTL } = options;
 
-    const ttlOptions = [EX !== undefined, PX !== undefined, !!KEEPTTL].filter(
-      Boolean,
-    );
+    const ttlOptions = [EX !== undefined, PX !== undefined, !!KEEPTTL].filter(Boolean);
     if (ttlOptions.length > 1) {
       throw new Error('EX, PX and KEEPTTL are mutually exclusive');
     }
@@ -87,12 +80,7 @@ export class CacheService implements OnModuleDestroy {
     if (NX) args.push('NX');
     if (XX) args.push('XX');
 
-    const result = await this.cacheClient.call(
-      'SET',
-      key,
-      this.serialize(value),
-      ...args,
-    );
+    const result = await this.cacheClient.call('SET', key, this.serialize(value), ...args);
     return result === 'OK';
   }
 
@@ -131,19 +119,9 @@ export class CacheService implements OnModuleDestroy {
     return (await this.cacheClient.persist(key)) === 1;
   }
 
-  async incrementCache({
-    key,
-    amount = 1,
-    ttl = 0,
-  }: IncrementCache): Promise<number> {
+  async incrementCache({ key, amount = 1, ttl = 0 }: IncrementCache): Promise<number> {
     if (ttl > 0) {
-      return (await this.cacheClient.eval(
-        INCR_WITH_TTL,
-        1,
-        key,
-        amount,
-        ttl,
-      )) as number;
+      return (await this.cacheClient.eval(INCR_WITH_TTL, 1, key, amount, ttl)) as number;
     }
     return this.cacheClient.incrby(key, amount);
   }
@@ -161,17 +139,8 @@ export class CacheService implements OnModuleDestroy {
     return fresh;
   }
 
-  async rateLimit({
-    key,
-    limit,
-    windowSeconds,
-  }: RateLimit): Promise<RateLimitResult> {
-    const [count, ttl] = (await this.cacheClient.eval(
-      RATE_LIMIT,
-      1,
-      key,
-      windowSeconds,
-    )) as [number, number];
+  async rateLimit({ key, limit, windowSeconds }: RateLimit): Promise<RateLimitResult> {
+    const [count, ttl] = (await this.cacheClient.eval(RATE_LIMIT, 1, key, windowSeconds)) as [number, number];
 
     const allowed = count <= limit;
     return {
@@ -181,10 +150,7 @@ export class CacheService implements OnModuleDestroy {
     };
   }
 
-  async findCacheKeys({
-    pattern = '*',
-    count = 100,
-  }: FindCacheKeys = {}): Promise<string[]> {
+  async findCacheKeys({ pattern = '*', count = 100 }: FindCacheKeys = {}): Promise<string[]> {
     const keys = new Set<string>();
     const stream = this.cacheClient.scanStream({ match: pattern, count });
 
@@ -194,9 +160,7 @@ export class CacheService implements OnModuleDestroy {
     return [...keys];
   }
 
-  async deleteByPattern({
-    pattern,
-  }: Required<Pick<FindCacheKeys, 'pattern'>>): Promise<number> {
+  async deleteByPattern({ pattern }: Required<Pick<FindCacheKeys, 'pattern'>>): Promise<number> {
     let deleted = 0;
     const stream = this.cacheClient.scanStream({ match: pattern, count: 200 });
 

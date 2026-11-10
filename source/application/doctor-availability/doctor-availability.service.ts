@@ -59,11 +59,7 @@ export class DoctorAvailabilityService {
   }
 
   async list(viewer: HUserDocument, query: AvailabilityQueryDto) {
-    const doctorId = query.doctorId
-      ? new Types.ObjectId(query.doctorId)
-      : viewer.role === SystemRoleEnum.DOCTOR
-        ? viewer._id
-        : undefined;
+    const doctorId = query.doctorId ? new Types.ObjectId(query.doctorId) : viewer.role === SystemRoleEnum.DOCTOR ? viewer._id : undefined;
     if (!doctorId) throw new BadRequestException('doctorId is required');
     const isOwner = viewer._id.equals(doctorId) || viewer.role === SystemRoleEnum.ADMIN;
     const onlyAvailable = query.onlyAvailable ?? !isOwner;

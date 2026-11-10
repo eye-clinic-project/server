@@ -1,12 +1,6 @@
 import type { Types } from 'mongoose';
-import {
-  AnalysisStatus,
-  DR_LEVEL_DESCRIPTIONS,
-  DR_LEVEL_LABELS,
-  DRLevel,
-} from './enum/database.enum.js';
+import { AnalysisStatus, DR_LEVEL_DESCRIPTIONS, DR_LEVEL_LABELS, DRLevel } from './enum/database.enum.js';
 import { AI_DISCLAIMER } from './constant.js';
-
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Localize } from './language/localize.js';
@@ -15,11 +9,6 @@ export const API_PREFIX = '/api/v1';
 
 export type SignedFileKind = 'image' | 'gradcam' | 'avatar';
 
-/**
- * Short-lived signed URLs for private files (NFR9), so <img> tags can load images
- * without exposing a public path. The expiry is rounded to the hour so the same URL
- * is reused (and cached by the browser) within that window.
- */
 export class SignedUrl {
   private static secret: Buffer | null = null;
   static readonly TTL_SECONDS = 60 * 60;
@@ -30,9 +19,7 @@ export class SignedUrl {
 
   private static signature(kind: string, id: string, exp: number): string {
     if (!SignedUrl.secret) throw new Error('SignedUrl is not configured');
-    return createHmac('sha256', SignedUrl.secret)
-      .update(`${kind}:${id}:${exp}`)
-      .digest('base64url');
+    return createHmac('sha256', SignedUrl.secret).update(`${kind}:${id}:${exp}`).digest('base64url');
   }
 
   static sign(kind: SignedFileKind, id: string, now = Date.now()): string {
@@ -56,7 +43,6 @@ const idOf = (value: unknown): string | null => {
   return v._id ? v._id.toString() : v.toString();
 };
 
-/** Safe public view of a user: never includes password hash, Google id or storage keys. */
 export const presentUser = (user: any) => {
   if (!user) return null;
   if (typeof user !== 'object' || !('email' in user)) return { id: idOf(user) };
@@ -78,10 +64,8 @@ export const presentUser = (user: any) => {
   };
 };
 
-export const imageFileUrl = (imageId: string) =>
-  `${API_PREFIX}/fundus-images/${imageId}/file`;
-export const gradCamUrl = (analysisId: string) =>
-  `${API_PREFIX}/analyses/${analysisId}/grad-cam`;
+export const imageFileUrl = (imageId: string) => `${API_PREFIX}/fundus-images/${imageId}/file`;
+export const gradCamUrl = (analysisId: string) => `${API_PREFIX}/analyses/${analysisId}/grad-cam`;
 
 export const presentImage = (image: any) => {
   if (!image) return null;
@@ -100,21 +84,16 @@ export const presentImage = (image: any) => {
     originalName: image.originalName,
     notes: image.notes,
     capturedAt: image.capturedAt,
-    device: idOf(image.device),
     fileUrl: SignedUrl.sign('image', id),
     createdAt: image.createdAt,
     updatedAt: image.updatedAt,
   };
 };
 
-/** Analysis with plain-language grade, URLs and the decision-support disclaimer (NFR14, NFR19). */
 export const presentAnalysis = (analysis: any) => {
   if (!analysis) return null;
   const id = idOf(analysis)!;
-  const level: DRLevel | null =
-    analysis.predictedLevel === null || analysis.predictedLevel === undefined
-      ? null
-      : (analysis.predictedLevel as DRLevel);
+  const level: DRLevel | null = analysis.predictedLevel === null || analysis.predictedLevel === undefined ? null : (analysis.predictedLevel as DRLevel);
   const completed = analysis.status === AnalysisStatus.COMPLETED;
   return {
     id,
@@ -122,7 +101,10 @@ export const presentAnalysis = (analysis: any) => {
     status: analysis.status,
     doctor: typeof analysis.doctor === 'object' && analysis.doctor && 'email' in analysis.doctor ? presentUser(analysis.doctor) : idOf(analysis.doctor),
     patient: typeof analysis.patient === 'object' && analysis.patient && 'email' in analysis.patient ? presentUser(analysis.patient) : idOf(analysis.patient),
-    image: typeof analysis.image === 'object' && analysis.image && 'mimeType' in analysis.image ? presentImage(analysis.image) : { id: idOf(analysis.image), fileUrl: SignedUrl.sign('image', idOf(analysis.image)!) },
+    image:
+      typeof analysis.image === 'object' && analysis.image && 'mimeType' in analysis.image
+        ? presentImage(analysis.image)
+        : { id: idOf(analysis.image), fileUrl: SignedUrl.sign('image', idOf(analysis.image)!) },
     result: completed
       ? {
           hasDR: analysis.hasDR,
@@ -149,10 +131,7 @@ export const presentAnalysis = (analysis: any) => {
   };
 };
 
-export const paged = <T>(
-  result: { docs: unknown[]; count: number; currentPage: number; size: number; pages: number },
-  map: (doc: any) => T,
-) => ({
+export const paged = <T>(result: { docs: unknown[]; count: number; currentPage: number; size: number; pages: number }, map: (doc: any) => T) => ({
   items: result.docs.map(map),
   total: result.count,
   page: result.currentPage,

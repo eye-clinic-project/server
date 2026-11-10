@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { HUserDocument } from '../../database/model/user.model.js';
 import { AnalysisRepository } from '../../database/repository/analysis.repository.js';
@@ -151,8 +144,7 @@ export class AnalysisService {
         });
       }
     } catch (error) {
-      const message =
-        error instanceof HttpException ? error.message : 'The AI analysis failed. Please retry.';
+      const message = error instanceof HttpException ? error.message : 'The AI analysis failed. Please retry.';
       if (!(error instanceof HttpException)) {
         this.logger.error(`Analysis ${id.toString()} failed: ${(error as Error).message}`);
       }
@@ -240,9 +232,7 @@ export class AnalysisService {
   }
 
   async gradCam(viewer: HUserDocument | null, id: Types.ObjectId) {
-    const analysis = viewer
-      ? await this.load(viewer, id)
-      : await this.analyses.findById({ _id: id, projection: '+gradCamKey' });
+    const analysis = viewer ? await this.load(viewer, id) : await this.analyses.findById({ _id: id, projection: '+gradCamKey' });
     if (!analysis?.gradCamKey) throw new NotFoundException('Grad-CAM heatmap is not available for this analysis');
     return {
       data: await this.storage.read(analysis.gradCamKey),

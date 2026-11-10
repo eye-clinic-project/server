@@ -74,7 +74,6 @@ All under `/api/v1`. (Auth is also mounted at `/authentication` for the old clie
 | Availability | `POST doctor-availability` (`startAt`, `endAt`, optional `slotMinutes`), `GET ?doctorId`, `GET/PATCH/DELETE :id` | FR5.1 |
 | Chat | `POST/GET conversations`, `GET :id`, `GET/POST :id/messages`, `PATCH :id/read`, `DELETE :id` + Socket.IO | FR6.1 |
 | Notifications | `GET notifications?unread&type`, `GET :id`, `PATCH :id/read`, `PATCH read-all`, `DELETE :id`, `DELETE` | FR4.4, FR4.6, FR5.2 |
-| Hardware | Doctor: `hardware/devices` CRUD + `:id/rotate-key`, `hardware/capture-sessions` CRUD. Device (header `x-device-key`): `POST hardware/device/heartbeat`, `GET hardware/device/capture-sessions`, `POST .../:id/image`, `POST .../:id/fail` | FR7.1 |
 | Admin | `GET admin/dashboard`, `admin/users` (+ `/:id`, `/:id/status`, `/:id/role`, `DELETE`), `admin/analyses`, `admin/reports` | — |
 | System | `GET health`, `GET ai/health`, `GET ai/model-info`, `GET files/:kind/:id` (signed) | NFR5, NFR15 |
 
@@ -113,7 +112,6 @@ Connect to the API origin with `io(API_URL, { auth: { token: accessToken } })`.
 | `mark_read` | client → server | `{ conversationId }` |
 | `receive_message`, `message_read`, `conversation_updated` | server → client | message / read info |
 | `notification` | server → client | a new notification (every user joins their own room) |
-| `capture_session_updated` | server → doctor | fundus camera upload/failure |
 
 ## Not done yet
 

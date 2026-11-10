@@ -42,12 +42,6 @@ export class FundusImage {
 
   @Prop({ type: Date })
   capturedAt?: Date;
-
-  @Prop({ type: Types.ObjectId, ref: 'Device', default: null })
-  device?: Types.ObjectId | null;
-
-  @Prop({ type: Types.ObjectId, ref: 'CaptureSession', default: null })
-  captureSession?: Types.ObjectId | null;
 }
 
 export const FundusImageSchema = SchemaFactory.createForClass(FundusImage);
