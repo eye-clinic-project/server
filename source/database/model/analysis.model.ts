@@ -23,6 +23,25 @@ class AnalysisHistoryEntry {
 }
 const AnalysisHistoryEntrySchema = SchemaFactory.createForClass(AnalysisHistoryEntry);
 
+@Schema({ _id: false })
+class AnalysisFinding {
+  @Prop({ type: String, required: true })
+  code: string;
+
+  @Prop({ type: String, required: true })
+  name: string;
+
+  @Prop({ type: Number, min: 0, max: 1, required: true })
+  probability: number;
+
+  @Prop({ type: Number, min: 0, max: 1, required: true })
+  threshold: number;
+
+  @Prop({ type: Boolean, required: true })
+  detected: boolean;
+}
+const AnalysisFindingSchema = SchemaFactory.createForClass(AnalysisFinding);
+
 @Schema({ timestamps: true, collection: 'analyses' })
 export class Analysis {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
@@ -59,6 +78,10 @@ export class Analysis {
   /** Per-class probabilities [NoDR, Mild, Moderate, Severe, PDR] after TTA. */
   @Prop({ type: [Number], default: [] })
   probabilities?: number[];
+
+  /** Stage-1 multi-label scores for all eight classes (empty for mock results). */
+  @Prop({ type: [AnalysisFindingSchema], default: [] })
+  findings?: AnalysisFinding[];
 
   @Prop({ type: String, default: null, select: false })
   gradCamKey?: string | null;

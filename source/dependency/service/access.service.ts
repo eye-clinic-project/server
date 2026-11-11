@@ -4,12 +4,6 @@ import { DoctorPatientRepository } from '../../database/repository/doctor-patien
 import type { HUserDocument } from '../../database/model/user.model.js';
 import { SystemRoleEnum } from '../enum/security.enum.js';
 
-/**
- * Central access-control rules (FR2.3, FR2.4, FR4.1, NFR10):
- *  - admin:   everything
- *  - doctor:  only patients with an ACTIVE assignment to them
- *  - patient: only their own data
- */
 @Injectable()
 export class AccessService {
   constructor(private readonly assignments: DoctorPatientRepository) {}

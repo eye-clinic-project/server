@@ -121,6 +121,7 @@ export class AnalysisService {
             predictedLevel: prediction.predictedLevel,
             confidence: prediction.confidence,
             probabilities: prediction.probabilities,
+            findings: prediction.findings,
             gradCamKey,
             modelVersion: prediction.modelVersion,
             isMock: prediction.isMock,

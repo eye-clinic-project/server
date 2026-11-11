@@ -2,12 +2,22 @@ import { Injectable, Logger, ServiceUnavailableException, UnprocessableEntityExc
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 
+export interface AiFinding {
+  code: string;
+  name: string;
+  probability: number;
+  threshold: number;
+  detected: boolean;
+}
+
 export interface AiPrediction {
   hasDR: boolean;
   stage1Confidence: number;
-  predictedLevel: number;
+  /** Five-level grade. Null when DR was detected but no stage-2 grading model is deployed. */
+  predictedLevel: number | null;
   confidence: number;
   probabilities: number[];
+  findings: AiFinding[];
   gradCam: { data: Buffer; mimeType: 'image/png' | 'image/jpeg' } | null;
   modelVersion: string;
   isMock: boolean;
@@ -113,16 +123,28 @@ export class AiService {
     const stage1 = body.stage1 ?? {};
     const stage2 = body.stage2 ?? null;
     const hasDR = Boolean(stage1.has_dr);
-    const level = hasDR && stage2 ? Number(stage2.level) : 0;
-    if (!Number.isInteger(level) || level < 0 || level > 4) {
+    // No DR -> grade 0. DR without a stage-2 model -> no grade (the doctor grades it), never "No DR".
+    const level = !hasDR ? 0 : stage2 ? Number(stage2.level) : null;
+    if (level !== null && (!Number.isInteger(level) || level < 0 || level > 4)) {
       throw new ServiceUnavailableException('AI service returned an invalid grade');
     }
+    const clamp01 = (v: unknown) => Math.min(1, Math.max(0, Number(v) || 0));
+    const findings: AiFinding[] = Array.isArray(stage1.findings)
+      ? stage1.findings.map((f: Record<string, unknown>) => ({
+          code: String(f.code),
+          name: String(f.name),
+          probability: clamp01(f.probability),
+          threshold: clamp01(f.threshold),
+          detected: Boolean(f.detected),
+        }))
+      : [];
     return {
       hasDR,
-      stage1Confidence: Number(stage1.confidence ?? 0),
+      stage1Confidence: clamp01(stage1.confidence),
       predictedLevel: level,
-      confidence: Number(stage2?.confidence ?? stage1.confidence ?? 0),
+      confidence: clamp01(stage2?.confidence ?? stage1.confidence),
       probabilities: Array.isArray(stage2?.probabilities) ? stage2.probabilities.map(Number) : [],
+      findings,
       gradCam: body.grad_cam_png_base64 ? { data: Buffer.from(body.grad_cam_png_base64, 'base64'), mimeType: 'image/png' } : null,
       modelVersion: String(body.model_version ?? 'unknown'),
       isMock: false,
@@ -141,6 +163,7 @@ export class AiService {
       predictedLevel: level,
       confidence: probabilities[level],
       probabilities,
+      findings: [],
       gradCam: null,
       modelVersion: 'mock-0',
       isMock: true,

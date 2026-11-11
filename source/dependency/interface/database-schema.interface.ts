@@ -121,6 +121,15 @@ export interface IAnalysisHistoryEntry {
   by?: Types.ObjectId | null;
 }
 
+/** One stage-1 class score (multi-label: N, D, G, C, A, H, M, O). */
+export interface IAnalysisFinding {
+  code: string;
+  name: string;
+  probability: number;
+  threshold: number;
+  detected: boolean;
+}
+
 export interface IAnalysis extends Timestamps {
   _id?: Types.ObjectId;
   doctor: Types.ObjectId;
@@ -132,6 +141,7 @@ export interface IAnalysis extends Timestamps {
   predictedLevel?: DRLevel | null;
   confidence?: number | null;
   probabilities?: number[];
+  findings?: IAnalysisFinding[];
   gradCamKey?: string | null;
   modelVersion?: string | null;
   isMock?: boolean;

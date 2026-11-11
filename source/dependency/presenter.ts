@@ -116,6 +116,7 @@ export const presentAnalysis = (analysis: any) => {
           referable: level !== null && level >= DRLevel.MODERATE,
           confidence: analysis.confidence,
           probabilities: analysis.probabilities ?? [],
+          findings: analysis.findings ?? [],
           gradCamUrl: (analysis.hasGradCam ?? !!analysis.gradCamKey) ? SignedUrl.sign('gradcam', id) : null,
           modelVersion: analysis.modelVersion,
           isMock: !!analysis.isMock,

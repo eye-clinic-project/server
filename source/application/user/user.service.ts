@@ -19,7 +19,7 @@ import { SecurityService } from '../../dependency/service/security.service.js';
 import { StorageService, extensionForMime } from '../../dependency/service/storage.service.js';
 import { TokenService } from '../../dependency/service/token.service.js';
 import { AccessService } from '../../dependency/service/access.service.js';
-import { DeleteAccountDto, UpdateUserDto } from './dto/update-user.dto.js';
+import { DeleteAccountDto, UpdateUserDto } from './dto/user.dto.js';
 
 @Injectable()
 export class UserService {

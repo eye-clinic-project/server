@@ -9,7 +9,7 @@ import type { HUserDocument } from '../../database/model/user.model.js';
 import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
 import { UploadImagePipe } from '../../dependency/pipe/upload.pipe.js';
 import { UserService } from './user.service.js';
-import { DeleteAccountDto, UpdateUserDto } from './dto/update-user.dto.js';
+import { DeleteAccountDto, UpdateUserDto } from './dto/user.dto.js';
 import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
 
 @ApiTags('Users')
