@@ -2,7 +2,6 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-
 import appConfiguration from './configuration/app.configuration.js';
 import { ServiceModule } from './dependency/module/service.module.js';
 import { DatabaseModule } from './dependency/module/database.module.js';
@@ -15,7 +14,6 @@ import { UserLocaleResolver } from './dependency/language/user-locale.resolver.j
 import { DEFAULT_LOCALE, I18N_PATH, SUPPORTED_LOCALES } from './dependency/language/i18n.constants.js';
 import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
 import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
-
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthenticationModule } from './application/authentication/authentication.module.js';

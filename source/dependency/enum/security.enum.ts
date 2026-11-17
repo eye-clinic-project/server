@@ -13,7 +13,6 @@ export enum SystemRoleEnum {
   PATIENT = 'patient',
 }
 
-/** Roles a user may pick for themselves at sign-up (admins are created by admins). */
 export enum SignUpRoleEnum {
   DOCTOR = 'doctor',
   PATIENT = 'patient',

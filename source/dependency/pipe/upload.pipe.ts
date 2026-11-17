@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 
-/** Accepted image formats (NFR18): JPEG and PNG only. */
 export const IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png']);
 
 export interface UploadImageOptions {
@@ -8,7 +7,6 @@ export interface UploadImageOptions {
   required?: boolean;
 }
 
-/** Detects the real image type from the file's magic bytes. */
 export const sniffImageType = (buffer: Buffer | undefined): 'image/jpeg' | 'image/png' | null => {
   if (!buffer || buffer.length < 8) return null;
   if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
@@ -20,11 +18,6 @@ export const sniffImageType = (buffer: Buffer | undefined): 'image/jpeg' | 'imag
   return null;
 };
 
-/**
- * Validates an uploaded image (FR3.1, NFR6, NFR18): JPEG/PNG only, within the size
- * limit, and the content must really be a JPEG/PNG (corrupted or disguised files are
- * rejected with a clear message instead of reaching the AI service).
- */
 @Injectable()
 export class UploadImagePipe implements PipeTransform<Express.Multer.File | undefined, Express.Multer.File | undefined> {
   constructor(private readonly options: UploadImageOptions = {}) {}

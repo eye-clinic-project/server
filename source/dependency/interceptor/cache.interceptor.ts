@@ -32,7 +32,6 @@ export class CacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    // Cached responses differ per language.
     const language = this.i18n.locale;
 
     const key = `http-cache:${language}:${request.originalUrl}`;

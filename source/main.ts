@@ -72,14 +72,12 @@ class Server {
     app.enableCors({
       origin: configuration.get<string[]>('app.corsOrigin'),
       credentials: true,
-      // Lets the browser client read how long a rate-limit block lasts (429 responses).
       exposedHeaders: ['Retry-After'],
     });
     app.disable('x-powered-by');
     app.enableShutdownHooks();
     app.useStaticAssets(join(process.cwd(), 'assets'), { prefix: '/assets/' });
     app.useGlobalPipes(
-      // Same as ValidationPipe, with messages translated to the request's language.
       new I18nValidationPipe({
         transform: true,
         whitelist: true,

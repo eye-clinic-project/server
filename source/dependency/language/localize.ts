@@ -15,14 +15,6 @@ const flatten = (obj: Record<string, unknown>, prefix: string, out: Record<strin
   return out;
 };
 
-/**
- * Translates the English messages the API throws (`new NotFoundException('Patient not found')`)
- * into the request's language, using `i18n/<locale>/errors.json`.
- *
- * Services keep throwing plain English; the English catalog maps each message back to its key,
- * and `{placeholders}` in a message (e.g. "A {status} appointment cannot be changed") are
- * matched and passed on as arguments. Unknown messages are returned unchanged.
- */
 @Injectable()
 export class Localize implements OnModuleInit {
   private static instance?: Localize;
@@ -51,8 +43,6 @@ export class Localize implements OnModuleInit {
           literal: text.replace(/\{\w+\}/g, '').length,
         });
       }
-      // Most specific first, so "Cannot {method} {path}" does not swallow
-      // "Cannot change a {status} appointment to {to}".
       this.templates.sort((x, y) => y.literal - x.literal);
     } catch (error) {
       this.logger.error(`Could not load ${file}: ${(error as Error).message}`);
@@ -63,7 +53,7 @@ export class Localize implements OnModuleInit {
     Localize.instance = this;
   }
 
-  /** Translates one message for the current request's locale. */
+
   translate(text: string): string {
     const key = this.exact.get(text);
     if (key) return this.i18n.translate(key);
@@ -77,7 +67,6 @@ export class Localize implements OnModuleInit {
     return text;
   }
 
-  /** Static entry point for code without dependency injection (filters, presenters). */
   static text(text: string): string;
   static text(text: string | null | undefined): string | null | undefined;
   static text(text: string | null | undefined) {

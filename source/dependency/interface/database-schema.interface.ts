@@ -121,7 +121,7 @@ export interface IAnalysisHistoryEntry {
   by?: Types.ObjectId | null;
 }
 
-/** One stage-1 class score (multi-label: N, D, G, C, A, H, M, O). */
+
 export interface IAnalysisFinding {
   code: string;
   name: string;

@@ -31,7 +31,6 @@ export enum DRLevel {
   PROLIFERATIVE = 4,
 }
 
-/** @deprecated use DRLevel */
 export const DrSeverity = DRLevel;
 
 export const DR_LEVEL_LABELS: Record<DRLevel, string> = {
@@ -42,7 +41,6 @@ export const DR_LEVEL_LABELS: Record<DRLevel, string> = {
   [DRLevel.PROLIFERATIVE]: 'Proliferative DR',
 };
 
-/** Plain-language explanation shown next to each grade (NFR14). */
 export const DR_LEVEL_DESCRIPTIONS: Record<DRLevel, string> = {
   [DRLevel.NO_DR]: 'No signs of diabetic retinopathy were detected.',
   [DRLevel.MILD]: 'Early, small changes in the retinal blood vessels. Usually monitored with regular check-ups.',
@@ -84,7 +82,6 @@ export enum AssignmentStatus {
   ENDED = 'ended',
 }
 
-/** Admin review of a doctor's medical license. Only approved doctors can use doctor features. */
 export enum DoctorVerificationStatus {
   PENDING = 'pending',
   APPROVED = 'approved',

@@ -2,11 +2,6 @@ import { ArgumentsHost, Catch, HttpException } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Localize } from '../language/localize.js';
 
-/**
- * Translates the `message` and `error` of every HTTP error into the request's language
- * (English or Arabic) before Nest writes the response. Validation messages arrive already
- * translated by I18nValidationPipe and pass through unchanged.
- */
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -14,10 +9,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       return super.catch(exception, host);
     }
     const body = exception.getResponse();
-    const translated =
-      typeof body === 'string'
-        ? Localize.text(body)
-        : {
+    const translated = typeof body === 'string' ? Localize.text(body): {
             ...body,
             ...('message' in body
               ? {

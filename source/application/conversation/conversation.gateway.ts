@@ -14,11 +14,6 @@ type Ack<T = unknown> = { ok: true; data: T } | { ok: false; error: string };
 
 const isObjectId = (value: unknown): value is string => typeof value === 'string' && /^[a-f\d]{24}$/i.test(value);
 
-/**
- * Socket.IO gateway (FR6.1). Connect with `auth: { token: "<access token>" }`.
- * Client → server: join_conversation, leave_conversation, send_message, typing, mark_read
- * Server → client: receive_message, message_read, typing, conversation_updated, notification
- */
 @WebSocketGateway({ cors: { origin: true, credentials: true } })
 export class ConversationGateway implements OnGatewayInit, OnGatewayConnection {
   private readonly logger = new Logger(ConversationGateway.name);
@@ -32,7 +27,6 @@ export class ConversationGateway implements OnGatewayInit, OnGatewayConnection {
 
   afterInit(server: Server) {
     this.realtime.attach(server);
-    // Authenticate during the handshake, so no event can arrive before the user is known.
     server.use((socket, next) => {
       const client = socket as IAuthSocket;
       const raw = this.util.getAuthSocket(client);
