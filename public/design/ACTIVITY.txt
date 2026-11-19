@@ -1,0 +1,375 @@
+RetinaCare — Activity Diagrams
+==============================
+
+Notation : Mermaid flowcharts used as UML activity diagrams. Rounded boxes are actions, {..} are
+           decisions, and ([..]) are the start and end nodes. Paste a block into
+           https://mermaid.live to see it drawn.
+Status   : A1–A8 describe code that exists today (source/application/authentication, /user).
+           A9–A15 describe the planned domain flows that the database model was designed for.
+
+Contents
+  A1  Sign up (email + password)                      Guest
+  A2  Send / re-send the verification code            Guest
+  A3  Verify email                                    Guest
+  A4  Sign in                                         Guest
+  A5  Forgot password / reset password                Guest
+  A6  Sign in with Google                             Guest
+  A7  Refresh token / logout                          Patient, Doctor, Admin
+  A8  Profile: view, update, upload or remove avatar  Patient, Doctor, Admin
+  A9  Doctor verification                             Doctor, Admin
+  A10 Doctor–patient assignment                       Patient, Doctor, Admin
+  A11 Upload a fundus image and run the AI analysis   Doctor, Patient, AI service
+  A12 Doctor review and report                        Doctor, Patient
+  A13 Availability and appointment booking            Doctor, Patient
+  A14 Chat                                            Doctor, Patient
+  A15 Notifications                                   System, every user
+
+
+A1. Sign up — POST /authentication/sign-up
+------------------------------------------
+Actor: Guest. Rate limit: 3 per hour (blocked for 5 hours after that).
+
+```mermaid
+flowchart TD
+    S([Guest submits name, email, password, city, role, acceptTerms]) --> V{DTO valid?}
+    V -- no --> E400[400 validation error]
+    V -- yes --> Q[QueryBus: FindUserByEmailQuery]
+    Q --> X{email already registered?}
+    X -- yes --> E409[409 'user exist before']
+    X -- no --> H[Hash password with PasswordHasher]
+    H --> R{role = doctor?}
+    R -- yes --> RD[role = doctor]
+    R -- no --> RP[role = patient]
+    RD --> C[CommandBus: CreateUserCommand<br/>provider = system, consentAcceptedAt]
+    RP --> C
+    C --> O[[In the background: issue an EMAIL_VERIFICATION OTP and email it]]
+    C --> OK([201 AuthenticationEntity — the account is not verified yet])
+    O -. mail failure is only logged .-> OK
+```
+
+
+A2. Send the verification code — POST /authentication/verify-email/send
+------------------------------------------------------------------------
+Actor: Guest (or a signed-in user who has not verified yet). Rate limit: 3 per hour.
+
+```mermaid
+flowchart TD
+    S([Client sends email]) --> A[Reply 202 Accepted immediately]
+    A --> END1([Client shows 'check your inbox'])
+    S --> B[[Background task]]
+    B --> Q[FindUserByEmailQuery]
+    Q --> U{user exists AND emailVerifiedAt is null?}
+    U -- no --> N([do nothing — the reply is the same, so the request<br/>does not reveal whether the account exists])
+    U -- yes --> G[OtpService.issue: random 6-digit code,<br/>store HMAC-SHA256 in cache under auth:otp:email-verification:email<br/>TTL 10 min, replaces any previous code]
+    G --> M[MailService.sendOtp: OtpMail 'Verify your RetinaCare email']
+    M --> D([done])
+```
+
+
+A3. Verify email — POST /authentication/verify-email
+----------------------------------------------------
+Actor: Guest. Rate limit: 5 per minute (blocked for 1 hour); this is the only brute-force guard.
+
+```mermaid
+flowchart TD
+    S([Client sends email + 6-digit code]) --> V[OtpService.verify: HMAC the code,<br/>timing-safe compare with the cached hash]
+    V --> OKC{match?}
+    OKC -- no / expired --> E400[400 'Invalid or expired verification code']
+    OKC -- yes --> DEL[Delete the cached code — it can be used once]
+    DEL --> U[UpdateUserCommand filter email, emailVerifiedAt null<br/>set emailVerifiedAt = now]
+    U --> R([204 No Content])
+```
+
+
+A4. Sign in — POST /authentication/sign-in
+------------------------------------------
+Actor: Guest. Rate limit: 5 per minute (blocked for 5 hours).
+
+```mermaid
+flowchart TD
+    S([Client sends email + password]) --> Q[FindUserByEmailQuery<br/>projection +passwordHash +googleId]
+    Q --> F{user found?}
+    F -- no --> E404[404]
+    F -- yes --> VE{emailVerifiedAt set?}
+    VE -- no --> E409[409 'email not verified yet']
+    VE -- yes --> P[PasswordHasher.verify]
+    P --> PV{password valid?}
+    PV -- no --> E401[401 'Invalid email or password']
+    PV -- yes --> T[TokenService.issue userId<br/>access token + refresh token]
+    T --> R([200 TokenPair])
+```
+Note: the 404 and 409 replies come before the password check, so this endpoint tells a caller
+whether an email is registered or verified. To avoid that, check the password first and use a
+single 401 for every failure.
+
+
+A5. Forgot password and reset password
+--------------------------------------
+Actor: Guest. Rate limits: forgot-password 3 per minute; reset-password 5 per minute.
+
+```mermaid
+flowchart TD
+    S([POST /forgot-password with email]) --> A[202 Accepted immediately]
+    S --> B[[Background]]
+    B --> Q{user exists?}
+    Q -- no --> N([nothing sent])
+    Q -- yes --> G[issue a PASSWORD_RESET OTP, 10 min TTL] --> M[email 'Your RetinaCare password reset code']
+
+    R([POST /reset-password with email, code, new password]) --> V{OtpService.verify PASSWORD_RESET}
+    V -- no --> E400[400 'Invalid or expired verification code']
+    V -- yes --> U{user still exists?}
+    U -- no --> E400
+    U -- yes --> H[Hash the new password]
+    H --> W[UpdateUserCommand: set passwordHash,<br/>and emailVerifiedAt if it was empty — owning the inbox proves the email]
+    W --> RV[TokenService.revokeAll — signs out every device]
+    RV --> OK([204 No Content])
+```
+
+
+A6. Sign in with Google — POST /authentication/google
+-----------------------------------------------------
+Actor: Guest. The client gets a Google ID token from Google Identity Services and posts it here.
+
+```mermaid
+flowchart TD
+    S([Client sends idToken and optional city]) --> CFG{OAUTH_GOOGLE_CLIENT_ID configured?}
+    CFG -- no --> E503a[503 'Google sign-in is not configured']
+    CFG -- yes --> J[Verify the JWT signature with Google JWKS,<br/>iss = accounts.google.com, aud = our client id, 30s clock skew]
+    J --> JV{valid?}
+    JV -- JwtError --> E401[401 'Invalid Google credential']
+    JV -- JWKS unreachable --> E503b[503 'Google credential verification is unavailable']
+    JV -- yes --> EV{email_verified?}
+    EV -- no --> E401
+    EV -- yes --> L{a user with this googleId exists?}
+    L -- yes --> TOK
+    L -- no --> EM{a user with this email exists?}
+    EM -- no --> C{city provided?}
+    C -- no --> E400[400 'City is required to create an account']
+    C -- yes --> NEW[CreateUserCommand: role patient, provider google,<br/>googleId, avatarUrl = picture, emailVerifiedAt = now] --> TOK
+    EM -- yes --> HG{that user already has a different googleId?}
+    HG -- yes --> E409[409 'An account with this email or Google account already exists']
+    HG -- no --> VER{local email verified?}
+    VER -- no --> E403[403 'Verify your email address before signing in with Google']
+    VER -- yes --> LINK[UpdateUserCommand filter _id, googleId null<br/>set googleId — atomic link] --> LINKED{updated?}
+    LINKED -- no, linked by another request meanwhile --> E409
+    LINKED -- yes --> TOK
+    TOK[TokenService.issue userId, method google] --> R([200 TokenPair])
+```
+
+
+A7. Refresh token and logout
+----------------------------
+
+```mermaid
+flowchart TD
+    RF([POST /refresh with refreshToken]) --> RV{TokenService.refresh:<br/>token valid and not revoked?}
+    RV -- no --> E401[401]
+    RV -- yes --> ROT[Rotate: revoke the old refresh token, issue a new pair] --> R1([200 TokenPair])
+
+    LO([POST /logout with Bearer access token, type]) --> AU{authenticated?}
+    AU -- no --> E401b[401]
+    AU -- yes --> TY{type}
+    TY -- single --> ONE[TokenService.revoke refreshToken — this device only]
+    TY -- all --> ALL[TokenService.revokeAll userId — every device]
+    ONE --> R2([200])
+    ALL --> R2
+```
+
+
+A8. Profile: view, update, upload or remove avatar
+--------------------------------------------------
+Actor: any signed-in, active user (UserPolicy.viewOwnProfile / updateOwnProfile).
+
+```mermaid
+flowchart TD
+    S([Request to /user/me with Bearer token]) --> G{JwtAuth: token valid and user found?}
+    G -- no --> E401[401]
+    G -- yes --> P{policy: user.isActive?}
+    P -- no --> E403[403]
+    P -- yes --> W{which action}
+
+    W -- GET me --> Q[GetUserByIdQuery] --> F{found?}
+    F -- no --> E404[404 'User not found']
+    F -- yes --> ENT[UserEntity: removes passwordHash, googleId, avatarKey] --> R200([200 UserEntity])
+
+    W -- PATCH me --> UP[UpdateUserProfileCommand: set name and/or city only] --> ENT
+
+    W -- PUT me/avatar --> UPL[FileInterceptor 'avatar' -> uploadToDisk photos<br/>jpeg/png/webp, max 5 MB,<br/>key avatars/userId/uuid.ext]
+    UPL --> HAS{file present?}
+    HAS -- no --> E400[400 'Avatar file is required']
+    HAS -- yes --> SET[SetUserAvatarCommand: avatarKey, avatarUrl = public URL]
+    SET --> OLD{previous avatarKey?}
+    OLD -- yes --> DEL[delete the old file from the photos disk]
+    OLD -- no --> ENT
+    DEL --> ENT
+
+    W -- DELETE me/avatar --> HA{user has avatarKey?}
+    HA -- no --> E404b[404 'Avatar not found']
+    HA -- yes --> RM[RemoveUserAvatarCommand: unset avatarKey and avatarUrl] --> DF[delete the file] --> ENT
+
+    IMG([GET /photos/avatars/:userId/:file — public]) --> RX{userId is 24 hex chars,<br/>file is uuid.jpg/png/webp?}
+    RX -- no --> E400b[400 'Invalid id']
+    RX -- yes --> ST[ImageInterceptor: stat the key on the photos disk]
+    ST --> EX{exists and image/* but not svg?}
+    EX -- no --> E404c[404]
+    EX -- yes --> SF([200 image stream, inline,<br/>Cache-Control public max-age 1 year immutable, ETag / 304])
+```
+
+
+A9. Doctor verification (planned)
+---------------------------------
+Actors: Doctor (applies), Admin (decides).
+
+```mermaid
+flowchart TD
+    S([Doctor signs up with role doctor plus clinicName, clinicAddress, licenseNumber]) --> U[Create User role doctor]
+    U --> D[Create Doctor profile: verificationStatus pending, verificationSubmittedAt now]
+    D --> N1[Notify every admin: type system 'New doctor awaiting verification']
+    N1 --> A([Admin opens GET /admin/doctors?status=pending])
+    A --> REV{Admin checks the licence}
+    REV -- approve --> AP[status approved, verifiedAt now, verifiedBy admin] --> N2[Notify the doctor + email]
+    REV -- reject --> RJ[status rejected, rejectionReason] --> N3[Notify the doctor with the reason]
+    N3 --> RES{doctor fixes the details and resubmits?}
+    RES -- yes --> D2[status pending, verificationSubmittedAt now] --> N1
+    RES -- no --> END([doctor keeps patient-only access])
+    N2 --> PANEL([doctor-only endpoints are now allowed])
+```
+
+
+A10. Doctor–patient assignment (planned)
+----------------------------------------
+Actors: Patient (requests), Doctor (accepts, declines or ends), Admin (assigns directly).
+
+```mermaid
+flowchart TD
+    P([Patient: POST /doctors/:doctorId/requests]) --> AV{doctor approved and pair not already linked?}
+    AV -- no --> E409[409]
+    AV -- yes --> PEND[DoctorPatient status pending, assignedBy patient] --> ND[Notify the doctor]
+    ND --> DEC{Doctor decides}
+    DEC -- accept --> ACT[status active, assignedAt now]
+    DEC -- decline --> END1[status ended, endedAt now] --> NP1[Notify the patient]
+    ACT --> CONV[Create the Conversation for the pair if it does not exist] --> NP2[Notify the patient]
+
+    AD([Admin: POST /admin/assignments doctor, patient]) --> ACT
+    ENDR([Doctor or patient: DELETE /assignments/:id]) --> END2[status ended, endedAt now]
+    END2 --> RO[The conversation stays read-only; new uploads and bookings with this doctor are blocked]
+```
+
+
+A11. Upload a fundus image and run the AI analysis (planned)
+------------------------------------------------------------
+Actors: Doctor (for an assigned patient) or Patient (for themself); external AI service.
+
+```mermaid
+flowchart TD
+    S([POST /patients/:patientId/fundus-images with image, eye, capturedAt, notes]) --> AUTH{caller is the patient,<br/>or an approved doctor with an active assignment?}
+    AUTH -- no --> E403[403]
+    AUTH -- yes --> VAL{jpeg/png, size within MAX_IMAGE_SIZE_MB?}
+    VAL -- no --> E400[400]
+    VAL -- yes --> HASH[Compute sha256] --> DUP{same sha256 already stored for this patient?}
+    DUP -- yes --> RET([200 existing FundusImage — no duplicate])
+    DUP -- no --> STORE[Save to the private fundus disk -> storageKey] --> FI[Create FundusImage]
+    FI --> AN[Create Analysis status pending, attempts 0, history: pending]
+    AN --> R202([202 Accepted with analysisId — the client polls or waits for a notification])
+
+    AN --> JOB[[Queue worker]]
+    JOB --> PR[status processing, attempts + 1, history: processing]
+    PR --> AI[Call AI service stage 1: DR or no DR, eight findings]
+    AI --> OK1{success?}
+    OK1 -- no --> RETRY{attempts < max?}
+    RETRY -- yes --> PR
+    RETRY -- no --> FAIL[status failed, error message, history: failed] --> NF[Notify: type analysis 'failed']
+    OK1 -- yes --> DR{hasDR?}
+    DR -- no --> L0[predictedLevel 0]
+    DR -- yes --> S2[AI stage 2: grade 0..4 with TTA probabilities, Grad-CAM heat map]
+    S2 --> L[predictedLevel, confidence, probabilities, gradCamKey]
+    L0 --> DONE
+    L --> DONE[status completed, completedAt, processingMs, modelVersion, isMock]
+    DONE --> NOT[Notify the patient and the assigned doctor: type analysis]
+```
+
+
+A12. Doctor review and report (planned)
+---------------------------------------
+Actors: Doctor (reviews and writes), Patient (reads).
+
+```mermaid
+flowchart TD
+    S([Doctor opens GET /analyses/:id — completed]) --> CH{AI grade correct?}
+    CH -- yes --> CF[aiResultConfirmed true, confirmedLevel = predictedLevel]
+    CH -- no --> CO[aiResultConfirmed false, confirmedLevel = the doctor's grade]
+    CF --> RV[POST /analyses/:id/review: notes, recommendations, followUpDate]
+    CO --> RV
+    RV --> UQ{a review by this doctor already exists?}
+    UQ -- yes --> E409[409 — edit it with PATCH instead]
+    UQ -- no --> SAVE[Create DoctorReview]
+    SAVE --> FU{followUpDate set?}
+    FU -- yes --> SCH[Schedule a follow_up notification for that date]
+    FU -- no --> RP
+    SCH --> RP[POST /reports: title, content, recommendations, analysis, review — status draft]
+    RP --> ED[Doctor edits the draft as often as needed]
+    ED --> SEND[POST /reports/:id/send: status sent, sentAt now]
+    SEND --> NP[Notify the patient: type report + email]
+    NP --> PV([Patient: GET /reports/:id — the first open sets viewedAt])
+```
+
+
+A13. Availability and appointment booking (planned)
+---------------------------------------------------
+Actors: Doctor (publishes slots, confirms or completes), Patient (books or cancels).
+
+```mermaid
+flowchart TD
+    D([Doctor: POST /availability with startAt and endAt list]) --> OV{overlaps or duplicates an existing startAt?}
+    OV -- yes --> E409a[409]
+    OV -- no --> SL[Create DoctorAvailability slots, isBooked false]
+
+    P([Patient: GET /doctors/:id/availability?from&to]) --> PICK[Choose a free slot]
+    PICK --> BK[POST /appointments slotId, reason]
+    BK --> AT{atomic update: slot isBooked false -> true}
+    AT -- lost the race --> E409b[409 'Slot already booked']
+    AT -- won --> AP[Create Appointment status pending,<br/>scheduledAt/endAt copied from the slot, slot.appointment = id]
+    AP --> ND[Notify the doctor: type appointment]
+    ND --> DC{Doctor}
+    DC -- confirm --> CF[status confirmed] --> NP[Notify the patient]
+    DC -- reject --> CX
+    CF --> TIME{appointment date reached}
+    TIME --> COMP[Doctor: status completed, notes]
+    PCX([Patient or doctor: POST /appointments/:id/cancel reason]) --> CX[status cancelled, cancelledBy, cancelReason]
+    CX --> FREE[Release the slot: isBooked false, appointment null] --> NO[Notify the other party]
+```
+
+
+A14. Chat (planned)
+-------------------
+Actors: Doctor and Patient who share an active assignment.
+
+```mermaid
+flowchart TD
+    S([POST /conversations/:id/messages with text and/or attachments]) --> PA{caller is a participant and the assignment is active?}
+    PA -- no --> E403[403]
+    PA -- yes --> M[Create Message: sender, message, attachments]
+    M --> C[Conversation: lastMessage, lastMessageAt]
+    C --> RT{recipient online over WebSocket?}
+    RT -- yes --> PUSH[Push the message, add the recipient to deliveredTo]
+    RT -- no --> NOTI[Notification type message, emailed later if still unread]
+    PUSH --> RD([Recipient opens the chat: POST /conversations/:id/read adds them to readBy])
+    E([Sender edits: PATCH /messages/:id sets editedAt]) --> PUSH
+    DL([Sender deletes: DELETE /messages/:id sets deletedAt — soft delete]) --> PUSH
+```
+
+
+A15. Notifications (planned)
+----------------------------
+Actor: System (creates them); every signed-in user (reads them).
+
+```mermaid
+flowchart TD
+    EV([Domain event: analysis done, report sent, appointment change, message, follow-up, system]) --> N[Create Notification: recipient, type, title, body, link, resourceId]
+    N --> SK[Push over WebSocket if the user is connected]
+    N --> EM{type warrants email and user still unread after the delay?}
+    EM -- yes --> MAIL[Send email, set emailedAt]
+    U([User: GET /notifications?read=false]) --> LIST[Paginated list, newest first]
+    LIST --> MR[PATCH /notifications/:id/read — read true, readAt now]
+    LIST --> MA[POST /notifications/read-all]
+```

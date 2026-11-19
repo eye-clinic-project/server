@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IDoctorReview } from '../../dependency/interface/database-schema.interface.js';
-import { DR_LEVEL_VALUES } from '../../dependency/enum/database.enum.js';
+import { IDoctorReview } from '../../dependencies/interface/index.js';
+import { DR_LEVEL_VALUES } from '../../dependencies/enum/index.js';
 
 export type HDoctorReviewDocument = HydratedDocument<IDoctorReview>;
 
@@ -17,7 +17,6 @@ export class DoctorReview {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true, index: true })
   patient: Types.ObjectId;
 
-  /** Whether the doctor agrees with the AI grade. */
   @Prop({ type: Boolean, required: true })
   aiResultConfirmed: boolean;
 

@@ -1,0 +1,704 @@
+RetinaCare — API Design
+=======================
+
+Base URL       : {APP_URL}   (no global prefix and no versioning; e.g. http://127.0.0.1:9090)
+Format         : JSON. Every successful JSON response is wrapped by TransformInterceptor:
+                   { "message": "Request completed successfully", "data": <payload> }
+                 File and image responses (StreamableFile) are sent raw, without the wrapper.
+Errors         : { statusCode, message, error }. The message is translated by Localize into the
+                 caller's language: ?language=ar, then the x-language header, then Accept-Language
+                 (en | ar).
+Authentication : `Authorization: Bearer <accessToken>` (JwtAuth, @nestjs/authentication).
+                 Tokens come from sign-in, Google sign-in or refresh.
+Validation     : ValidationPipe { whitelist, forbidNonWhitelisted, transform }. Unknown fields are
+                 rejected with 400.
+Rate limits    : @nestjs/throttler, per client. "5/1m, block 5h" means 5 calls per minute, then
+                 the client is blocked for 5 hours (429 Too Many Requests).
+Caching        : Anonymous GET responses are cached (memory + Redis) under http:<url>. Requests
+                 that carry a user, an Authorization header or a cookie are never cached.
+
+Actors (who performs each function)
+  Guest   — not signed in.
+  Patient — User with role patient.
+  Doctor  — User with role doctor. "Approved doctor" means Doctor.verificationStatus = approved.
+  Admin   — User with role admin.
+  System  — the server itself (background jobs, the AI worker, schedulers).
+  Any user — any signed-in, active user (isActive = true).
+
+Status of each endpoint
+  [IMPLEMENTED] — exists in source/application today and matches this document.
+  [PLANNED]     — designed from the database model (source/database/model); not built yet.
+
+Endpoint index
+  1. Authentication  AUTH-01 … AUTH-09
+  2. User / profile  USER-01 … USER-05
+  3. Patients        PAT-01 … PAT-04
+  4. Doctors         DOC-01 … DOC-05
+  5. Admin           ADM-01 … ADM-06
+  6. Assignments     ASG-01 … ASG-05
+  7. Fundus images   IMG-01 … IMG-04
+  8. Analyses        ANA-01 … ANA-05
+  9. Doctor reviews  REV-01 … REV-03
+ 10. Reports         REP-01 … REP-06
+ 11. Availability    AVL-01 … AVL-03
+ 12. Appointments    APT-01 … APT-06
+ 13. Chat            CHT-01 … CHT-06
+ 14. Notifications   NOT-01 … NOT-04
+
+
+==================================================================================================
+1. AUTHENTICATION  — controller: source/application/authentication/authentication.controller.ts
+==================================================================================================
+
+AUTH-01  POST /authentication/sign-up                                              [IMPLEMENTED]
+  Who        : Guest
+  Auth       : optional (@Authenticate({ optional: true })), @Can.Anyone()
+  Rate limit : 3/1h, block 5h
+  Request    : {
+                 "name": string (1..100, trimmed),
+                 "email": string (email, ≤254, lowercased),
+                 "password": string (8..72),
+                 "city": string (1..100),
+                 "role"?: "patient" | "doctor"  (default patient),
+                 "acceptTerms"?: boolean,
+                 "clinicName"?: string (≤150, required when role = doctor),
+                 "clinicAddress"?: string (≤300, required when role = doctor),
+                 "specialty"?: string (≤100),
+                 "licenseNumber"?: string (≤50, required when role = doctor)
+               }
+  Response   : 201 AuthenticationEntity (the new user without secrets; emailVerifiedAt is null)
+  Errors     : 400 validation · 409 "user exist before" · 429
+  Description: Registers a new account with email and password. The server checks that the email
+               is not already used, hashes the password with PasswordHasher, and creates the User
+               through CreateUserCommand with provider = system. The role is patient unless the
+               caller asks for doctor. Admins cannot be created here. consentAcceptedAt is set
+               when acceptTerms is true. Right after the account is created, a 6-digit email
+               verification code is generated in the background and emailed (see AUTH-05). A mail
+               failure is only logged and does not fail the sign-up. The account can't sign in
+               until the email is verified.
+               Planned: when role = doctor, also create the Doctor profile with the clinic and
+               licence fields and verificationStatus = pending, and notify admins (DOC / ADM).
+
+AUTH-02  POST /authentication/sign-in                                              [IMPLEMENTED]
+  Who        : Guest (any registered, verified user)
+  Auth       : optional, @Can.Anyone()
+  Rate limit : 5/1m, block 5h
+  Request    : { "email": string, "password": string (1..72) }
+  Response   : 200 TokenPair { accessToken, refreshToken, ... }
+  Errors     : 404 unknown email · 409 "email not verified yet" · 401 "Invalid email or password" · 429
+  Description: Exchanges email and password for an access token and a refresh token. The user is
+               loaded with its hidden passwordHash, the email must be verified, and the password
+               is checked with PasswordHasher.verify. The access token is short-lived and goes in
+               the Authorization header; the refresh token is used with AUTH-03.
+               Known issue: the 404 and 409 replies come before the password check, so a caller
+               can find out whether an email is registered or verified. The recommended fix is to
+               check the password first and answer every failure with the same 401. Disabled
+               accounts (isActive = false) should also be refused here.
+
+AUTH-03  POST /authentication/refresh                                              [IMPLEMENTED]
+  Who        : Patient, Doctor, Admin (holder of a valid refresh token)
+  Auth       : optional (the refresh token in the body is the credential), @Can.Anyone()
+  Rate limit : 10/1m, block 15m
+  Request    : { "refreshToken": string (≤512) }
+  Response   : 200 TokenPair
+  Errors     : 401 invalid, expired or revoked refresh token · 429
+  Description: Issues a new token pair from a refresh token, via @nestjs/authentication
+               TokenService.refresh. Clients call it when the access token expires, so the user
+               stays signed in without entering the password again. A refresh token that was
+               revoked by logout or a password reset is refused.
+
+AUTH-04  POST /authentication/logout                                               [IMPLEMENTED]
+  Who        : Patient, Doctor, Admin
+  Auth       : required (Bearer), @Can.Anyone()
+  Rate limit : 10/1m, block 15m
+  Request    : { "type": "single" | "all", "refreshToken"?: string (required when type = single) }
+  Response   : 200 (empty data)
+  Errors     : 400 validation · 401 · 429
+  Description: Ends sessions. "single" revokes only the given refresh token (this device).
+               "all" revokes every refresh token of the signed-in user (every device), for
+               example after a lost phone. Access tokens that were already issued stay valid
+               until they expire, so the access-token TTL should be kept short.
+
+AUTH-05  POST /authentication/verify-email/send                                    [IMPLEMENTED]
+  Who        : Guest (or a signed-in user who has not verified yet)
+  Auth       : optional, @Can.Anyone()
+  Rate limit : 3/1h, block 5h
+  Request    : { "email": string }
+  Response   : 202 Accepted (empty data), returned immediately
+  Errors     : 400 validation · 429
+  Description: Sends a new email verification code. The reply is always 202 and the work runs in
+               the background, so the response never tells whether the email exists. If the user
+               exists and is not verified yet, OtpService issues a random 6-digit code. Only the
+               HMAC-SHA256 of the code is stored in the cache, under
+               auth:otp:email-verification:<email>, for 10 minutes. A new code replaces the
+               previous one. The code is emailed with the OtpMail template. Unknown or already
+               verified emails are ignored silently.
+
+AUTH-06  POST /authentication/verify-email                                         [IMPLEMENTED]
+  Who        : Guest
+  Auth       : optional, @Can.Anyone()
+  Rate limit : 5/1m, block 1h  (this is the only brute-force guard for the 6-digit code)
+  Request    : { "email": string, "code": "^\d{6}$" }
+  Response   : 204 No Content
+  Errors     : 400 "Invalid or expired verification code" · 429
+  Description: Confirms that the user owns the email. The submitted code is hashed and compared
+               with the cached hash using a timing-safe comparison. On success the code is
+               deleted, so it works only once, and emailVerifiedAt is set with UpdateUserCommand.
+               The filter only matches users that are not verified yet, so the call is idempotent.
+               After this the user can sign in (AUTH-02).
+
+AUTH-07  POST /authentication/forgot-password                                      [IMPLEMENTED]
+  Who        : Guest
+  Auth       : optional, @Can.Anyone()
+  Rate limit : 3/1m, block 1h
+  Request    : { "email": string }
+  Response   : 202 Accepted (empty data)
+  Errors     : 400 validation · 429
+  Description: Starts a password reset. Like AUTH-05, it always answers 202 and works in the
+               background, so it never reveals whether the email exists. If the account exists, a
+               PASSWORD_RESET code (6 digits, 10 minutes, stored hashed) is emailed with the
+               subject "Your RetinaCare password reset code".
+
+AUTH-08  POST /authentication/reset-password                                       [IMPLEMENTED]
+  Who        : Guest
+  Auth       : optional, @Can.Anyone()
+  Rate limit : 5/1m, block 1h
+  Request    : { "email": string, "code": "^\d{6}$", "password": string (8..72) }
+  Response   : 204 No Content
+  Errors     : 400 "Invalid or expired verification code" · 429
+  Description: Sets a new password using the code from AUTH-07. The code is checked and used up,
+               the new password is hashed and saved, and emailVerifiedAt is set if it was empty
+               (receiving the code proves the user owns the inbox). Finally every refresh token of
+               the user is revoked, which signs out all devices, including one an attacker may
+               hold.
+
+AUTH-09  POST /authentication/google                                  [IMPLEMENTED in service]
+  Who        : Guest
+  Auth       : optional, @Can.Anyone()
+  Rate limit : 5/1m, block 5h
+  Request    : { "idToken": string (≤4096, Google ID token), "city"?: string (≤100) }
+  Response   : 200 TokenPair
+  Errors     : 400 "City is required to create an account"
+               401 "Invalid Google credential"
+               403 "Verify your email address before signing in with Google"
+               409 "An account with this email or Google account already exists"
+               503 "Google sign-in is not configured" / "Google credential verification is unavailable"
+  Description: Signs in or signs up with Google. The client (web or mobile) gets an ID token from
+               Google Identity Services and posts it here. GoogleIdentityService checks the
+               signature against Google's JWKS, the issuer, the audience (OAUTH_GOOGLE_CLIENT_ID,
+               which can be a comma-separated list of client ids) and the expiry, and requires
+               email_verified. Then:
+                 1) a user already linked to this Google subject signs in;
+                 2) otherwise, if no account uses the email, a new patient is created
+                    (provider google, emailVerifiedAt now, avatarUrl from Google). city is
+                    required in this case only;
+                 3) otherwise the existing account is linked to Google, but only if its own
+                    email was verified (this stops someone taking over an unverified account) and
+                    it isn't linked to another Google account. The link is an atomic
+                    conditional update, so two parallel requests can't both link it.
+               The tokens carry method = google.
+               NOTE: the controller method google() is an empty stub right now. It must be wired
+               back to AuthenticationService.googleSignIn with @Body() GoogleSignInDto,
+               @HttpCode(200), @RateLimit.signIn(), @Authenticate({ optional: true }) and
+               @Can.Anyone().
+
+
+==================================================================================================
+2. USER / PROFILE  — controller: source/application/user/user.controller.ts
+==================================================================================================
+
+USER-01  GET /user/me                                                              [IMPLEMENTED]
+  Who        : Any user (Patient, Doctor, Admin)
+  Auth       : required, @Can(UserPolicy, 'viewOwnProfile') — the user must be active
+  Response   : 200 UserEntity { _id, name, email, city, phone, avatarUrl, role, provider,
+               emailVerified: boolean, consentAcceptedAt, isActive, language, createdAt, updatedAt }
+  Errors     : 401 · 403 disabled account · 404 "User not found"
+  Description: Returns the signed-in user's own profile, loaded fresh with GetUserByIdQuery.
+               UserEntity removes passwordHash, googleId and avatarKey, and turns emailVerifiedAt
+               into an emailVerified boolean. The front end calls this after sign-in to decide
+               what to show: role, verification state and avatar. It is never cached, because the
+               request is authenticated.
+
+USER-02  PATCH /user/me                                                            [IMPLEMENTED]
+  Who        : Any user
+  Auth       : required, @Can(UserPolicy, 'updateOwnProfile')
+  Request    : { "name"?: string, "city"?: string }  (any other field → 400)
+  Response   : 200 UserEntity
+  Errors     : 400 · 401 · 403 · 404
+  Description: Updates the editable profile fields. Only name and city can be changed here. The
+               email, role, provider and verification fields can't be edited by the user.
+               Updated with UpdateUserProfileCommand (findByIdAndUpdate with runValidators, bumps
+               __v).
+
+USER-03  PUT /user/me/avatar                                                       [IMPLEMENTED]
+  Who        : Any user
+  Auth       : required, @Can(UserPolicy, 'updateOwnProfile')
+  Rate limit : 20/1m, block 5m
+  Request    : multipart/form-data, field "avatar": image/jpeg | image/png | image/webp, ≤ 5 MB
+  Response   : 200 UserEntity (avatarUrl points to USER-05)
+  Errors     : 400 "Avatar file is required" / wrong type · 401 · 403 · 413 too large
+  Description: Uploads or replaces the profile picture. The file is streamed to the 'photos'
+               storage disk under avatars/<userId>/<uuid>.<ext>. A random name on every upload
+               means browsers and CDNs can cache an avatar URL forever without showing a stale
+               picture. avatarKey and avatarUrl are saved with SetUserAvatarCommand, and then the
+               previous avatar file, if any, is deleted.
+
+USER-04  DELETE /user/me/avatar                                                    [IMPLEMENTED]
+  Who        : Any user
+  Auth       : required, @Can(UserPolicy, 'updateOwnProfile')
+  Response   : 200 UserEntity (avatarUrl removed)
+  Errors     : 401 · 403 · 404 "Avatar not found"
+  Description: Removes the profile picture. The avatarKey and avatarUrl fields are unset
+               (RemoveUserAvatarCommand) and the file is deleted from the photos disk.
+
+USER-05  GET /photos/avatars/:userId/:file                                         [IMPLEMENTED]
+  Who        : Anyone (Guest included) — @Public(), @Can.Anyone()
+  Params     : userId = 24 hex characters; file = <uuid>.(jpg|png|webp)
+  Response   : 200 the image bytes, Content-Disposition inline,
+               Cache-Control: public, max-age=31536000, immutable; ETag / 304 supported
+  Errors     : 400 "Invalid id" · 404
+  Description: Serves avatar images so they can be used directly in <img src>. The route only
+               builds and validates the storage key. @ServeImage('photos') (ImageInterceptor)
+               then checks that the file exists and is a raster image (SVG is refused because it
+               can carry scripts) and streams it. Avatars are public by design. Fundus images and
+               Grad-CAM maps are never served from here (see IMG-03 and ANA-04).
+
+
+==================================================================================================
+3. PATIENTS  — collection: patients (1:1 with users where role = patient)
+==================================================================================================
+
+PAT-01  GET /patients/me                                                               [PLANNED]
+  Who        : Patient
+  Response   : 200 Patient { medicalRecordNumber, dateOfBirth, gender, emergencyContact,
+               diabetesSince, medicalNotes }
+  Description: Returns the signed-in patient's medical profile. It is created the first time it
+               is needed: a medicalRecordNumber (unique, uppercase) is generated when the patient
+               signs up or is registered by a doctor.
+
+PAT-02  PATCH /patients/me                                                             [PLANNED]
+  Who        : Patient
+  Request    : { dateOfBirth?, gender?: "male"|"female", emergencyContact?, diabetesSince?: ≥1900 }
+  Description: Lets patients keep their own demographic and diabetes history up to date.
+               medicalNotes and medicalRecordNumber are read-only for patients; only the treating
+               doctor can write clinical notes (PAT-04).
+
+PAT-03  GET /patients?search=&page=&size=                                              [PLANNED]
+  Who        : Approved doctor (their assigned patients only), Admin (every patient)
+  Response   : 200 { docs: [User + Patient], count, currentPage, size, pages }
+  Description: Paginated patient list, using DatabaseRepository.paginate. search does a
+               case-insensitive match on name or email (users text index) or an exact
+               medicalRecordNumber. For doctors the list is limited to patients with an active
+               DoctorPatient assignment.
+
+PAT-04  GET | PATCH /patients/:patientId                                               [PLANNED]
+  Who        : Approved doctor with an active assignment; Admin
+  Request    : PATCH { medicalNotes?, diabetesSince?, emergencyContact? }
+  Errors     : 403 not assigned · 404
+  Description: Opens one patient's chart for the treating doctor, or lets them write clinical
+               notes. Every other medical endpoint for this patient (images, analyses, reports)
+               uses the same assignment check.
+
+
+==================================================================================================
+4. DOCTORS  — collection: doctors (1:1 with users where role = doctor)
+==================================================================================================
+
+DOC-01  GET /doctors?city=&specialty=&page=&size=                                      [PLANNED]
+  Who        : Anyone (Guest included). Anonymous responses are cached.
+  Response   : 200 page of { userId, name, city, avatarUrl, clinicName, clinicAddress, specialty,
+               bio, yearsOfExperience }
+  Description: Public directory of approved doctors only (verificationStatus = approved and
+               user.isActive), so patients can find a doctor and request one (ASG-01). Licence
+               numbers and verification details are never shown.
+
+DOC-02  GET /doctors/:doctorId                                                         [PLANNED]
+  Who        : Anyone
+  Description: Public profile of one approved doctor. Returns 404 for pending or rejected doctors.
+
+DOC-03  GET /doctors/me                                                                [PLANNED]
+  Who        : Doctor (any verification status)
+  Response   : 200 the full Doctor profile, including verificationStatus and rejectionReason
+  Description: Lets the doctor see their own verification progress and, when rejected, the
+               reason.
+
+DOC-04  PATCH /doctors/me                                                              [PLANNED]
+  Who        : Doctor
+  Request    : { clinicName?, clinicAddress?, specialty?, bio?, yearsOfExperience?, licenseNumber? }
+  Errors     : 409 licenseNumber already in use
+  Description: Updates the doctor profile. Changing licenseNumber after approval moves the
+               doctor back to pending, because the licence has to be checked again.
+
+DOC-05  POST /doctors/me/verification                                                  [PLANNED]
+  Who        : Doctor whose status is rejected
+  Description: Resubmits for verification after fixing the details: status goes back to
+               pending, verificationSubmittedAt = now, rejectionReason = null, and the admins are
+               notified.
+
+
+==================================================================================================
+5. ADMIN
+==================================================================================================
+
+ADM-01  GET /admin/doctors?status=pending|approved|rejected&page=&size=                [PLANNED]
+  Who        : Admin
+  Description: The doctor verification queue: every doctor with their licence number and
+               submission date, oldest first.
+
+ADM-02  POST /admin/doctors/:doctorId/approve                                          [PLANNED]
+  Who        : Admin
+  Description: Approves a doctor after checking the licence: verificationStatus = approved,
+               verifiedAt = now, verifiedBy = admin. Notifies the doctor in the app and by email.
+               From then on the doctor-only endpoints accept them.
+
+ADM-03  POST /admin/doctors/:doctorId/reject                                           [PLANNED]
+  Who        : Admin
+  Request    : { "reason": string }
+  Description: Rejects an application with a reason the doctor can read (DOC-03) and fix before
+               resubmitting (DOC-05).
+
+ADM-04  GET /admin/users?role=&isActive=&search=&page=&size=                           [PLANNED]
+  Who        : Admin
+  Description: Searches all accounts for support and moderation.
+
+ADM-05  PATCH /admin/users/:userId/status                                              [PLANNED]
+  Who        : Admin
+  Request    : { "isActive": boolean }
+  Description: Disables or re-enables an account. Disabling also revokes all of the user's
+               tokens (TokenService.revokeAll), and UserPolicy then refuses the account
+               everywhere. Admins cannot disable themselves.
+
+ADM-06  GET /admin/stats                                                               [PLANNED]
+  Who        : Admin
+  Description: Dashboard counts: users by role, pending doctors, analyses by status and DR level,
+               appointments this week.
+
+
+==================================================================================================
+6. DOCTOR–PATIENT ASSIGNMENTS  — collection: doctor_patients
+==================================================================================================
+
+ASG-01  POST /doctors/:doctorId/requests                                               [PLANNED]
+  Who        : Patient
+  Request    : { "notes"?: string }
+  Errors     : 404 doctor not approved · 409 already pending or active
+  Description: A patient asks to be followed by a doctor. Creates a DoctorPatient with status
+               pending and assignedBy = the patient, and notifies the doctor. The unique
+               (doctor, patient) index prevents duplicates. An ended pair is re-opened instead of
+               creating a new document.
+
+ASG-02  GET /assignments?status=pending|active|ended                                   [PLANNED]
+  Who        : Doctor (their patients), Patient (their doctors)
+  Description: Lists the caller's relationships. Doctors use status=pending as their inbox of
+               new requests.
+
+ASG-03  POST /assignments/:id/accept                                                   [PLANNED]
+  Who        : Approved doctor (the requested doctor)
+  Description: Accepts a request: status active, assignedAt = now. Creates the pair's
+               Conversation if it doesn't exist yet and notifies the patient. Image uploads,
+               analyses, reports, chat and bookings between the two are allowed from now on.
+
+ASG-04  POST /assignments/:id/decline  |  DELETE /assignments/:id                      [PLANNED]
+  Who        : Doctor (decline or end); Patient (cancel or end); Admin
+  Description: Declines a pending request or ends an active relationship: status ended,
+               endedAt = now. Medical history stays. The chat becomes read-only, and new
+               uploads and bookings between the pair are blocked.
+
+ASG-05  POST /admin/assignments                                                        [PLANNED]
+  Who        : Admin
+  Request    : { "doctor": userId, "patient": userId, "notes"?: string }
+  Description: Assigns a patient to a doctor directly (for example, a clinic onboarding its
+               patients). The assignment is created active, with assignedBy = the admin.
+
+
+==================================================================================================
+7. FUNDUS IMAGES  — collection: fundusImages, stored on a PRIVATE disk
+==================================================================================================
+
+IMG-01  POST /patients/:patientId/fundus-images                                        [PLANNED]
+  Who        : Approved doctor with an active assignment; Patient (when patientId is their own id)
+  Rate limit : upload 20/1m
+  Request    : multipart: "image" (jpeg/png, ≤ MAX_IMAGE_SIZE_MB), "eye": left|right|unknown,
+               "capturedAt"?, "notes"?
+  Response   : 202 { image: FundusImage, analysis: { _id, status: "pending" } }
+               200 when the same image was already uploaded (the existing one is returned)
+  Description: Uploads a retinal (fundus) photograph and starts the DR screening. The server
+               computes the sha256, so uploading the same file twice for one patient is
+               detected and nothing is duplicated. The file goes to the private fundus disk
+               (storageKey is select:false and never returned), and the FundusImage records who
+               uploaded it and for which eye. An Analysis is created with status pending and
+               queued for the AI worker (ANA flow, ACTIVITY A11). The client follows progress
+               with ANA-02 or waits for an "analysis" notification.
+
+IMG-02  GET /patients/:patientId/fundus-images?eye=&page=&size=                        [PLANNED]
+  Who        : The patient; their assigned doctors; Admin
+  Description: The patient's image history, newest first ((patient, createdAt desc) index),
+               each with its latest analysis status, so progression over time can be compared.
+
+IMG-03  GET /fundus-images/:id/file                                                    [PLANNED]
+  Who        : The patient; their assigned doctors
+  Response   : 200 image stream (inline, Cache-Control: private, no-store)
+  Description: Streams the original image after an authorisation check. Medical images must
+               not be public or shared through caches, unlike avatars (USER-05).
+
+IMG-04  DELETE /fundus-images/:id                                                      [PLANNED]
+  Who        : The uploader, while no completed analysis references the image; Admin
+  Description: Removes an image uploaded by mistake, together with the file. Images that
+               already have reviewed analyses are kept as part of the medical record.
+
+
+==================================================================================================
+8. ANALYSES  — collection: analyses (AI results)
+==================================================================================================
+
+ANA-01  POST /fundus-images/:id/analyses                                               [PLANNED]
+  Who        : Approved doctor with an active assignment
+  Rate limit : aiInference 10/1m, block 5m
+  Description: Runs the analysis again for an existing image, for example after a failure or a
+               model upgrade. Creates a new Analysis (status pending). Earlier analyses are kept,
+               and the (image, createdAt desc) index finds the latest one.
+
+ANA-02  GET /analyses/:id                                                              [PLANNED]
+  Who        : The patient; their assigned doctors
+  Response   : 200 { status, hasDR, stage1Confidence, predictedLevel, levelLabel, levelDescription,
+               confidence, probabilities[5], findings[], modelVersion, isMock, processingMs,
+               completedAt, history[], review? }
+  Description: Returns the AI result. Stage 1 gives DR / no DR and per-finding probabilities;
+               stage 2 gives the grade 0–4 (No DR, Mild, Moderate, Severe, Proliferative DR)
+               with class probabilities. levelLabel and levelDescription come from
+               DR_LEVEL_LABELS and DR_LEVEL_DESCRIPTIONS, in the caller's language. isMock = true
+               marks demo output from AI_MODE=mock, which must be shown as "not a real
+               diagnosis". history is the audit trail of status changes. Patients see the AI
+               grade together with a "pending doctor review" label until REV-01 is done.
+
+ANA-03  GET /analyses?patient=&status=&level=&page=&size=                              [PLANNED]
+  Who        : Doctor (their patients; their worklist), Admin
+  Description: The doctor's worklist. For example, status=completed together with "no review
+               yet" lists the results waiting for this doctor, sorted by severity and then by
+               date.
+
+ANA-04  GET /analyses/:id/grad-cam                                                     [PLANNED]
+  Who        : Assigned doctors (and the patient, if the clinic allows it)
+  Response   : 200 image stream (private, no-store)
+  Description: Streams the Grad-CAM heat map that shows which retinal regions drove the
+               prediction. gradCamKey is select:false and is only read here.
+
+ANA-05  POST /internal/analyses/:id/result                                             [PLANNED]
+  Who        : System (AI service callback, authenticated with a shared secret — not public)
+  Description: Lets the AI service report back asynchronously instead of being polled: writes
+               the stage 1 and stage 2 outputs, status completed or failed, processingMs and
+               modelVersion, appends to history, and sends the "analysis" notifications to the
+               patient and their doctors.
+
+
+==================================================================================================
+9. DOCTOR REVIEWS  — collection: doctor_reviews (one per doctor per analysis)
+==================================================================================================
+
+REV-01  POST /analyses/:id/review                                                      [PLANNED]
+  Who        : Approved doctor with an active assignment
+  Request    : { "aiResultConfirmed": boolean, "confirmedLevel": 0..4, "notes"?,
+                 "recommendations"?, "followUpDate"? }
+  Errors     : 409 already reviewed by this doctor · 422 the analysis is not completed
+  Description: The doctor's clinical sign-off on an AI result. The doctor agrees with the AI
+               grade (aiResultConfirmed = true, confirmedLevel = predictedLevel) or overrides it
+               with their own grade. confirmedLevel is the grade shown to the patient from then
+               on. A followUpDate schedules a follow_up notification for that day. Every override
+               is recorded, which can be used to monitor and retrain the model.
+
+REV-02  PATCH /reviews/:id                                                             [PLANNED]
+  Who        : The doctor who wrote the review
+  Description: Corrects or completes a review. Changes are allowed until a sent report
+               references the review.
+
+REV-03  GET /patients/:patientId/reviews                                               [PLANNED]
+  Who        : The patient; their assigned doctors
+  Description: The patient's reviewed history (confirmed grade over time), used to draw a
+               progression chart.
+
+
+==================================================================================================
+10. REPORTS  — collection: reports (draft → sent)
+==================================================================================================
+
+REP-01  POST /reports                                                                  [PLANNED]
+  Who        : Approved doctor with an active assignment
+  Request    : { "analysis": id, "review"?: id, "title": string, "content"?, "recommendations"? }
+  Response   : 201 Report (status draft)
+  Description: Starts a report for an analysis. It can be filled in from the review (grade,
+               notes, recommendations). Drafts are visible only to their author.
+
+REP-02  PATCH /reports/:id                                                             [PLANNED]
+  Who        : The author, while status = draft
+  Description: Edits a draft. Once sent, a report can't be changed; corrections are made by
+               sending a new report.
+
+REP-03  POST /reports/:id/send                                                         [PLANNED]
+  Who        : The author
+  Description: Publishes the report to the patient: status sent, sentAt = now, plus a "report"
+               notification and email. From now on the patient can see it.
+
+REP-04  GET /reports?patient=&status=&page=&size=                                      [PLANNED]
+  Who        : Patient (their sent reports), Doctor (reports they wrote), Admin
+  Description: Lists reports, newest first. Patients never see drafts.
+
+REP-05  GET /reports/:id                                                               [PLANNED]
+  Who        : The patient (when sent); the author
+  Description: Returns one report. The patient's first open sets viewedAt, so the doctor knows
+               the patient has read it.
+
+REP-06  GET /reports/:id/pdf                                                           [PLANNED]
+  Who        : The patient; the author
+  Rate limit : fileGeneration 10/1m
+  Description: Downloads a PDF of the report, with clinic branding, the fundus thumbnail, the
+               grade and the recommendations, for printing or sharing with another clinic.
+
+
+==================================================================================================
+11. AVAILABILITY  — collection: doctor_availability
+==================================================================================================
+
+AVL-01  POST /availability                                                             [PLANNED]
+  Who        : Approved doctor
+  Request    : { "slots": [{ "startAt": ISO, "endAt": ISO }, …] }
+  Errors     : 400 endAt ≤ startAt or in the past · 409 overlap
+  Description: The doctor publishes bookable time slots. The unique (doctor, startAt) index
+               prevents duplicates, and the server also rejects slots that overlap.
+
+AVL-02  GET /doctors/:doctorId/availability?from=&to=                                  [PLANNED]
+  Who        : Patient (assigned to the doctor); the doctor
+  Description: Free (isBooked = false) future slots in a date range, shown as a calendar for
+               booking.
+
+AVL-03  DELETE /availability/:id                                                       [PLANNED]
+  Who        : The doctor who owns the slot
+  Errors     : 409 the slot is booked (cancel the appointment first)
+  Description: Removes an unbooked slot.
+
+
+==================================================================================================
+12. APPOINTMENTS  — collection: appointments
+==================================================================================================
+
+APT-01  POST /appointments                                                             [PLANNED]
+  Who        : Patient with an active assignment to the slot's doctor
+  Request    : { "slot": id, "reason"?: string }
+  Errors     : 409 "Slot already booked"
+  Description: Books a slot. The slot is claimed with one atomic conditional update
+               (isBooked false → true), so two patients can't book the same time. Then an
+               Appointment is created with status pending and scheduledAt/endAt copied from the
+               slot, the two documents are linked, and the doctor is notified.
+
+APT-02  GET /appointments?status=&from=&to=&page=&size=                                [PLANNED]
+  Who        : Patient (their own), Doctor (their schedule), Admin
+  Description: The caller's agenda, using the (doctor, scheduledAt) and (patient, scheduledAt)
+               indexes.
+
+APT-03  POST /appointments/:id/confirm                                                 [PLANNED]
+  Who        : The appointment's doctor
+  Description: Confirms a pending booking (status confirmed) and notifies the patient. A reminder
+               notification is scheduled for the day before.
+
+APT-04  POST /appointments/:id/cancel                                                  [PLANNED]
+  Who        : The patient or the doctor of the appointment
+  Request    : { "reason"?: string }
+  Description: Cancels the appointment: status cancelled, cancelledBy, cancelReason. The slot is
+               freed again (isBooked false, appointment null) and the other party is notified.
+
+APT-05  POST /appointments/:id/complete                                                [PLANNED]
+  Who        : The appointment's doctor
+  Request    : { "notes"?: string }
+  Description: Marks the visit as done (status completed) and stores the doctor's visit notes.
+
+APT-06  PATCH /appointments/:id                                                        [PLANNED]
+  Who        : The patient (reason), the doctor (notes), while pending or confirmed
+  Description: Edits the free-text fields. To reschedule, the user cancels and books another
+               slot, which keeps the slot accounting simple.
+
+
+==================================================================================================
+13. CHAT  — collections: conversations (one per doctor–patient pair), messages
+==================================================================================================
+
+CHT-01  GET /conversations                                                             [PLANNED]
+  Who        : Doctor, Patient
+  Description: The caller's conversations, sorted by lastMessageAt, with the other participant's
+               name, their avatar and an unread count.
+
+CHT-02  GET /conversations/:id/messages?before=&limit=                                 [PLANNED]
+  Who        : A participant
+  Description: Message history, newest first, with cursor pagination ((conversation, createdAt
+               desc) index). Soft-deleted messages come back as "message deleted" placeholders.
+
+CHT-03  POST /conversations/:id/messages                                               [PLANNED]
+  Who        : A participant whose assignment is active
+  Rate limit : message 60/1m
+  Request    : { "message"?: string, "attachments"?: storage keys from a prior upload }
+  Description: Sends a message. Updates the conversation's lastMessage and lastMessageAt, pushes
+               the message to the recipient over WebSocket when they are online (deliveredTo),
+               and otherwise creates a "message" notification.
+
+CHT-04  POST /conversations/:id/read                                                   [PLANNED]
+  Who        : A participant
+  Description: Marks every message in the conversation as read by the caller (adds them to
+               readBy), which clears the unread badge and shows read receipts to the sender.
+
+CHT-05  PATCH /messages/:id                                                            [PLANNED]
+  Who        : The sender
+  Description: Edits the message text and sets editedAt.
+
+CHT-06  DELETE /messages/:id                                                           [PLANNED]
+  Who        : The sender
+  Description: Soft delete: sets deletedAt and keeps the record, as medical communication may
+               need to be audited.
+
+
+==================================================================================================
+14. NOTIFICATIONS  — collection: notifications
+==================================================================================================
+
+NOT-01  GET /notifications?read=&type=&page=&size=                                     [PLANNED]
+  Who        : Any user (only their own)
+  Description: The in-app notification feed, newest first, using the (recipient, read, createdAt)
+               index. Each item has a type and a link/resourceId the client uses to open the
+               related appointment, analysis, report or chat.
+
+NOT-02  GET /notifications/unread-count                                                [PLANNED]
+  Who        : Any user
+  Description: A cheap count for the bell badge.
+
+NOT-03  PATCH /notifications/:id/read                                                  [PLANNED]
+  Who        : The recipient
+  Description: Marks one notification as read (read true, readAt now).
+
+NOT-04  POST /notifications/read-all                                                   [PLANNED]
+  Who        : Any user
+  Description: Marks all of the caller's notifications as read.
+
+  System behaviour: notifications are created by the server when a domain event happens
+  (analysis completed or failed, report sent, appointment booked, confirmed or cancelled, new
+  message, follow-up date reached, doctor verification decision). Important types are also
+  emailed through @nestjs/mail when they are still unread after a delay; emailedAt records when.
+
+
+==================================================================================================
+Authorisation summary
+==================================================================================================
+
+                        Guest  Patient            Doctor (approved)            Admin
+Authentication          ✔      ✔                  ✔                            ✔
+Own profile / avatar    —      ✔                  ✔                            ✔
+Doctor directory        ✔      ✔                  ✔                            ✔
+Patient charts          —      own                assigned patients            all
+Fundus images           —      own (upload/read)  assigned (upload/read)       all
+Analyses                —      own (read)         assigned (run/read)          all
+Reviews / reports       —      own, sent only     write for assigned           read all
+Availability            —      read (assigned)    manage own                   —
+Appointments            —      book/cancel own    confirm/cancel/complete own  read all
+Chat                    —      with assigned dr   with assigned patients       —
+Notifications           —      own                own                          own
+Doctor verification     —      —                  view / resubmit own          approve / reject
+Account status          —      —                  —                            enable / disable
+
+A doctor whose verificationStatus is not approved has patient-level access only, plus DOC-03,
+DOC-04 and DOC-05.

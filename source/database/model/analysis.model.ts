@@ -2,14 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
 import { FundusImage } from './fundus-image.model.js';
-import { IAnalysis } from '../../dependency/interface/database-schema.interface.js';
-import { AnalysisStatus, DR_LEVEL_VALUES } from '../../dependency/enum/database.enum.js';
+import { IAnalysis } from '../../dependencies/interface/index.js';
+import { AnalysisStatus, DR_LEVEL_VALUES } from '../../dependencies/enum/index.js';
 
 export type HAnalysisDocument = HydratedDocument<IAnalysis>;
 
 @Schema({ _id: false })
 class AnalysisHistoryEntry {
-  @Prop({ type: String, enum: Object.values(AnalysisStatus), required: true })
+  @Prop({ type: String, enum: AnalysisStatus, required: true })
   status: AnalysisStatus;
 
   @Prop({ type: String })
@@ -61,7 +61,6 @@ export class Analysis {
   })
   status: AnalysisStatus;
 
-  /** Stage-1 output: DR / No DR (FR3.3). */
   @Prop({ type: Boolean, default: null })
   hasDR?: boolean | null;
 
@@ -75,11 +74,9 @@ export class Analysis {
   @Prop({ type: Number, min: 0, max: 1, default: null })
   confidence?: number | null;
 
-  /** Per-class probabilities [NoDR, Mild, Moderate, Severe, PDR] after TTA. */
   @Prop({ type: [Number], default: [] })
   probabilities?: number[];
 
-  /** Stage-1 multi-label scores for all eight classes (empty for mock results). */
   @Prop({ type: [AnalysisFindingSchema], default: [] })
   findings?: AnalysisFinding[];
 
@@ -89,7 +86,6 @@ export class Analysis {
   @Prop({ type: String, default: null })
   modelVersion?: string | null;
 
-  /** True when produced by AI_MODE=mock (demo only, not a real prediction). */
   @Prop({ type: Boolean, default: false })
   isMock?: boolean;
 
@@ -105,6 +101,9 @@ export class Analysis {
   @Prop({ type: Date, default: null })
   completedAt?: Date | null;
 
+  @Prop({ type: Date, default: null })
+  reviewedAt?: Date | null;
+
   @Prop({ type: [AnalysisHistoryEntrySchema], default: [] })
   history: AnalysisHistoryEntry[];
 }
@@ -112,3 +111,4 @@ export class Analysis {
 export const AnalysisSchema = SchemaFactory.createForClass(Analysis);
 AnalysisSchema.index({ patient: 1, createdAt: -1 });
 AnalysisSchema.index({ image: 1, createdAt: -1 });
+AnalysisSchema.index({ doctor: 1, status: 1, reviewedAt: 1, createdAt: -1 });

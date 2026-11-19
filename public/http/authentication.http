@@ -1,0 +1,79 @@
+### RetinaCare — authentication
+# Works with the VS Code "REST Client" extension and the JetBrains HTTP Client.
+# Start the server first: npm run start:dev  (PORT=9090 from .env.development)
+# Sign-up is rate limited to 3 requests per hour per IP (then blocked for 5 hours).
+# To run every request below, set THROTTLE_DISABLED=true in .env.development and restart.
+
+@baseUrl = http://localhost:9090
+@language = en
+
+### Sign up — patient (201)
+# Change the email before re-running: a second call with the same email returns 409.
+POST {{baseUrl}}/authentication/sign-up
+Content-Type: application/json
+x-language: {{language}}
+
+{
+  "name": "Sara Ahmed",
+  "email": "patient.sample@example.com",
+  "password": "Patient#2026",
+  "city": "Cairo",
+  "role": "patient",
+  "acceptTerms": true
+}
+
+### Sign up — doctor (201)
+# Doctor fields are validated by the DTO, but the doctor profile is not stored yet.
+POST {{baseUrl}}/authentication/sign-up
+Content-Type: application/json
+x-language: {{language}}
+
+{
+  "name": "Dr. Omar Hassan",
+  "email": "doctor.sample@example.com",
+  "password": "Doctor#2026",
+  "city": "Alexandria",
+  "role": "doctor",
+  "acceptTerms": true,
+  "clinicName": "Hassan Eye Clinic",
+  "clinicAddress": "12 Corniche Rd, Alexandria",
+  "specialty": "Ophthalmology",
+  "licenseNumber": "EG-OPH-10234"
+}
+
+### Sign up — duplicate email (409)
+# Run "Sign up — patient" first.
+POST {{baseUrl}}/authentication/sign-up
+Content-Type: application/json
+x-language: {{language}}
+
+{
+  "name": "Sara Ahmed",
+  "email": "patient.sample@example.com",
+  "password": "Patient#2026",
+  "city": "Cairo",
+  "acceptTerms": true
+}
+
+### Sign up — duplicate email, Arabic message (409)
+# The message stays English until AllExceptionsFilter and Localize are registered in the app.
+POST {{baseUrl}}/authentication/sign-up
+Content-Type: application/json
+x-language: ar
+
+{
+  "name": "Sara Ahmed",
+  "email": "patient.sample@example.com",
+  "password": "Patient#2026",
+  "city": "Cairo",
+  "acceptTerms": true
+}
+
+### Sign up — invalid body (expected 400 once a ValidationPipe is registered; 500 until then)
+POST {{baseUrl}}/authentication/sign-up
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "short"
+}

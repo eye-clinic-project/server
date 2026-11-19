@@ -1,0 +1,244 @@
+RetinaCare — Entity Relationship Diagram
+=========================================
+
+Source of truth : source/database/model/*.model.ts
+Database        : MongoDB (Mongoose). Every collection has _id (ObjectId), __v (bumped on every
+                  repository update) and createdAt / updatedAt (timestamps: true).
+Notation        : Mermaid erDiagram. Paste the block into https://mermaid.live or any Markdown
+                  viewer that renders ```mermaid blocks to see it drawn.
+
+Legend for keys : PK = primary key, FK = reference (ObjectId ref), UK = unique index.
+Cardinality     : ||--|| one-to-one, ||--o{ one-to-many (zero or more), }o--o{ many-to-many.
+
+
+```mermaid
+erDiagram
+    USER {
+        ObjectId _id PK
+        string   name
+        string   email UK "lowercase, trimmed"
+        string   passwordHash "select:false, absent for Google-only users"
+        string   city
+        string   phone
+        string   avatarKey "storage key on the 'photos' disk"
+        string   avatarUrl
+        string   role "admin | doctor | patient (indexed)"
+        string   provider "system | google"
+        string   googleId UK "sparse, select:false"
+        date     emailVerifiedAt
+        date     consentAcceptedAt
+        boolean  isActive "false = disabled by admin, cannot sign in"
+        string   language "en | ar | null"
+    }
+
+    PATIENT {
+        ObjectId _id PK
+        ObjectId user FK,UK "-> USER (role patient)"
+        string   medicalRecordNumber UK "uppercase"
+        date     dateOfBirth
+        string   gender "male | female"
+        string   emergencyContact
+        number   diabetesSince "year >= 1900"
+        string   medicalNotes
+        ObjectId createdBy FK "-> USER (doctor/admin who registered the patient)"
+    }
+
+    DOCTOR {
+        ObjectId _id PK
+        ObjectId user FK,UK "-> USER (role doctor)"
+        string   clinicName
+        string   clinicAddress
+        string   specialty
+        string   licenseNumber UK "sparse"
+        string   bio
+        number   yearsOfExperience
+        string   verificationStatus "pending | approved | rejected (indexed)"
+        date     verificationSubmittedAt
+        date     verifiedAt
+        ObjectId verifiedBy FK "-> USER (admin)"
+        string   rejectionReason
+    }
+
+    DOCTOR_PATIENT {
+        ObjectId _id PK
+        ObjectId doctor FK "-> USER"
+        ObjectId patient FK "-> USER"
+        string   status "pending | active | ended"
+        date     assignedAt
+        ObjectId assignedBy FK "-> USER"
+        date     endedAt
+        string   notes
+    }
+
+    FUNDUS_IMAGE {
+        ObjectId _id PK
+        ObjectId patient FK "-> USER"
+        ObjectId uploadedBy FK "-> USER"
+        string   eye "left | right | unknown"
+        string   source "upload"
+        string   storageKey "select:false"
+        string   mimeType
+        number   size "bytes"
+        string   sha256 "content hash, used to detect duplicates"
+        string   originalName
+        string   notes
+        date     capturedAt
+    }
+
+    ANALYSIS {
+        ObjectId _id PK
+        ObjectId doctor FK "-> USER"
+        ObjectId patient FK "-> USER"
+        ObjectId image FK "-> FUNDUS_IMAGE"
+        string   status "pending | processing | completed | failed"
+        boolean  hasDR "stage 1"
+        number   stage1Confidence "0..1"
+        number   predictedLevel "stage 2: 0..4"
+        number   confidence "0..1"
+        number[] probabilities "[NoDR, Mild, Moderate, Severe, PDR]"
+        object[] findings "AnalysisFinding[] (embedded)"
+        string   gradCamKey "select:false"
+        string   modelVersion
+        boolean  isMock
+        string   error
+        number   attempts
+        number   processingMs
+        date     completedAt
+        object[] history "AnalysisHistoryEntry[] (embedded)"
+    }
+
+    DOCTOR_REVIEW {
+        ObjectId _id PK
+        ObjectId analysis FK "-> ANALYSIS"
+        ObjectId doctor FK "-> USER"
+        ObjectId patient FK "-> USER"
+        boolean  aiResultConfirmed
+        number   confirmedLevel "0..4"
+        string   notes
+        string   recommendations
+        date     followUpDate
+    }
+
+    REPORT {
+        ObjectId _id PK
+        ObjectId doctor FK "-> USER"
+        ObjectId patient FK "-> USER"
+        ObjectId analysis FK "-> ANALYSIS"
+        ObjectId review FK "-> DOCTOR_REVIEW"
+        string   title
+        string   content
+        string   recommendations
+        string   status "draft | sent"
+        date     sentAt
+        date     viewedAt
+    }
+
+    DOCTOR_AVAILABILITY {
+        ObjectId _id PK
+        ObjectId doctor FK "-> USER"
+        date     startAt
+        date     endAt
+        boolean  isBooked
+        ObjectId appointment FK "-> APPOINTMENT"
+    }
+
+    APPOINTMENT {
+        ObjectId _id PK
+        ObjectId doctor FK "-> USER"
+        ObjectId patient FK "-> USER"
+        ObjectId slot FK "-> DOCTOR_AVAILABILITY"
+        date     scheduledAt
+        date     endAt
+        string   status "pending | confirmed | cancelled | completed"
+        string   reason
+        string   notes
+        ObjectId cancelledBy FK "-> USER"
+        string   cancelReason
+    }
+
+    CONVERSATION {
+        ObjectId   _id PK
+        ObjectId[] participants FK "-> USER (doctor + patient)"
+        ObjectId   doctor FK "-> USER"
+        ObjectId   patient FK "-> USER"
+        ObjectId   lastMessage FK "-> MESSAGE"
+        date       lastMessageAt
+    }
+
+    MESSAGE {
+        ObjectId   _id PK
+        ObjectId   conversation FK "-> CONVERSATION"
+        ObjectId   sender FK "-> USER"
+        string     message
+        string[]   attachments "storage keys"
+        ObjectId[] deliveredTo FK "-> USER"
+        ObjectId[] readBy FK "-> USER"
+        date       editedAt
+        date       deletedAt "soft delete"
+    }
+
+    NOTIFICATION {
+        ObjectId _id PK
+        ObjectId recipient FK "-> USER"
+        string   title
+        string   body
+        boolean  read
+        date     readAt
+        string   type "appointment | analysis | report | message | system | note | follow_up"
+        string   link
+        ObjectId resourceId "id of the related document (polymorphic)"
+        date     emailedAt
+    }
+
+    USER ||--o| PATIENT              : "has patient profile"
+    USER ||--o| DOCTOR               : "has doctor profile"
+    USER ||--o{ DOCTOR_PATIENT       : "doctor side"
+    USER ||--o{ DOCTOR_PATIENT       : "patient side"
+    USER ||--o{ FUNDUS_IMAGE         : "owns (patient)"
+    USER ||--o{ FUNDUS_IMAGE         : "uploads (uploadedBy)"
+    FUNDUS_IMAGE ||--o{ ANALYSIS     : "is analysed by"
+    USER ||--o{ ANALYSIS             : "requests (doctor)"
+    ANALYSIS ||--o{ DOCTOR_REVIEW    : "is reviewed in"
+    ANALYSIS ||--o{ REPORT           : "is reported in"
+    DOCTOR_REVIEW ||--o| REPORT      : "is summarised by"
+    USER ||--o{ DOCTOR_AVAILABILITY  : "publishes slots (doctor)"
+    DOCTOR_AVAILABILITY |o--o| APPOINTMENT : "booked as"
+    USER ||--o{ APPOINTMENT          : "attends (doctor/patient)"
+    USER ||--o{ CONVERSATION         : "participates"
+    CONVERSATION ||--o{ MESSAGE      : "contains"
+    CONVERSATION |o--o| MESSAGE      : "lastMessage"
+    USER ||--o{ MESSAGE              : "sends"
+    USER ||--o{ NOTIFICATION         : "receives"
+```
+
+
+Indexes and constraints (from the schemas)
+------------------------------------------
+users               email UK; googleId UK sparse; role; text index on (name, email)
+patients            user UK; medicalRecordNumber UK
+doctors             user UK; licenseNumber UK sparse; verificationStatus
+doctor_patients     (doctor, patient) UK — a pair is linked at most once; doctor; patient
+fundusImages        patient; (patient, createdAt desc)
+analyses            doctor; patient; status; (patient, createdAt desc); (image, createdAt desc)
+doctor_reviews      (analysis, doctor) UK — one review per doctor per analysis; analysis; patient
+reports             doctor; patient; (patient, createdAt desc)
+doctor_availability (doctor, startAt) UK — a doctor cannot publish two slots that start together
+appointments        (doctor, scheduledAt); (patient, scheduledAt)
+conversations       (doctor, patient) UK — exactly one chat per doctor–patient pair; participants
+messages            conversation; (conversation, createdAt desc)
+notifications       recipient; (recipient, read, createdAt desc)
+
+
+Design notes
+------------
+1. Every "doctor" and "patient" FK points to USER, not to DOCTOR / PATIENT. The DOCTOR and PATIENT
+   collections are 1:1 profile extensions keyed by `user`, so authentication, chat and
+   notifications only ever deal with user ids.
+2. Sensitive or internal fields are `select: false` (passwordHash, googleId, storageKey,
+   gradCamKey). They are loaded only on purpose with a projection such as '+passwordHash'.
+3. ANALYSIS embeds its `findings` and `history` arrays (no separate collections): they are always
+   read together with the analysis and never queried on their own.
+4. NOTIFICATION.resourceId is polymorphic: its target collection is implied by `type`
+   (appointment -> APPOINTMENT, report -> REPORT, analysis -> ANALYSIS, message -> CONVERSATION).
+5. DOCTOR_AVAILABILITY.appointment and APPOINTMENT.slot reference each other. Both are written in
+   the same operation when a slot is booked, and both are cleared when it is cancelled.

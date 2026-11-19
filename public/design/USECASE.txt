@@ -1,0 +1,820 @@
+RetinaCare — Use Case Model
+===========================
+
+Notation : PlantUML use-case diagrams. Mermaid has no use-case diagram type, so these blocks use
+           PlantUML. Paste a block into https://www.plantuml.com/plantuml or open it with the
+           VS Code / JetBrains PlantUML plugin.
+Related  : API.txt (endpoint IDs such as AUTH-01), ACTIVITY.txt (flows such as A1), CLASS.txt, ERD.txt
+Status   : [IMPLEMENTED] = in the code today; [PLANNED] = designed from the database model.
+
+
+1. Actors
+---------
+
+Guest        Anyone who is not signed in. Can register, sign in, recover a password and browse the
+             public doctor directory.
+User         Abstract actor: any signed-in, active account. Patient, Doctor and Admin all
+             specialise it and inherit its use cases (profile, notifications, sign-out).
+Patient      A person with diabetes being screened. Owns their medical record, fundus images,
+             results and reports.
+Doctor       An ophthalmologist or physician. After an admin approves the licence, the doctor
+             follows assigned patients, runs AI screening, confirms results and writes reports.
+Admin        Platform operator. Verifies doctors, manages accounts and assignments, and watches
+             platform statistics.
+AI Service   External secondary actor (AI_* env vars). Grades fundus images in two stages: DR yes/no,
+             then severity 0–4 with a Grad-CAM heat map.
+Mail Server  External secondary actor (SMTP through @nestjs/mail). Delivers OTP codes and
+             notification emails.
+Google       External secondary actor (Google Identity Services and JWKS). Issues and signs the ID
+             tokens used for Google sign-in.
+Scheduler    Time-based system actor. Triggers follow-up reminders, appointment reminders and
+             delayed notification emails.
+
+
+2. Use case diagrams
+--------------------
+
+2.1 Overview (every actor, grouped by subsystem)
+
+```plantuml
+@startuml RetinaCare_UseCase_Overview
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Guest" as Guest
+actor "User" as User
+actor "Patient" as Patient
+actor "Doctor" as Doctor
+actor "Admin" as Admin
+actor "AI Service" as AI <<system>>
+actor "Mail Server" as Mail <<system>>
+actor "Google" as Google <<system>>
+actor "Scheduler" as Clock <<system>>
+
+User <|-- Patient
+User <|-- Doctor
+User <|-- Admin
+
+rectangle "RetinaCare Platform" {
+
+  package "Account & Access" {
+    usecase "UC-01 Register account" as UC01
+    usecase "UC-02 Verify email" as UC02
+    usecase "UC-03 Sign in" as UC03
+    usecase "UC-04 Sign in with Google" as UC04
+    usecase "UC-05 Recover password" as UC05
+    usecase "UC-06 Keep session / sign out" as UC06
+    usecase "Send OTP email" as SendOtp
+  }
+
+  package "Profile" {
+    usecase "UC-07 Manage own profile" as UC07
+    usecase "UC-08 Manage avatar" as UC08
+    usecase "UC-09 Manage patient medical profile" as UC09
+    usecase "UC-10 Manage doctor profile" as UC10
+  }
+
+  package "Doctor Onboarding" {
+    usecase "UC-11 Browse doctor directory" as UC11
+    usecase "UC-12 Submit / resubmit verification" as UC12
+    usecase "UC-13 Verify doctor" as UC13
+  }
+
+  package "Care Relationship" {
+    usecase "UC-14 Request a doctor" as UC14
+    usecase "UC-15 Accept / decline / end assignment" as UC15
+    usecase "UC-16 Assign patient to doctor" as UC16
+    usecase "UC-17 View patient chart" as UC17
+  }
+
+  package "DR Screening" {
+    usecase "UC-18 Upload fundus image" as UC18
+    usecase "UC-19 Run AI analysis" as UC19
+    usecase "UC-20 View analysis result" as UC20
+    usecase "UC-21 Review AI result" as UC21
+    usecase "UC-22 Write and send report" as UC22
+    usecase "UC-23 Read / download report" as UC23
+    usecase "UC-24 View screening history" as UC24
+  }
+
+  package "Scheduling" {
+    usecase "UC-25 Publish availability" as UC25
+    usecase "UC-26 Book appointment" as UC26
+    usecase "UC-27 Manage appointment" as UC27
+  }
+
+  package "Communication" {
+    usecase "UC-28 Chat with doctor / patient" as UC28
+    usecase "UC-29 Receive notifications" as UC29
+  }
+
+  package "Administration" {
+    usecase "UC-30 Manage user accounts" as UC30
+    usecase "UC-31 View platform statistics" as UC31
+  }
+}
+
+Guest --> UC01
+Guest --> UC02
+Guest --> UC03
+Guest --> UC04
+Guest --> UC05
+Guest --> UC11
+
+User --> UC06
+User --> UC07
+User --> UC08
+User --> UC29
+
+Patient --> UC09
+Patient --> UC11
+Patient --> UC14
+Patient --> UC15
+Patient --> UC18
+Patient --> UC20
+Patient --> UC23
+Patient --> UC24
+Patient --> UC26
+Patient --> UC27
+Patient --> UC28
+
+Doctor --> UC10
+Doctor --> UC12
+Doctor --> UC15
+Doctor --> UC17
+Doctor --> UC18
+Doctor --> UC19
+Doctor --> UC20
+Doctor --> UC21
+Doctor --> UC22
+Doctor --> UC24
+Doctor --> UC25
+Doctor --> UC27
+Doctor --> UC28
+
+Admin --> UC13
+Admin --> UC16
+Admin --> UC30
+Admin --> UC31
+
+UC01 ..> SendOtp : <<include>>
+UC02 ..> SendOtp : <<include>>\n(resend)
+UC05 ..> SendOtp : <<include>>
+SendOtp --> Mail
+
+UC04 --> Google
+UC04 ..> UC01 : <<extend>>\n(first Google sign-in)
+
+UC18 ..> UC19 : <<include>>
+UC19 --> AI
+UC21 ..> UC20 : <<include>>
+UC22 ..> UC21 : <<extend>>\n(from review)
+UC26 ..> UC25 : <<include>>\n(needs free slot)
+UC17 ..> UC24 : <<include>>
+UC12 ..> UC10 : <<include>>
+
+UC29 --> Mail
+Clock --> UC29
+@enduml
+```
+
+2.2 Guest and Account & Access (implemented)
+
+```plantuml
+@startuml RetinaCare_UseCase_Auth
+left to right direction
+actor Guest
+actor User
+actor "Mail Server" as Mail <<system>>
+actor Google <<system>>
+
+rectangle "Authentication  /authentication" {
+  usecase "Register account\n(AUTH-01)" as R
+  usecase "Send verification code\n(AUTH-05)" as SV
+  usecase "Verify email\n(AUTH-06)" as VE
+  usecase "Sign in\n(AUTH-02)" as SI
+  usecase "Sign in with Google\n(AUTH-09)" as GS
+  usecase "Link Google to existing account" as LINK
+  usecase "Create account from Google" as GNEW
+  usecase "Forgot password\n(AUTH-07)" as FP
+  usecase "Reset password\n(AUTH-08)" as RP
+  usecase "Refresh session\n(AUTH-03)" as RF
+  usecase "Sign out one / all devices\n(AUTH-04)" as LO
+  usecase "Issue hashed OTP + email it" as OTP
+  usecase "Revoke all sessions" as RA
+}
+
+Guest --> R
+Guest --> SV
+Guest --> VE
+Guest --> SI
+Guest --> GS
+Guest --> FP
+Guest --> RP
+User --> RF
+User --> LO
+
+R ..> OTP : <<include>>
+SV ..> OTP : <<include>>
+FP ..> OTP : <<include>>
+OTP --> Mail
+RP ..> RA : <<include>>
+LO ..> RA : <<extend>>\n(type = all)
+LINK ..> GS : <<extend>>\n(email exists, verified)
+GNEW ..> GS : <<extend>>\n(no account yet)
+GS --> Google
+SI ..> VE : <<precondition>>\nemail verified
+@enduml
+```
+
+2.3 Clinical workflow (patient – doctor – AI)
+
+```plantuml
+@startuml RetinaCare_UseCase_Clinical
+left to right direction
+actor Patient
+actor Doctor
+actor "AI Service" as AI <<system>>
+actor Scheduler <<system>>
+
+rectangle "Screening & Care" {
+  usecase "Request a doctor" as REQ
+  usecase "Accept / decline request" as ACC
+  usecase "Upload fundus image" as UP
+  usecase "Detect duplicate (sha256)" as DUP
+  usecase "Run AI analysis" as RUN
+  usecase "Re-run analysis" as RERUN
+  usecase "View result + Grad-CAM" as VIEW
+  usecase "Confirm / override AI grade" as REV
+  usecase "Schedule follow-up" as FU
+  usecase "Write report (draft)" as WR
+  usecase "Send report" as SEND
+  usecase "Read / download PDF" as READ
+  usecase "Chat" as CHAT
+  usecase "Publish slots" as SLOT
+  usecase "Book / cancel appointment" as BOOK
+  usecase "Confirm / complete appointment" as CONF
+}
+
+Patient --> REQ
+Doctor --> ACC
+Patient --> UP
+Doctor --> UP
+UP ..> DUP : <<include>>
+UP ..> RUN : <<include>>
+RERUN ..> RUN : <<include>>
+Doctor --> RERUN
+RUN --> AI
+Patient --> VIEW
+Doctor --> VIEW
+Doctor --> REV
+FU ..> REV : <<extend>>\n(followUpDate set)
+FU <-- Scheduler
+Doctor --> WR
+Doctor --> SEND
+SEND ..> WR : <<include>>
+Patient --> READ
+Patient --> CHAT
+Doctor --> CHAT
+Doctor --> SLOT
+Patient --> BOOK
+Doctor --> CONF
+BOOK ..> SLOT : <<include>>
+ACC .> REQ : follows
+@enduml
+```
+
+2.4 Administration
+
+```plantuml
+@startuml RetinaCare_UseCase_Admin
+left to right direction
+actor Admin
+actor Doctor
+actor "Mail Server" as Mail <<system>>
+
+rectangle "Administration  /admin" {
+  usecase "Review verification queue\n(ADM-01)" as Q
+  usecase "Approve doctor\n(ADM-02)" as AP
+  usecase "Reject doctor with reason\n(ADM-03)" as RJ
+  usecase "Resubmit verification\n(DOC-05)" as RS
+  usecase "Search users\n(ADM-04)" as SU
+  usecase "Disable / enable account\n(ADM-05)" as DIS
+  usecase "Revoke user's sessions" as REVOKE
+  usecase "Assign patient to doctor\n(ASG-05)" as ASG
+  usecase "View statistics\n(ADM-06)" as ST
+  usecase "Notify doctor" as N
+}
+
+Admin --> Q
+Admin --> SU
+Admin --> ASG
+Admin --> ST
+AP ..> Q : <<extend>>
+RJ ..> Q : <<extend>>
+AP ..> N : <<include>>
+RJ ..> N : <<include>>
+N --> Mail
+DIS ..> SU : <<extend>>
+DIS ..> REVOKE : <<include>>
+Doctor --> RS
+RS ..> Q : feeds
+@enduml
+```
+
+
+3. Use case specifications
+--------------------------
+
+Format: ID / name / status. Primary actor, secondary actors, preconditions, trigger, main success
+scenario, alternative and exception flows, postconditions, business rules, related API and
+activity.
+
+---------------------------------------------------------------------------------------------------
+UC-01  Register account                                                            [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Guest
+Secondary actor : Mail Server
+Preconditions   : The email is not registered. The client is within the sign-up rate limit (3 per hour).
+Trigger         : The guest submits the sign-up form.
+Main scenario   :
+  1. The guest enters name, email, password (8–72 characters), city, role (patient or doctor) and
+     accepts the terms.
+  2. The system validates the input and normalises the email (trimmed, lowercased).
+  3. The system checks that no account uses the email.
+  4. The system hashes the password and creates the user with provider = system, the chosen role
+     and consentAcceptedAt.
+  5. The system issues an email verification code (include: Send OTP email) in the background.
+  6. The system returns the new account (without secrets) and tells the guest to check their inbox.
+Alternatives    :
+  1a. Role = doctor: clinicName, clinicAddress and licenseNumber are also required. [PLANNED] A
+      Doctor profile is created with verificationStatus = pending, and the admins are notified
+      (continues in UC-12 and UC-13).
+  3a. The email exists: 409 "user exist before". The guest is told to sign in or recover the
+      password.
+  5a. The mail server fails: the account is still created and the failure is logged. The guest
+      can request a new code with UC-02.
+Exceptions      : invalid input → 400; rate limit → 429.
+Postconditions  : An unverified account exists. A hashed code for it is cached for 10 minutes.
+Business rules  : Admin accounts can't be self-registered. Unknown fields are rejected.
+Related         : AUTH-01 · ACTIVITY A1
+
+---------------------------------------------------------------------------------------------------
+UC-02  Verify email                                                                [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Guest
+Secondary actor : Mail Server
+Preconditions   : The account exists and is not verified.
+Trigger         : The guest opens the email and types the 6-digit code.
+Main scenario   :
+  1. The guest enters the email and the code.
+  2. The system hashes the code and compares it, in constant time, with the stored hash.
+  3. The system deletes the code (it works only once) and sets emailVerifiedAt.
+  4. The system answers 204, and the client sends the guest to sign in.
+Alternatives    :
+  1a. The code is lost or expired: the guest asks for a new one (AUTH-05). The system always
+      answers 202, and sends a code only if the account exists and is still unverified. The new
+      code replaces the old one.
+  2a. Wrong or expired code: 400 "Invalid or expired verification code". The guest can retry
+      within the rate limit (5 per minute, then blocked for 1 hour).
+Postconditions  : emailVerifiedAt is set and the account can sign in.
+Business rules  : Codes are 6 digits and valid for 10 minutes. Only their HMAC-SHA256 is stored,
+                  in the cache under auth:otp:email-verification:<email>. Responses never reveal
+                  whether an account exists.
+Related         : AUTH-05, AUTH-06 · ACTIVITY A2, A3
+
+---------------------------------------------------------------------------------------------------
+UC-03  Sign in                                                                     [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Guest (registered user)
+Preconditions   : The account exists, the email is verified and the account is active.
+Trigger         : The guest submits email and password.
+Main scenario   :
+  1. The guest enters email and password.
+  2. The system loads the account with its hidden password hash.
+  3. The system checks that the email is verified, then checks the password.
+  4. The system issues an access token and a refresh token and returns them.
+  5. The client stores the tokens and loads the profile (UC-07) to decide which screens to show
+     for the user's role.
+Alternatives    :
+  3a. Email not verified: 409. The client offers to resend the code (UC-02).
+  3b. Wrong password: 401 "Invalid email or password".
+  2a. Unknown email: 404. (Known issue: this reveals whether an email is registered. Planned: a
+      single 401 for every failure, checked after the password.)
+  2b. [PLANNED] Account disabled by an admin: 403, no tokens issued.
+Exceptions      : rate limit 5 per minute, then blocked for 5 hours → 429.
+Postconditions  : A new session (refresh token) exists for the user.
+Related         : AUTH-02 · ACTIVITY A4
+
+---------------------------------------------------------------------------------------------------
+UC-04  Sign in with Google                                                [IMPLEMENTED in service]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Guest
+Secondary actor : Google
+Preconditions   : Google sign-in is configured (OAUTH_GOOGLE_CLIENT_ID). The guest has a Google
+                  account with a verified email.
+Trigger         : The guest presses "Continue with Google".
+Main scenario   :
+  1. The client gets an ID token from Google and sends it to the system.
+  2. The system checks the token's signature (Google JWKS), issuer, audience and expiry, and that
+     Google verified the email.
+  3. The system finds the account already linked to this Google subject.
+  4. The system issues tokens (method = google).
+Alternatives    :
+  3a. No linked account and no account with this email (extends UC-01): the system needs a city
+      (400 if it is missing), creates a verified patient account with provider = google and the
+      Google picture as avatar, then continues at step 4.
+  3b. An account with this email exists and is verified: the system links the Google subject to
+      it with an atomic update and continues at step 4.
+  3c. The account with this email is unverified: 403. The user must verify the email first, so
+      nobody can take over an unverified account.
+  3d. The email is already linked to another Google account, or a parallel request linked it
+      first: 409.
+Exceptions      : invalid token → 401; Google keys unreachable or not configured → 503.
+Postconditions  : The user is signed in and the Google identity is linked.
+Note            : the controller route is an empty stub right now and must be wired back to
+                  AuthenticationService.googleSignIn.
+Related         : AUTH-09 · ACTIVITY A6
+
+---------------------------------------------------------------------------------------------------
+UC-05  Recover password                                                            [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Guest
+Secondary actor : Mail Server
+Preconditions   : None. The use case starts the same way whether or not the account exists.
+Trigger         : The guest clicks "Forgot password".
+Main scenario   :
+  1. The guest enters the email. The system answers 202 right away.
+  2. If the account exists, the system emails a password-reset code (6 digits, 10 minutes).
+  3. The guest enters the email, the code and a new password.
+  4. The system checks and uses up the code, saves the new password hash, and marks the email
+     verified if it wasn't already.
+  5. The system revokes every session of the account and answers 204.
+  6. The guest signs in with the new password (UC-03).
+Alternatives    : 4a. Wrong or expired code → 400. The guest can request a new code (back to step 1).
+Postconditions  : The password is changed and every device is signed out.
+Business rules  : The response never reveals whether an account exists. Codes are stored hashed.
+Related         : AUTH-07, AUTH-08 · ACTIVITY A5
+
+---------------------------------------------------------------------------------------------------
+UC-06  Keep session / sign out                                                     [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : User (Patient, Doctor, Admin)
+Main scenario   :
+  1. When the access token expires, the client sends the refresh token and receives a new pair
+     (AUTH-03).
+  2. The user signs out of this device: the system revokes that refresh token.
+Alternatives    :
+  2a. "Sign out everywhere": every refresh token of the user is revoked (type = all), for example
+      after losing a phone.
+  1a. The refresh token is revoked or expired: 401, and the client goes back to sign-in.
+Postconditions  : The revoked sessions can no longer be refreshed.
+Related         : AUTH-03, AUTH-04 · ACTIVITY A7
+
+---------------------------------------------------------------------------------------------------
+UC-07  Manage own profile                                                          [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : User
+Preconditions   : Signed in, and the account is active (UserPolicy).
+Main scenario   :
+  1. The user opens "My profile". The system returns the profile without secrets, with
+     emailVerified as a boolean.
+  2. The user changes name and/or city and saves.
+  3. The system updates only those fields and returns the updated profile.
+Alternatives    : 2a. Any other field (email, role…) → 400. Those fields can't be edited here.
+Exceptions      : not signed in → 401; disabled → 403; account deleted → 404.
+Related         : USER-01, USER-02 · ACTIVITY A8
+
+---------------------------------------------------------------------------------------------------
+UC-08  Manage avatar                                                               [IMPLEMENTED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : User (uploads, replaces or removes); Guest or anyone (views)
+Main scenario   :
+  1. The user picks a JPEG, PNG or WebP image of 5 MB or less.
+  2. The system stores it under avatars/<userId>/<random>.<ext> on the photos disk, saves the key
+     and the public URL, and deletes the previous file.
+  3. Any client shows the avatar through its public URL. The image is served inline and can be
+     cached for a year.
+Alternatives    :
+  1a. No file, wrong type or too large → 400 or 413.
+  2a. The user removes the avatar: the key and URL are cleared and the file is deleted. If there
+      is no avatar → 404.
+  3a. Malformed URL → 400. Missing file or non-image file → 404. SVG is never served.
+Related         : USER-03, USER-04, USER-05 · ACTIVITY A8
+
+---------------------------------------------------------------------------------------------------
+UC-09  Manage patient medical profile                                                  [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient. Secondary: the assigned Doctor (clinical notes).
+Main scenario   : 1. The patient views their medical record number and profile. 2. The patient
+                  updates date of birth, gender, emergency contact and year of diabetes onset.
+                  3. The system saves the changes.
+Alternatives    : 2a. medicalNotes and medicalRecordNumber are read-only for the patient. Only an
+                  assigned doctor can write medicalNotes (UC-17).
+Business rules  : medicalRecordNumber is unique and uppercase, and is generated by the system.
+Related         : PAT-01, PAT-02, PAT-04
+
+---------------------------------------------------------------------------------------------------
+UC-10  Manage doctor profile                                                           [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor
+Main scenario   : 1. The doctor views their profile and verification status. 2. The doctor edits
+                  clinic name and address, specialty, bio and years of experience. 3. The system
+                  saves the changes.
+Alternatives    : 2a. The licence number changes after approval: the status goes back to pending
+                  and the admins are notified (UC-13). 2b. The licence is already in use → 409.
+Related         : DOC-03, DOC-04
+
+---------------------------------------------------------------------------------------------------
+UC-11  Browse doctor directory                                                         [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Guest or Patient
+Main scenario   : 1. The actor filters doctors by city or specialty. 2. The system lists approved,
+                  active doctors with their public details. 3. The actor opens a profile and can
+                  request that doctor (UC-14, patients only).
+Business rules  : Pending or rejected doctors, licence numbers and verification data are never
+                  shown. Anonymous results are cached.
+Related         : DOC-01, DOC-02
+
+---------------------------------------------------------------------------------------------------
+UC-12  Submit / resubmit doctor verification                                           [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor
+Preconditions   : The doctor signed up with role doctor (UC-01, alternative 1a).
+Main scenario   : 1. The verification is submitted with the licence details at sign-up (status
+                  pending). 2. The doctor checks the status (DOC-03) and waits. 3. The admin
+                  decides (UC-13).
+Alternatives    : 3a. Rejected: the doctor reads rejectionReason, fixes the profile (UC-10) and
+                  resubmits (DOC-05). The status goes back to pending and verificationSubmittedAt
+                  is reset.
+Postconditions  : The verification is in the admin queue.
+Business rules  : Until the doctor is approved, every doctor-only use case (UC-15, UC-17 to UC-22,
+                  UC-25) is refused with 403.
+Related         : DOC-03, DOC-05 · ACTIVITY A9
+
+---------------------------------------------------------------------------------------------------
+UC-13  Verify doctor                                                                   [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Admin. Secondary: Mail Server.
+Main scenario   :
+  1. The admin opens the queue of pending doctors (oldest first).
+  2. The admin checks the licence number and clinic details outside the system.
+  3. The admin approves. The system records verifiedAt and verifiedBy and notifies the doctor in
+     the app and by email.
+Alternatives    : 3a. The admin rejects with a reason. The doctor is notified with that reason
+                  (back to UC-12).
+Postconditions  : The doctor can use the doctor panel, or knows why not.
+Related         : ADM-01, ADM-02, ADM-03 · ACTIVITY A9
+
+---------------------------------------------------------------------------------------------------
+UC-14  Request a doctor                                                                [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient
+Preconditions   : The doctor is approved. The pair has no pending or active link.
+Main scenario   : 1. The patient picks a doctor in the directory and sends a request with an
+                  optional note. 2. The system creates a pending assignment and notifies the
+                  doctor.
+Alternatives    : 1a. A link already exists → 409. 1b. A previously ended link is re-opened as
+                  pending.
+Related         : ASG-01 · ACTIVITY A10
+
+---------------------------------------------------------------------------------------------------
+UC-15  Accept / decline / end assignment                                               [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor (accept, decline or end); Patient (cancel or end)
+Main scenario   : 1. The doctor reviews pending requests. 2. The doctor accepts. The system makes
+                  the assignment active, creates the pair's conversation and notifies the patient.
+Alternatives    : 2a. The doctor declines: the assignment becomes ended and the patient is
+                  notified. 3a. Either side ends an active relationship: ended, endedAt is set,
+                  the chat becomes read-only, and new uploads and bookings are blocked. The
+                  medical history is kept.
+Related         : ASG-02, ASG-03, ASG-04 · ACTIVITY A10
+
+---------------------------------------------------------------------------------------------------
+UC-16  Assign patient to doctor                                                        [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Admin
+Main scenario   : The admin selects a doctor and a patient. The system creates an active
+                  assignment with assignedBy = the admin, and notifies both users.
+Related         : ASG-05
+
+---------------------------------------------------------------------------------------------------
+UC-17  View patient chart                                                              [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor (approved, assigned). Admin can view all charts.
+Main scenario   : 1. The doctor searches their patient list. 2. The doctor opens a chart: profile,
+                  images, analyses, reviews, reports and appointments (includes UC-24). 3. The
+                  doctor adds or edits clinical notes.
+Exceptions      : patient not assigned → 403.
+Related         : PAT-03, PAT-04
+
+---------------------------------------------------------------------------------------------------
+UC-18  Upload fundus image                                                             [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor (for an assigned patient) or Patient (for themself)
+Preconditions   : An active assignment (for doctors). JPEG or PNG within MAX_IMAGE_SIZE_MB.
+Main scenario   :
+  1. The actor selects the image, the eye (left, right or unknown), the capture date and notes.
+  2. The system computes the sha256 and checks for a duplicate.
+  3. The system stores the file privately and records the image metadata and the uploader.
+  4. The system starts an AI analysis (include: UC-19) and answers 202 with the analysis id.
+Alternatives    : 2a. The same image was already uploaded for this patient: the existing record
+                  is returned and no new analysis is started.
+Exceptions      : wrong type or size → 400 or 413; not allowed → 403; rate limit 20 per minute.
+Postconditions  : The image is in the patient's history and an analysis is pending.
+Related         : IMG-01, IMG-02, IMG-03 · ACTIVITY A11
+
+---------------------------------------------------------------------------------------------------
+UC-19  Run AI analysis                                                                 [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : System (queue worker); started by UC-18 or by a doctor's re-run
+Secondary actor : AI Service
+Main scenario   :
+  1. The worker marks the analysis processing and increments attempts.
+  2. The AI service runs stage 1: DR or no DR, plus probabilities for the eight findings.
+  3. If DR is present, the AI service runs stage 2: grade 0–4 with probabilities and a Grad-CAM
+     heat map.
+  4. The system stores the results, model version and processing time, and marks the analysis
+     completed.
+  5. The system notifies the patient and the assigned doctors (UC-29).
+Alternatives    :
+  2a. No DR: predictedLevel = 0 and stage 2 is skipped.
+  2b. The AI call fails: it is retried until the maximum number of attempts. After that the
+      status is failed, the error is recorded, and the users are notified.
+  2c. AI_MODE=mock: the results are flagged isMock and shown as "demo — not a diagnosis".
+Postconditions  : The analysis is completed or failed, and every status change is in history.
+Related         : ANA-01, ANA-05 · ACTIVITY A11
+
+---------------------------------------------------------------------------------------------------
+UC-20  View analysis result                                                            [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient (own results); Doctor (assigned patients)
+Main scenario   : 1. The actor opens an analysis. 2. The system shows the status, DR yes/no, the
+                  grade with its label and plain-language description (in the user's language),
+                  the confidence, the class probabilities and the findings. 3. The doctor can
+                  view the Grad-CAM heat map.
+Alternatives    : 2a. Not reviewed yet: the patient sees "pending doctor review". 2b. Reviewed:
+                  the doctor's confirmed grade is shown instead of the AI grade. 2c. Still
+                  processing: the status is shown, and the client polls or waits for a
+                  notification.
+Related         : ANA-02, ANA-03, ANA-04
+
+---------------------------------------------------------------------------------------------------
+UC-21  Review AI result                                                                [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor (approved, assigned)
+Preconditions   : The analysis is completed. This doctor hasn't reviewed it yet.
+Main scenario   :
+  1. The doctor examines the result (includes UC-20) and the image.
+  2. The doctor confirms the AI grade, or overrides it with their own grade.
+  3. The doctor adds notes, recommendations and an optional follow-up date.
+  4. The system saves the review. The confirmed grade becomes the grade of record.
+Alternatives    : 3a. A follow-up date is set: the Scheduler sends a follow_up reminder on that
+                  date. 4a. Already reviewed → 409; the doctor edits the review instead (REV-02),
+                  which is allowed until a sent report references it.
+Postconditions  : The analysis is clinically signed off. Overrides are recorded for monitoring
+                  the model.
+Related         : REV-01, REV-02, REV-03 · ACTIVITY A12
+
+---------------------------------------------------------------------------------------------------
+UC-22  Write and send report                                                           [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor
+Main scenario   : 1. The doctor creates a draft report for an analysis, pre-filled from the
+                  review. 2. The doctor edits the title, content and recommendations. 3. The
+                  doctor sends it. The system marks it sent, records sentAt and notifies the
+                  patient in the app and by email.
+Alternatives    : 3a. A sent report can't be edited; a corrected report is sent as a new one.
+Related         : REP-01, REP-02, REP-03 · ACTIVITY A12
+
+---------------------------------------------------------------------------------------------------
+UC-23  Read / download report                                                          [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient
+Main scenario   : 1. The patient opens the report list (sent reports only). 2. The patient opens
+                  a report. The first open records viewedAt, and the doctor can see that it was
+                  read. 3. The patient can download a PDF of it.
+Related         : REP-04, REP-05, REP-06
+
+---------------------------------------------------------------------------------------------------
+UC-24  View screening history                                                          [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient; Doctor
+Main scenario   : The system lists the patient's images per eye and the confirmed grades over
+                  time, so progression or improvement is visible.
+Related         : IMG-02, REV-03
+
+---------------------------------------------------------------------------------------------------
+UC-25  Publish availability                                                            [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor (approved)
+Main scenario   : 1. The doctor adds time slots (start and end). 2. The system rejects overlaps
+                  and past times and saves the slots as free. 3. The doctor can remove an
+                  unbooked slot.
+Alternatives    : 3a. The slot is booked → 409; the appointment must be cancelled first.
+Related         : AVL-01, AVL-02, AVL-03 · ACTIVITY A13
+
+---------------------------------------------------------------------------------------------------
+UC-26  Book appointment                                                                [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient (assigned to the doctor)
+Main scenario   :
+  1. The patient views the doctor's free slots in a date range.
+  2. The patient picks a slot and gives a reason.
+  3. The system claims the slot atomically, creates a pending appointment and notifies the doctor.
+Alternatives    : 3a. Another patient booked the slot first → 409 "Slot already booked". The
+                  patient picks another one.
+Postconditions  : The slot is booked and linked to the appointment.
+Related         : APT-01, AVL-02 · ACTIVITY A13
+
+---------------------------------------------------------------------------------------------------
+UC-27  Manage appointment                                                              [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Doctor (confirm, complete); Patient or Doctor (cancel, edit text)
+Main scenario   : 1. The doctor confirms the pending appointment, and the patient is notified and
+                  later reminded by the Scheduler. 2. After the visit, the doctor marks it
+                  completed with notes.
+Alternatives    : 1a. Either side cancels with a reason: the slot is freed and the other side is
+                  notified. 1b. The doctor rejects a pending booking (same as cancel).
+                  Rescheduling means cancelling and booking again.
+Related         : APT-02 … APT-06 · ACTIVITY A13
+
+---------------------------------------------------------------------------------------------------
+UC-28  Chat with doctor / patient                                                      [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Patient and Doctor in an active assignment
+Main scenario   : 1. The user opens their conversations, sorted by the latest message, with unread
+                  counts. 2. The user sends text or attachments. 3. The system delivers the
+                  message in real time if the other side is online, or notifies them. 4. When the
+                  recipient opens the chat, the messages are marked read.
+Alternatives    : 2a. The sender edits the message (editedAt) or deletes it (soft delete, kept
+                  for audit). 2b. The assignment has ended: the chat is read-only → 403.
+Related         : CHT-01 … CHT-06 · ACTIVITY A14
+
+---------------------------------------------------------------------------------------------------
+UC-29  Receive notifications                                                           [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : User. Secondary: Scheduler, Mail Server.
+Main scenario   : 1. A domain event creates a notification for its recipient (analysis, report,
+                  appointment, message, follow_up, system). 2. The user sees it in real time or in
+                  the feed, with a link to the related item. 3. The user marks one or all of
+                  them as read.
+Alternatives    : 2a. Still unread after a delay, and the type warrants it: the notification is
+                  also emailed, and emailedAt is recorded.
+Related         : NOT-01 … NOT-04 · ACTIVITY A15
+
+---------------------------------------------------------------------------------------------------
+UC-30  Manage user accounts                                                            [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Admin
+Main scenario   : 1. The admin searches users by role, status, name or email. 2. The admin
+                  disables an account. The system sets isActive = false and revokes all of its
+                  sessions, and the user is refused everywhere from then on. 3. The admin can
+                  re-enable the account later.
+Business rules  : Admins can't disable themselves. Disabling doesn't delete any medical data.
+Related         : ADM-04, ADM-05
+
+---------------------------------------------------------------------------------------------------
+UC-31  View platform statistics                                                        [PLANNED]
+---------------------------------------------------------------------------------------------------
+Primary actor   : Admin
+Main scenario   : The admin opens the dashboard: users per role, doctors awaiting verification,
+                  analyses per status and DR grade, and appointments this week.
+Related         : ADM-06
+
+
+4. Traceability: use case → API → activity
+------------------------------------------
+
+UC-01 Register account            AUTH-01                     A1
+UC-02 Verify email                AUTH-05, AUTH-06            A2, A3
+UC-03 Sign in                     AUTH-02                     A4
+UC-04 Sign in with Google         AUTH-09                     A6
+UC-05 Recover password            AUTH-07, AUTH-08            A5
+UC-06 Keep session / sign out     AUTH-03, AUTH-04            A7
+UC-07 Manage own profile          USER-01, USER-02            A8
+UC-08 Manage avatar               USER-03 … USER-05           A8
+UC-09 Patient medical profile     PAT-01, PAT-02, PAT-04      —
+UC-10 Doctor profile              DOC-03, DOC-04              —
+UC-11 Doctor directory            DOC-01, DOC-02              —
+UC-12 Submit verification         DOC-03, DOC-05              A9
+UC-13 Verify doctor               ADM-01 … ADM-03             A9
+UC-14 Request a doctor            ASG-01                      A10
+UC-15 Accept/decline/end          ASG-02 … ASG-04             A10
+UC-16 Admin assignment            ASG-05                      A10
+UC-17 Patient chart               PAT-03, PAT-04              —
+UC-18 Upload fundus image         IMG-01 … IMG-04             A11
+UC-19 Run AI analysis             ANA-01, ANA-05              A11
+UC-20 View analysis               ANA-02 … ANA-04             A11
+UC-21 Review AI result            REV-01 … REV-03             A12
+UC-22 Write & send report         REP-01 … REP-03             A12
+UC-23 Read / download report      REP-04 … REP-06             A12
+UC-24 Screening history           IMG-02, REV-03              —
+UC-25 Publish availability        AVL-01 … AVL-03             A13
+UC-26 Book appointment            APT-01, AVL-02              A13
+UC-27 Manage appointment          APT-02 … APT-06             A13
+UC-28 Chat                        CHT-01 … CHT-06             A14
+UC-29 Notifications               NOT-01 … NOT-04             A15
+UC-30 Manage accounts             ADM-04, ADM-05              —
+UC-31 Statistics                  ADM-06                      —

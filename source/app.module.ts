@@ -1,36 +1,43 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthenticationModule } from '@nestjs/authentication';
+import { CacheModule } from '@nestjs/cache-manager';
+import { I18nModule } from '@nestjs/i18n';
+import { MailModule } from '@nestjs/mail';
+import { MongooseModule } from '@nestjs/mongoose';
+import { StorageModule } from '@nestjs/storage';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import appConfiguration from './configuration/app.configuration.js';
-import { ServiceModule } from './dependency/module/service.module.js';
-import { DatabaseModule } from './dependency/module/database.module.js';
-import { CacheInterceptor } from './dependency/interceptor/cache.interceptor.js';
-import { LoggingInterceptor } from './dependency/interceptor/logging.interceptor.js';
-import { TransformInterceptor } from './dependency/interceptor/transform.interceptor.js';
-import { TimeoutInterceptor } from './dependency/interceptor/timeout.interceptor.js';
-import { AcceptLanguageLocaleResolver, HeaderLocaleResolver, I18nModule, JsonI18nLoader, QueryLocaleResolver } from '@nestjs/i18n';
-import { UserLocaleResolver } from './dependency/language/user-locale.resolver.js';
-import { DEFAULT_LOCALE, I18N_PATH, SUPPORTED_LOCALES } from './dependency/language/i18n.constants.js';
-import { MaintenanceMiddleware } from './dependency/middleware/maintenance-mode-middleware.js';
-import { SlowRequestMiddleware } from './dependency/middleware/response-time.middleware.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { AuthenticationModule } from './application/authentication/authentication.module.js';
-import { UserModule } from './application/user/user.module.js';
-import { DoctorsModule } from './application/doctor/doctors.module.js';
-import { PatientModule } from './application/patient/patient.module.js';
-import { DoctorPatientModule } from './application/doctor-patient/doctor-patient.module.js';
-import { FundusImageModule } from './application/fundus-image/fundus-image.module.js';
-import { AnalysisModule } from './application/analysis/analysis.module.js';
-import { DoctorReviewModule } from './application/doctor-review/doctor-review.module.js';
-import { ReportModule } from './application/report/report.module.js';
-import { AppointmentModule } from './application/appointment/appointment.module.js';
-import { DoctorAvailabilityModule } from './application/doctor-availability/doctor-availability.module.js';
-import { ConversationModule } from './application/conversation/conversation.module.js';
-import { NotificationModule } from './application/notification/notification.module.js';
-import { AdminModule } from './application/admin/admin.module.js';
-import { SystemModule } from './application/system/system.module.js';
+import {
+  AdminModule,
+  AnalysisModule,
+  AppointmentModule,
+  AuthenticationModule as AuthModule,
+  ChatModule,
+  DoctorModule,
+  NotificationModule,
+  PatientModule,
+  UserModule,
+} from './application/index.js';
+import {
+  appConfiguration,
+  createAuthenticationOptions,
+  createCacheOptions,
+  createMailOptions,
+  createMongooseOptions,
+  createStorageOptions,
+  createQueueOptions,
+  createThrottlerOptions,
+  i18nOptions,
+  eventOptions,
+} from './configuration/index.js';
+import { ServiceModule } from './dependencies/module/index.js';
+import { Localize } from './dependencies/language/index.js';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { BullModule } from '@nestjs/bullmq';
+
+const inject = [ConfigService];
 
 @Module({
   imports: [
@@ -39,49 +46,27 @@ import { SystemModule } from './application/system/system.module.js';
       envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}`, '.env'],
       load: [appConfiguration],
     }),
-    ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60_000, limit: parseInt(process.env.THROTTLE_LIMIT ?? '', 10) || 120 }],
-      skipIf: () => process.env.THROTTLE_DISABLED === 'true',
-    }),
-    I18nModule.forRoot({
-      loader: new JsonI18nLoader({ path: I18N_PATH }),
-      defaultLocale: DEFAULT_LOCALE,
-      supportedLocales: [...SUPPORTED_LOCALES],
-      resolvers: [new QueryLocaleResolver('lang'), new HeaderLocaleResolver('x-lang'), new UserLocaleResolver(), new AcceptLanguageLocaleResolver()],
-    }),
-    ServiceModule,
-    DatabaseModule,
-    AuthenticationModule,
+    ThrottlerModule.forRoot(createThrottlerOptions()),
+    I18nModule.forRoot(i18nOptions),
+    StorageModule.forRootAsync({ inject, useFactory: createStorageOptions }),
+    CacheModule.registerAsync({ isGlobal: true, inject, useFactory: createCacheOptions }),
+    MongooseModule.forRootAsync({ inject, useFactory: createMongooseOptions }),
+    MailModule.forRootAsync({ inject, useFactory: createMailOptions }),
+    EventEmitterModule.forRoot(eventOptions),
+    BullModule.forRootAsync({ inject, useFactory: createQueueOptions }),
+    AuthenticationModule.forRootAsync({ inject, useFactory: createAuthenticationOptions }),
+    AuthModule,
     UserModule,
-    DoctorsModule,
+    ServiceModule,
     PatientModule,
-    DoctorPatientModule,
-    FundusImageModule,
     AnalysisModule,
-    DoctorReviewModule,
-    ReportModule,
-    AppointmentModule,
-    DoctorAvailabilityModule,
-    ConversationModule,
-    NotificationModule,
     AdminModule,
-    SystemModule,
+    DoctorModule,
+    AppointmentModule,
+    ChatModule,
+    NotificationModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
-    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
-    { provide: APP_INTERCEPTOR, useClass: TimeoutInterceptor },
-    { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [AppService, Localize, ThrottlerGuard],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(MaintenanceMiddleware, SlowRequestMiddleware).forRoutes({
-      path: '*splat',
-      method: RequestMethod.ALL,
-    });
-  }
-}
+export class AppModule {}

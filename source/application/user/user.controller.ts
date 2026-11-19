@@ -1,93 +1,100 @@
-import { AllowPendingDoctor } from '../../dependency/decorator/doctor-approval.decorator.js';
-import { Body, Controller, Delete, Get, Param, Patch, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Types } from 'mongoose';
-import { Auth } from '../../dependency/decorator/auth.decorator.js';
-import { User } from '../../dependency/decorator/user.decorator.js';
-import type { HUserDocument } from '../../database/model/user.model.js';
-import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
-import { UploadImagePipe } from '../../dependency/pipe/upload.pipe.js';
-import { UserService } from './user.service.js';
-import { DeleteAccountDto, UpdateUserDto } from './dto/user.dto.js';
-import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
 
-@ApiTags('Users')
-@Controller('api/v1/users')
+  Param,
+  Patch,
+  Put,
+  UnauthorizedException,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Can } from '@nestjs/authorization';
+import { uploadToDisk, type StoredUpload } from '@nestjs/storage';
+import { randomUUID } from 'node:crypto';
+
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { ServeImage } from '../../dependencies/interceptor/image.interceptor.js';
+import { DeviceTokenDto } from './dto/device-token.dto.js';
+import { RegisterDeviceDto } from './dto/register-device.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UserEntity } from './entity/user.entity.js';
+import { UserService } from './user.service.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+
+const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+@Controller('user')
 @Auth()
-@AllowPendingDoctor()
 export class UserController {
-  constructor(private readonly service: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('me')
-  @ApiOperation({
-    summary: 'Get my account',
-    description: 'Any signed-in user. Same data as GET /auth/me: account fields plus the role profile.',
-  })
-  me(@User() user: HUserDocument) {
-    return this.service.getMe(user);
+  getMe(@User() user: IUser): Promise<UserEntity> {
+    return this.userService.getMe(user);
   }
 
   @Patch('me')
-  @ApiOperation({
-    summary: 'Update my account',
-    description: 'Any signed-in user. Edits name, city, phone and language (FR1.5). Changes are saved and returned after re-login.',
-  })
-  update(@User() user: HUserDocument, @Body() dto: UpdateUserDto) {
-    return this.service.updateMe(user, dto);
+  updateMe(@User() user: IUser, @Body() body: UpdateUserDto): Promise<UserEntity> {
+    return this.userService.updateMe(user, body);
   }
 
-  @RateLimit.passwordCheck()
-  @Delete('me')
-  @ApiOperation({
-    summary: 'Delete my account',
-    description:
-      "Any signed-in user. Email/password accounts must send their password. For patients this also deletes their images, analyses, reviews, reports and stored files. Doctors' assignments are ended.",
-  })
-  remove(@User() user: HUserDocument, @Body() dto: DeleteAccountDto) {
-    return this.service.deleteMe(user, dto);
+  @Put('me/avatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: uploadToDisk({
+        disk: 'photos',
+        contentTypes: AVATAR_TYPES,
+        key: (file, req: { user?: IUser | null }) => {
+          if (!req.user?._id) throw new UnauthorizedException();
+          return `avatars/${String(req.user._id)}/${randomUUID()}${file.extension}`;
+        },
+      }),
+      limits: { fileSize: AVATAR_MAX_BYTES, files: 1 },
+    }),
+  )
+  setAvatar(@User() user: IUser, @UploadedFile() file: StoredUpload | undefined): Promise<UserEntity> {
+    if (!file) throw new BadRequestException('Avatar file is required');
+    return this.userService.setAvatar(user, file);
   }
 
-  @RateLimit.upload()
-  @Patch('me/avatar')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 3 * 1024 * 1024 } }))
-  @ApiOperation({
-    summary: 'Upload my profile picture',
-    description:
-      'Any signed-in user. multipart/form-data with field `file` (JPEG or PNG, up to 3 MB). The image is stored encrypted and returned as a signed avatarUrl.',
-  })
-  avatar(@User() user: HUserDocument, @UploadedFile(new UploadImagePipe({ maxSize: 3 * 1024 * 1024 })) file: Express.Multer.File) {
-    return this.service.updateAvatar(user, file);
+
+  @Put('me/devices')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  registerDevice(@User() user: IUser, @Body() body: RegisterDeviceDto): Promise<void> {
+    return this.userService.registerDevice(user, body);
+  }
+
+  @Delete('me/devices')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  unregisterDevice(@User() user: IUser, @Body() body: DeviceTokenDto): Promise<void> {
+    return this.userService.unregisterDevice(user, body);
   }
 
   @Delete('me/avatar')
-  @ApiOperation({
-    summary: 'Remove my profile picture',
-    description: 'Any signed-in user. Deletes the stored avatar file.',
-  })
-  removeAvatar(@User() user: HUserDocument) {
-    return this.service.removeAvatar(user);
-  }
-
-  @Get(':userId/avatar')
-  @ApiOperation({
-    summary: "Download a user's profile picture",
-    description: 'Any signed-in user. Returns the image bytes. Clients usually use the signed avatarUrl instead.',
-  })
-  async avatarFile(@Param('userId', ParseObjectIdPipe) userId: Types.ObjectId) {
-    const file = await this.service.avatarFile(userId);
-    return new StreamableFile(file.data, { type: file.mimeType, disposition: 'inline' });
-  }
-
-  @Get(':userId')
-  @ApiOperation({
-    summary: "Get a user's profile",
-    description:
-      'Any signed-in user. Doctor profiles are visible to everyone signed in. Patient profiles only to the patient, their assigned doctors and admins (otherwise 403).',
-  })
-  findOne(@User() user: HUserDocument, @Param('userId', ParseObjectIdPipe) userId: Types.ObjectId) {
-    return this.service.getUser(user, userId);
+  @HttpCode(HttpStatus.OK)
+  removeAvatar(@User() user: IUser): Promise<UserEntity> {
+    return this.userService.removeAvatar(user);
   }
 }
+
+
+@Controller('photos')
+@Auth({ public: true })
+export class PhotosController {
+  @Get('avatars/:userId/:file')
+  @ServeImage('photos')
+  avatar(@Param('userId') userId: string, @Param('file') file: string): string {
+    if (!/^[a-f0-9]{24}$/.test(userId) || !/^[a-f0-9-]{36}\.(jpg|png|webp)$/.test(file)) throw new BadRequestException('Invalid id');
+    return `avatars/${userId}/${file}`;
+  }
+}
+

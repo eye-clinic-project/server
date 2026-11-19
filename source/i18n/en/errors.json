@@ -17,7 +17,8 @@
     "routeNotFound": "Cannot {method} {path}",
     "timedOut": "Request timed out",
     "maintenance": "Server is under maintenance",
-    "requestAccepted": "request accepted"
+    "requestAccepted": "request accepted",
+    "success": "Request completed successfully"
   },
   "auth": {
     "emailExists": "An account with this email already exists",
@@ -55,7 +56,9 @@
     "noPermission": "You do not have permission to perform this action",
     "unauthorizedSocket": "Unauthorized",
     "issuerUnknown": "Could not determine token issuer",
-    "mailNotConfigured": "Email delivery is not configured"
+    "mailNotConfigured": "Email delivery is not configured",
+    "googleLinkUnverified": "Verify your email address before signing in with Google",
+    "cityRequired": "City is required to create an account"
   },
   "users": {
     "userNotFound": "User not found",
@@ -70,7 +73,8 @@
     "deleteSelfHint": "Use DELETE /users/me to delete your own account",
     "licenseExists": "This license number is already registered",
     "clinicRequired": "clinicName and clinicAddress are required to complete your profile",
-    "selfOnly": "You can only access your own data"
+    "selfOnly": "You can only access your own data",
+    "avatarRequired": "Avatar file is required"
   },
   "patients": {
     "patientNotFound": "Patient not found",
@@ -88,14 +92,15 @@
   },
   "images": {
     "imageRequired": "Image file is required",
-    "unsupportedFormat": "Unsupported file format. Only JPEG and PNG images are allowed",
+    "unsupportedFormat": "Unsupported file format. Only JPEG, PNG and WebP images are allowed",
     "tooLarge": "Image is too large. The maximum size is {size} MB",
-    "corrupted": "The image file is corrupted or is not a valid JPEG/PNG image",
+    "corrupted": "The image file is corrupted or is not a valid JPEG, PNG or WebP image",
     "imageNotFound": "Image not found",
     "fileNotFound": "File not found",
     "deleteAnalysesFirst": "Delete the analyses of this image first",
     "linkInvalid": "This link is invalid or has expired",
     "invalidId": "Invalid id",
+    "invalidObjectId": "Invalid ObjectId: '{value}' is not a valid MongoDB ObjectId",
     "resourceNotFound": "{label} not found"
   },
   "analyses": {
@@ -122,12 +127,21 @@
     "reviewOnlyCompleted": "Only completed analyses can be reviewed",
     "reviewExists": "You already reviewed this analysis. Update your review instead.",
     "reviewNotFound": "Review not found",
-    "ownReviewsOnly": "You can only change your own reviews"
+    "ownReviewsOnly": "You can only change your own reviews",
+    "assignedOnly": "Analyses are only available between a doctor and their assigned patient",
+    "reviewLocked": "The report was already sent, so the review can no longer be changed",
+    "reviewFirst": "Review the analysis before writing the report",
+    "noAccess": "You do not have access to this analysis"
   },
   "reports": {
     "reportNotFound": "Report not found",
     "onlyCompleted": "A report can only be generated from a completed analysis",
-    "ownReportsOnly": "You can only change your own reports"
+    "ownReportsOnly": "You can only change your own reports",
+    "alreadySent": "This report has already been sent",
+    "notSentYet": "The report has not been sent yet",
+    "noteRequired": "Add a note to your review or to the report before generating it",
+    "reportExists": "A report for this analysis already exists",
+    "pdfUnavailable": "The report PDF is not available yet"
   },
   "appointments": {
     "appointmentNotFound": "Appointment not found",
@@ -145,7 +159,21 @@
     "overlap": "This time overlaps with an existing availability slot",
     "endAfterStart": "endAt must be after startAt",
     "rangeTooShort": "The range is shorter than one slot",
-    "tooManySlots": "At most {max} slots can be created at once"
+    "tooManySlots": "At most {max} slots can be created at once",
+    "assignedOnly": "You can only book appointments with your assigned doctor",
+    "reasonNotAllowed": "You cannot reschedule for this reason",
+    "noticeTooShort": "This reason needs at least {hours} hours notice before the appointment",
+    "noteRequired": "A note is required for this reason",
+    "rescheduleLimit": "You can reschedule this appointment at most {max} times",
+    "sameTime": "The new time is the same as the current one",
+    "timeInPast": "The appointment time must be in the future",
+    "notStarted": "An appointment can only be completed after it starts",
+    "doctorOrPatientRequired": "doctorId is required for patients and patientId for doctors",
+    "patientSlotRequired": "Patients must book an availability slot",
+    "requestPending": "This appointment already has a pending request",
+    "noPendingRequest": "This appointment has no pending request",
+    "onePerDay": "You already have an appointment on this day",
+    "patientOnly": "Only the patient can do this"
   },
   "chat": {
     "betweenDoctorPatient": "A conversation must be between a doctor and a patient",
@@ -154,9 +182,21 @@
     "notParticipant": "You are not part of this conversation",
     "invalidConversationId": "Invalid conversationId",
     "messageLength": "Message must be 1-4000 characters",
-    "joinFirst": "Join the conversation first"
+    "joinFirst": "Join the conversation first",
+    "attachmentTooLarge": "Each attachment can be at most {size} MB",
+    "unsupportedAttachment": "Attachments must be JPEG, PNG, WebP or PDF files"
   },
   "notifications": {
-    "notificationNotFound": "Notification not found"
+    "notificationNotFound": "Notification not found",
+    "deviceNotFound": "Device not registered"
+  },
+  "doctors": {
+    "profileNotFound": "Doctor profile not found",
+    "notApproved": "This doctor's account has not been approved yet",
+    "notPending": "This doctor has no pending verification",
+    "licenseMissing": "This doctor has not submitted a license number",
+    "uploadLicense": "Upload at least one license document",
+    "alreadyVerified": "Your account is already verified",
+    "documentNotFound": "Document not found"
   }
 }

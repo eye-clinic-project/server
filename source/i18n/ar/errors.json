@@ -17,7 +17,8 @@
     "routeNotFound": "المسار {method} {path} غير موجود",
     "timedOut": "انتهت مهلة الطلب",
     "maintenance": "الخادم تحت الصيانة حاليًا",
-    "requestAccepted": "تم قبول الطلب"
+    "requestAccepted": "تم قبول الطلب",
+    "success": "تمت معالجة الطلب بنجاح"
   },
   "auth": {
     "emailExists": "يوجد حساب مسجّل بهذا البريد الإلكتروني بالفعل",
@@ -55,7 +56,9 @@
     "noPermission": "ليست لديك صلاحية للقيام بهذا الإجراء",
     "unauthorizedSocket": "غير مصرح",
     "issuerUnknown": "تعذّر تحديد مُصدر الرمز",
-    "mailNotConfigured": "إرسال البريد الإلكتروني غير مُفعّل"
+    "mailNotConfigured": "إرسال البريد الإلكتروني غير مُفعّل",
+    "googleLinkUnverified": "يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول عبر Google",
+    "cityRequired": "المدينة مطلوبة لإنشاء حساب"
   },
   "users": {
     "userNotFound": "المستخدم غير موجود",
@@ -70,7 +73,8 @@
     "deleteSelfHint": "استخدم DELETE /users/me لحذف حسابك",
     "licenseExists": "رقم الترخيص هذا مسجّل بالفعل",
     "clinicRequired": "اسم العيادة وعنوانها مطلوبان لإكمال ملفك",
-    "selfOnly": "يمكنك الوصول إلى بياناتك فقط"
+    "selfOnly": "يمكنك الوصول إلى بياناتك فقط",
+    "avatarRequired": "ملف الصورة الشخصية مطلوب"
   },
   "patients": {
     "patientNotFound": "المريض غير موجود",
@@ -88,14 +92,15 @@
   },
   "images": {
     "imageRequired": "ملف الصورة مطلوب",
-    "unsupportedFormat": "صيغة الملف غير مدعومة. يُسمح فقط بصور JPEG و PNG",
+    "unsupportedFormat": "صيغة الملف غير مدعومة. يُسمح فقط بصور JPEG و PNG و WebP",
     "tooLarge": "الصورة كبيرة جدًا. الحد الأقصى {size} ميجابايت",
-    "corrupted": "ملف الصورة تالف أو ليس صورة JPEG/PNG صالحة",
+    "corrupted": "ملف الصورة تالف أو ليس صورة JPEG أو PNG أو WebP صالحة",
     "imageNotFound": "الصورة غير موجودة",
     "fileNotFound": "الملف غير موجود",
     "deleteAnalysesFirst": "احذف تحاليل هذه الصورة أولًا",
     "linkInvalid": "هذا الرابط غير صالح أو انتهت صلاحيته",
     "invalidId": "المعرّف غير صالح",
+    "invalidObjectId": "المعرّف '{value}' غير صالح",
     "resourceNotFound": "العنصر ({label}) غير موجود"
   },
   "analyses": {
@@ -122,12 +127,21 @@
     "reviewOnlyCompleted": "يمكن مراجعة التحاليل المكتملة فقط",
     "reviewExists": "لقد راجعت هذا التحليل بالفعل. عدّل مراجعتك بدلًا من ذلك.",
     "reviewNotFound": "المراجعة غير موجودة",
-    "ownReviewsOnly": "يمكنك تعديل مراجعاتك فقط"
+    "ownReviewsOnly": "يمكنك تعديل مراجعاتك فقط",
+    "assignedOnly": "التحليلات متاحة فقط بين الطبيب ومريضه المعين",
+    "reviewLocked": "تم إرسال التقرير بالفعل، لذا لا يمكن تعديل المراجعة",
+    "reviewFirst": "راجع التحليل قبل كتابة التقرير",
+    "noAccess": "ليس لديك صلاحية الوصول إلى هذا التحليل"
   },
   "reports": {
     "reportNotFound": "التقرير غير موجود",
     "onlyCompleted": "يمكن إنشاء التقرير من تحليل مكتمل فقط",
-    "ownReportsOnly": "يمكنك تعديل تقاريرك فقط"
+    "ownReportsOnly": "يمكنك تعديل تقاريرك فقط",
+    "alreadySent": "تم إرسال هذا التقرير بالفعل",
+    "notSentYet": "لم يتم إرسال التقرير بعد",
+    "noteRequired": "أضف ملاحظة إلى مراجعتك أو إلى التقرير قبل إنشائه",
+    "reportExists": "يوجد تقرير لهذا التحليل بالفعل",
+    "pdfUnavailable": "ملف PDF الخاص بالتقرير غير متاح بعد"
   },
   "appointments": {
     "appointmentNotFound": "الموعد غير موجود",
@@ -145,7 +159,21 @@
     "overlap": "هذا الوقت يتداخل مع موعد متاح موجود",
     "endAfterStart": "يجب أن يكون وقت النهاية بعد وقت البداية",
     "rangeTooShort": "الفترة أقصر من مدة موعد واحد",
-    "tooManySlots": "يمكن إنشاء {max} موعدًا كحد أقصى في المرة الواحدة"
+    "tooManySlots": "يمكن إنشاء {max} موعدًا كحد أقصى في المرة الواحدة",
+    "assignedOnly": "يمكنك حجز المواعيد مع طبيبك المعالج فقط",
+    "reasonNotAllowed": "لا يمكنك تغيير الموعد لهذا السبب",
+    "noticeTooShort": "هذا السبب يتطلب إشعارًا قبل الموعد بـ {hours} ساعة على الأقل",
+    "noteRequired": "يجب إضافة ملاحظة لهذا السبب",
+    "rescheduleLimit": "يمكنك تغيير موعد هذا الحجز {max} مرات كحد أقصى",
+    "sameTime": "الموعد الجديد مطابق للموعد الحالي",
+    "timeInPast": "يجب أن يكون وقت الموعد في المستقبل",
+    "notStarted": "لا يمكن إكمال الموعد قبل بدايته",
+    "doctorOrPatientRequired": "معرّف الطبيب مطلوب للمرضى ومعرّف المريض مطلوب للأطباء",
+    "patientSlotRequired": "يجب على المرضى حجز موعد من المواعيد المتاحة",
+    "requestPending": "يوجد طلب معلّق بالفعل على هذا الموعد",
+    "noPendingRequest": "لا يوجد طلب معلّق على هذا الموعد",
+    "onePerDay": "لديك موعد بالفعل في هذا اليوم",
+    "patientOnly": "هذا الإجراء متاح للمريض فقط"
   },
   "chat": {
     "betweenDoctorPatient": "يجب أن تكون المحادثة بين طبيب ومريض",
@@ -154,9 +182,21 @@
     "notParticipant": "أنت لست طرفًا في هذه المحادثة",
     "invalidConversationId": "معرّف المحادثة غير صالح",
     "messageLength": "يجب أن تكون الرسالة بين 1 و4000 حرف",
-    "joinFirst": "انضم إلى المحادثة أولًا"
+    "joinFirst": "انضم إلى المحادثة أولًا",
+    "attachmentTooLarge": "الحد الأقصى لحجم كل مرفق هو {size} ميغابايت",
+    "unsupportedAttachment": "يجب أن تكون المرفقات بصيغة JPEG أو PNG أو WebP أو PDF"
   },
   "notifications": {
-    "notificationNotFound": "الإشعار غير موجود"
+    "notificationNotFound": "الإشعار غير موجود",
+    "deviceNotFound": "الجهاز غير مسجل"
+  },
+  "doctors": {
+    "profileNotFound": "ملف الطبيب غير موجود",
+    "notApproved": "لم تتم الموافقة على حساب هذا الطبيب بعد",
+    "notPending": "لا يوجد طلب توثيق معلّق لهذا الطبيب",
+    "licenseMissing": "لم يُقدّم هذا الطبيب رقم الترخيص بعد",
+    "uploadLicense": "ارفع مستند ترخيص واحدًا على الأقل",
+    "alreadyVerified": "تم توثيق حسابك بالفعل",
+    "documentNotFound": "المستند غير موجود"
   }
 }

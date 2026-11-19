@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { IUser } from '../../dependency/interface/database-schema.interface.js';
-import { AuthProviderEnum, SystemRoleEnum } from '../../dependency/enum/security.enum.js';
+
+import { AuthProviderEnum, SystemRoleEnum, DoctorVerificationStatus } from '../../dependencies/enum/index.js';
+import { IUser } from '../../dependencies/interface/index.js';
 
 export type HUserDocument = HydratedDocument<IUser>;
 
@@ -22,14 +23,10 @@ export class User {
   @Prop({ type: String, trim: true })
   phone?: string;
 
-  /** Storage key of the encrypted avatar file (served via GET /users/:id/avatar). */
-  @Prop({ type: String, default: null })
-  avatarKey?: string | null;
-
   @Prop({ type: String, trim: true })
   avatarUrl?: string;
 
-  @Prop({ required: true, enum: Object.values(SystemRoleEnum), type: String, index: true })
+  @Prop({ required: true, enum: SystemRoleEnum, type: String, index: true })
   role: SystemRoleEnum;
 
   @Prop({
@@ -46,18 +43,18 @@ export class User {
   @Prop({ type: Date, default: null })
   emailVerifiedAt?: Date | null;
 
-  /** When the user accepted the privacy policy / consent at sign-up (NFR11). */
   @Prop({ type: Date, default: null })
   consentAcceptedAt?: Date | null;
 
-  /** Admins can disable an account; disabled users cannot log in. */
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
-  /** Preferred language (en | ar). Unset = use the request's Accept-Language. */
   @Prop({ type: String, enum: ['en', 'ar', null], default: null })
-  lang?: string | null;
+  language?: string | null;
+
+  @Prop({ type: String, enum: [...Object.values(DoctorVerificationStatus), null], default: null })
+  doctorStatus?: DoctorVerificationStatus | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.index({ name: 'text', email: 'text' });
+UserSchema.index({ name: 'text', email: 'text' }, { language_override: 'textSearchLanguage' });

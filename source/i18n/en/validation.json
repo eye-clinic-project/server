@@ -30,6 +30,12 @@
     "otp": "The verification code must be 6 digits",
     "resetToken": "Invalid reset token",
     "notInFuture": "{property} cannot be in the future",
-    "mustBeFuture": "{property} must be in the future"
-  }
+    "mustBeFuture": "{property} must be in the future",
+    "dateFormat": "{property} must be a date in YYYY-MM-DD format"
+  },
+  "arrayMaxSize": {
+    "one": "{property} can contain at most {count} item",
+    "other": "{property} can contain at most {count} items"
+  },
+  "isInstance": "{property} has an invalid value"
 }

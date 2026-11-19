@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IDoctorAvailability } from '../../dependency/interface/database-schema.interface.js';
+import { IDoctorAvailability } from '../../dependencies/interface/index.js';
 
 export type HDoctorAvailabilityDocument = HydratedDocument<IDoctorAvailability>;
 
@@ -16,7 +16,6 @@ export class DoctorAvailability {
   @Prop({ type: Date, required: true })
   endAt: Date;
 
-  /** Flipped atomically when a patient books the slot, so a slot can only be booked once. */
   @Prop({ type: Boolean, default: false })
   isBooked: boolean;
 
@@ -26,3 +25,4 @@ export class DoctorAvailability {
 
 export const DoctorAvailabilitySchema = SchemaFactory.createForClass(DoctorAvailability);
 DoctorAvailabilitySchema.index({ doctor: 1, startAt: 1 }, { unique: true });
+DoctorAvailabilitySchema.index({ doctor: 1, isBooked: 1, startAt: 1 });

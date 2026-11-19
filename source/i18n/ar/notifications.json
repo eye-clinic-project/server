@@ -1,0 +1,103 @@
+{
+  "analysisCompleted": {
+    "title": "التحليل جاهز للمراجعة",
+    "body": "اكتمل تحليل الذكاء الاصطناعي لصورة قاع العين الخاصة بـ {patient} وهو بانتظار مراجعتك."
+  },
+  "analysisFailed": {
+    "title": "فشل التحليل",
+    "body": "فشل تحليل الذكاء الاصطناعي لصورة قاع العين الخاصة بـ {patient}: {reason}"
+  },
+  "analysisFailedPatient": {
+    "title": "تعذر تحليل الصورة",
+    "body": "تعذر تحليل صورة قاع العين الخاصة بك: {reason}"
+  },
+  "reportReady": {
+    "title": "تقريرك جاهز",
+    "body": "أرسل لك د. {doctor} تقرير فحص الشبكية."
+  },
+  "appointmentRequested": {
+    "title": "طلب موعد جديد",
+    "body": "طلب {patient} موعدًا في {date}."
+  },
+  "appointmentBooked": {
+    "title": "موعد جديد",
+    "body": "حجز لك د. {doctor} موعدًا في {date}."
+  },
+  "appointmentConfirmed": {
+    "title": "تم تأكيد الموعد",
+    "body": "أكّد د. {doctor} موعدك في {date}."
+  },
+  "appointmentRescheduled": {
+    "title": "تم تغيير الموعد",
+    "body": "نقل {by} موعدك إلى {date}. السبب: {reason}."
+  },
+  "appointmentCancelled": {
+    "title": "تم إلغاء الموعد",
+    "body": "ألغى {by} الموعد المحدد في {date}: {reason}"
+  },
+  "newMessage": {
+    "title": "{sender}",
+    "body": "{preview}"
+  },
+  "assignmentRequested": {
+    "title": "طلب مريض جديد",
+    "body": "طلب {patient} أن تكون طبيبه المعالج."
+  },
+  "assignmentAccepted": {
+    "title": "تم قبول الطلب",
+    "body": "قبلك د. {doctor} كمريض لديه."
+  },
+  "doctorApproved": {
+    "title": "تم اعتماد الحساب",
+    "body": "تم التحقق من حسابك كطبيب. يمكن للمرضى الآن العثور عليك."
+  },
+  "doctorRejected": {
+    "title": "تم رفض التحقق",
+    "body": "تم رفض التحقق من حسابك كطبيب: {reason}"
+  },
+  "rescheduleReasons": {
+    "patient_request": "طلب المريض",
+    "patient_emergency": "ظرف طارئ للمريض",
+    "doctor_unavailable": "عدم توفر الطبيب",
+    "medical_follow_up": "متابعة طبية",
+    "other": "سبب آخر"
+  },
+  "doctorName": "د. {name}",
+  "patientAssigned": {
+    "title": "طبيب جديد",
+    "body": "أضافك د. {doctor} كمريض لديه."
+  },
+  "assignmentEnded": {
+    "title": "إنهاء ارتباط الطبيب",
+    "body": "لم يعد د. {doctor} طبيبك المعالج."
+  },
+  "appointmentBookedByPatient": {
+    "title": "موعد جديد",
+    "body": "حجز {patient} موعدًا في {date}."
+  },
+  "cancelRequested": {
+    "title": "طلب إلغاء",
+    "body": "طلب {patient} إلغاء الموعد المحدد في {date}. السبب: {reason}"
+  },
+  "rescheduleRequested": {
+    "title": "طلب تغيير موعد",
+    "body": "طلب {patient} نقل الموعد المحدد في {date} إلى {newDate}. السبب: {reason}"
+  },
+  "requestWithdrawn": {
+    "title": "تم سحب الطلب",
+    "body": "سحب {patient} طلبه الخاص بالموعد المحدد في {date}."
+  },
+  "cancelRejected": {
+    "title": "تم رفض الإلغاء",
+    "body": "رفض د. {doctor} طلب إلغاء الموعد المحدد في {date}. {note}"
+  },
+  "rescheduleRejected": {
+    "title": "تم رفض تغيير الموعد",
+    "body": "رفض د. {doctor} طلب نقل الموعد المحدد في {date}. {note}"
+  },
+  "attachmentPreview": "أرسل مرفقًا",
+  "doctorVerificationSubmitted": {
+    "title": "توثيق طبيب",
+    "body": "أرسل د. {doctor} ترخيصًا للمراجعة."
+  }
+}

@@ -38,6 +38,12 @@
     "otp": "يجب أن يتكون رمز التحقق من 6 أرقام",
     "resetToken": "رمز إعادة التعيين غير صالح",
     "notInFuture": "لا يمكن أن يكون «{property}» في المستقبل",
-    "mustBeFuture": "يجب أن يكون «{property}» في المستقبل"
-  }
+    "mustBeFuture": "يجب أن يكون «{property}» في المستقبل",
+    "dateFormat": "يجب أن يكون {property} تاريخًا بصيغة YYYY-MM-DD"
+  },
+  "arrayMaxSize": {
+    "one": "يمكن أن يحتوي {property} على عنصر واحد كحد أقصى",
+    "other": "يمكن أن يحتوي {property} على {count} عناصر كحد أقصى"
+  },
+  "isInstance": "قيمة {property} غير صالحة"
 }

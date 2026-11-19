@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IFundusImage } from '../../dependency/interface/database-schema.interface.js';
-import { EyeSide, ImageSource } from '../../dependency/enum/database.enum.js';
+import { IFundusImage } from '../../dependencies/interface/index.js';
+import { EyeSide, ImageSource } from '../../dependencies/enum/index.js';
 
 export type HFundusImageDocument = HydratedDocument<IFundusImage>;
 
@@ -20,18 +20,16 @@ export class FundusImage {
   @Prop({ type: String, enum: Object.values(ImageSource), default: ImageSource.UPLOAD })
   source: ImageSource;
 
-  /** Key of the encrypted file in private storage. Never exposed as a public URL. */
-  @Prop({ type: String, required: true, select: false })
+  @Prop({ type: String, required: true })
   storageKey: string;
 
   @Prop({ type: String, required: true })
   mimeType: string;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true, min: 0 })
   size: number;
 
-  /** Hash of the original bytes; proves the AI received the image unmodified (FR3.2). */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, index: true })
   sha256: string;
 
   @Prop({ type: String, trim: true })

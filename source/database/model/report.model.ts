@@ -2,8 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
 import { Analysis } from './analysis.model.js';
-import { IReport } from '../../dependency/interface/database-schema.interface.js';
-import { ReportStatus } from '../../dependency/enum/database.enum.js';
+import { IReport } from '../../dependencies/interface/index.js';
+import { ReportStatus } from '../../dependencies/enum/index.js';
 
 export type HReportDocument = HydratedDocument<IReport>;
 
@@ -24,7 +24,6 @@ export class Report {
   @Prop({ required: true, trim: true })
   title: string;
 
-  /** Doctor notes. */
   @Prop({ trim: true })
   content?: string;
 
@@ -39,7 +38,14 @@ export class Report {
 
   @Prop({ type: Date, default: null })
   viewedAt?: Date | null;
+
+  @Prop({ type: String, default: null, select: false })
+  pdfKey?: string | null;
+
+  @Prop({ type: Number, default: null })
+  pdfSize?: number | null;
 }
 
 export const ReportSchema = SchemaFactory.createForClass(Report);
 ReportSchema.index({ patient: 1, createdAt: -1 });
+ReportSchema.index({ analysis: 1 }, { unique: true });

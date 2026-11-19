@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IDoctorPatient } from '../../dependency/interface/database-schema.interface.js';
-import { AssignmentStatus } from '../../dependency/enum/database.enum.js';
+import { IDoctorPatient } from '../../dependencies/interface/index.js';
+import { AssignmentStatus } from '../../dependencies/enum/index.js';
 
 export type HDoctorPatientDocument = HydratedDocument<IDoctorPatient>;
 

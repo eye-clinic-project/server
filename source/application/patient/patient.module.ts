@@ -1,14 +1,41 @@
 import { Module } from '@nestjs/common';
-import { PatientService } from './patient.service.js';
+import { BullModule } from '@nestjs/bullmq';
+
+import { DatabaseModule, ServiceModule } from '../../dependencies/module/index.js';
+import {
+  BackfillPatientRecordsHandler,
+  CreatePatientHandler,
+  DeletePatientHandler,
+  EnsurePatientRecordHandler,
+  FindPatientByIdHandler,
+  FindPatientByUserHandler,
+  IsPatientAssignedHandler,
+  ListAssignedDoctorsHandler,
+  ListPatientsHandler,
+  UpdatePatientHandler,
+} from './cqrs/handler/index.js';
+import { PatientListener } from './event/index.js';
+import { PATIENT_QUEUE, PatientProcessor } from './queue/index.js';
 import { PatientController } from './patient.controller.js';
-import { AuthenticationModule } from '../authentication/authentication.module.js';
-import { AnalysisModule } from '../analysis/analysis.module.js';
-import { ReportModule } from '../report/report.module.js';
+import { PatientService } from './patient.service.js';
 
 @Module({
-  imports: [AuthenticationModule, AnalysisModule, ReportModule],
+  imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: PATIENT_QUEUE })],
   controllers: [PatientController],
-  providers: [PatientService],
-  exports: [PatientService],
+  providers: [
+    PatientService,
+    PatientListener,
+    PatientProcessor,
+    FindPatientByIdHandler,
+    FindPatientByUserHandler,
+    ListPatientsHandler,
+    ListAssignedDoctorsHandler,
+    IsPatientAssignedHandler,
+    CreatePatientHandler,
+    UpdatePatientHandler,
+    DeletePatientHandler,
+    EnsurePatientRecordHandler,
+    BackfillPatientRecordsHandler,
+  ],
 })
 export class PatientModule {}

@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { INotification } from '../../dependency/interface/database-schema.interface.js';
-import { NotificationType } from '../../dependency/enum/database.enum.js';
+import { INotification } from '../../dependencies/interface/index.js';
+import { NotificationType } from '../../dependencies/enum/index.js';
 
 export type HNotificationDocument = HydratedDocument<INotification>;
 
@@ -30,7 +30,6 @@ export class Notification {
   })
   type: NotificationType;
 
-  /** In-app route the client should open, e.g. /patient/results/<id>. */
   @Prop({ type: String, trim: true })
   link?: string;
 
@@ -39,6 +38,9 @@ export class Notification {
 
   @Prop({ type: Date, default: null })
   emailedAt?: Date | null;
+
+  @Prop({ type: Date, default: null })
+  pushedAt?: Date | null;
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

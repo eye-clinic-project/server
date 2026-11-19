@@ -1,0 +1,3127 @@
+{
+  "info": {
+    "_postman_id": "f3b8a0d2-5c1e-4b7a-9d3e-2a6c8e1f4b90",
+    "name": "RetinaCare API",
+    "description": "Generated from the same source as swagger.json (version 0.0.1). Regenerate with `npm run docs:generate`.\n\n1. Set `baseUrl` (default http://localhost:9090).\n\n2. Run **Authentication → Sign in**: the tokens are saved to the collection variables and every request uses `{{accessToken}}`.\n\n3. Requests that create or list things save the ids they return (`patientId`, `slotId`, `appointmentId`, `analysisId`, `reportId`, …) for the next requests.\n\n4. Set `language` to `ar` for Arabic messages.\n\nFor file uploads (avatar, fundus image) pick the file in the request body.\n\n### Real-time chat (socket.io)\n\nNamespace `/chat`. Send the access token in the handshake:\n\n```js\nconst socket = io('http://localhost:9090/chat', { auth: { token: accessToken } });\n```\n\nOnly active doctors and patients with an assignment can chat. Every event is authenticated; failures arrive as an `exception` event (or the ack): `{ status: 'error', statusCode, message, event }`.\n\n**Client → server** (all acknowledged)\n\n| Event | Payload | Ack |\n|---|---|---|\n| `join_conversation` | `{ conversationId }` | `{ status: 'ok', conversationId }` |\n| `leave_conversation` | `{ conversationId }` | `{ status: 'ok', conversationId }` |\n| `send_message` | `{ conversationId, message?, attachments?: [{ name?, data }], clientId? }` — `data` is base64 or bytes; JPEG, PNG, WEBP or PDF, 5 MB each, at most 4 | `{ status: 'ok', message: ChatMessage }` |\n| `typing` | `{ conversationId, isTyping }` | `{ status: 'ok' }` |\n| `read` | `{ conversationId, messageId? }` | `{ status: 'ok', count, upTo }` |\n\n**Server → client**\n\n| Event | Payload |\n|---|---|\n| `new_message` | `ChatMessage` (to both participants) |\n| `typing` | `{ conversationId, userId, isTyping }` (to the other participant in the room) |\n| `read` | `{ conversationId, userId, upTo, count }` |\n\nA push notification is sent when the recipient is not in the conversation room.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9090"
+    },
+    {
+      "key": "language",
+      "value": "en"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "patientId",
+      "value": ""
+    },
+    {
+      "key": "doctorId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "avatarFile",
+      "value": ""
+    },
+    {
+      "key": "slotId",
+      "value": ""
+    },
+    {
+      "key": "appointmentId",
+      "value": ""
+    },
+    {
+      "key": "conversationId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "key": "attachmentIndex",
+      "value": "0"
+    },
+    {
+      "key": "analysisId",
+      "value": ""
+    },
+    {
+      "key": "reportId",
+      "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Hello",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            },
+            "description": "Liveness check; the Docker HEALTHCHECK calls it."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "Accounts, tokens and email verification. Access tokens go in `Authorization: Bearer <token>`.",
+      "item": [
+        {
+          "name": "Sign up",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sara Mahmoud\",\n  \"email\": \"sara@example.com\",\n  \"password\": \"Str0ng-Passw0rd\",\n  \"city\": \"Cairo\",\n  \"role\": \"doctor\",\n  \"acceptTerms\": true,\n  \"clinicName\": \"Nile Eye Clinic\",\n  \"clinicAddress\": \"12 Tahrir St, Cairo\",\n  \"specialty\": \"Ophthalmology\",\n  \"licenseNumber\": \"EG-12345\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/sign-up",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "sign-up"
+              ]
+            },
+            "description": "Creates a patient (default) or doctor account and emails a 6-digit verification code. Sign-in is refused until the email is verified.\n\n**Rate limit:** 3 per hour (blocked 5 h when exceeded)"
+          },
+          "response": []
+        },
+        {
+          "name": "Sign in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.accessToken; if (value !== undefined && value !== null) pm.collectionVariables.set('accessToken', value); }",
+                  "  { const value = data.refreshToken; if (value !== undefined && value !== null) pm.collectionVariables.set('refreshToken', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sara@example.com\",\n  \"password\": \"Str0ng-Passw0rd\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/sign-in",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "sign-in"
+              ]
+            },
+            "description": "409 when the email is not verified yet.\n\n**Rate limit:** 5 per minute (blocked 5 h when exceeded)"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh tokens",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.accessToken; if (value !== undefined && value !== null) pm.collectionVariables.set('accessToken', value); }",
+                  "  { const value = data.refreshToken; if (value !== undefined && value !== null) pm.collectionVariables.set('refreshToken', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "refresh"
+              ]
+            },
+            "description": "Refresh tokens are single use: store the new pair.\n\n**Rate limit:** 10 per minute (blocked 15 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "Inspect access token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/authentication/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "token"
+              ]
+            },
+            "description": "Verifies the bearer access token and returns its decoded header and claims.\n\n**Rate limit:** 10 per minute (blocked 15 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "Log out",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"single\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "logout"
+              ]
+            },
+            "description": "**Rate limit:** 10 per minute (blocked 15 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "Send verification code",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sara@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/verify-email/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "verify-email",
+                "send"
+              ]
+            },
+            "description": "Always 202, whether or not the account exists.\n\n**Rate limit:** 3 per hour (blocked 5 h)"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify email",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sara@example.com\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/verify-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "verify-email"
+              ]
+            },
+            "description": "**Rate limit:** 5 per minute (blocked 1 h)"
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot password",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sara@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "forgot-password"
+              ]
+            },
+            "description": "Emails a 6-digit reset code. Always 202.\n\n**Rate limit:** 3 per minute (blocked 1 h)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset password",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sara@example.com\",\n  \"code\": \"123456\",\n  \"password\": \"N3w-Passw0rd\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "reset-password"
+              ]
+            },
+            "description": "**Rate limit:** 5 per minute (blocked 1 h)"
+          },
+          "response": []
+        },
+        {
+          "name": "Sign in with Google",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.accessToken; if (value !== undefined && value !== null) pm.collectionVariables.set('accessToken', value); }",
+                  "  { const value = data.refreshToken; if (value !== undefined && value !== null) pm.collectionVariables.set('refreshToken', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"<google-id-token>\",\n  \"city\": \"Cairo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/authentication/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "authentication",
+                "google"
+              ]
+            },
+            "description": "201 when a new patient account was created, 200 when an existing account signed in.\n\n**Rate limit:** 5 per minute (blocked 5 h when exceeded)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "The signed-in user: profile, avatar and push-notification devices.",
+      "item": [
+        {
+          "name": "Get my profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update my profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sara Mahmoud\",\n  \"city\": \"Giza\",\n  \"language\": \"ar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload avatar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me",
+                "avatar"
+              ]
+            },
+            "description": "**Rate limit:** 20 per minute (blocked 5 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove avatar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me",
+                "avatar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register push device",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<fcm-token>\",\n  \"platform\": \"android\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me",
+                "devices"
+              ]
+            },
+            "description": "Registers an FCM token for push notifications (up to 10 devices per user)."
+          },
+          "response": []
+        },
+        {
+          "name": "Unregister push device",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<fcm-token>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me",
+                "devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get avatar image",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/photos/avatars/{{userId}}/{{avatarFile}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "photos",
+                "avatars",
+                "{{userId}}",
+                "{{avatarFile}}"
+              ]
+            },
+            "description": "Public. Use the avatarUrl returned on the user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Patient",
+      "description": "Patient records. `{id}` is the patient profile id, not the user id.",
+      "item": [
+        {
+          "name": "Create patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data._id; if (value !== undefined && value !== null) pm.collectionVariables.set('patientId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Hassan\",\n  \"email\": \"ahmed@example.com\",\n  \"city\": \"Cairo\",\n  \"phone\": \"+20 100 123 4567\",\n  \"dateOfBirth\": \"1970-05-01\",\n  \"gender\": \"male\",\n  \"diabetesSince\": 2012\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patient",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient"
+              ]
+            },
+            "description": "Creates the account and the patient profile (with a medical record number). A doctor is assigned to the new patient automatically.\n\n**Roles:** admin, doctor\n\n**Rate limit:** 30 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "List patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patient?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Page size",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Name, email or medical record number",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Doctors only see their assigned patients.\n\n**Roles:** admin, doctor\n\n**Rate limit:** 60 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "Get my patient profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patient/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient",
+                "me"
+              ]
+            },
+            "description": "**Roles:** patient"
+          },
+          "response": []
+        },
+        {
+          "name": "List my doctors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data[0] && data[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('doctorId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patient/me/doctors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient",
+                "me",
+                "doctors"
+              ]
+            },
+            "description": "**Roles:** patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Get patient",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patient/{{patientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient",
+                "{{patientId}}"
+              ]
+            },
+            "description": "**Roles:** admin, doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Update patient",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+20 100 123 4567\",\n  \"medicalNotes\": \"HbA1c 7.9% (Nov 2026)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patient/{{patientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient",
+                "{{patientId}}"
+              ]
+            },
+            "description": "**Roles:** admin, doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete patient",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patient/{{patientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patient",
+                "{{patientId}}"
+              ]
+            },
+            "description": "Deletes the account, profile and assignments. Doctors can only delete patients they created.\n\n**Roles:** admin, doctor\n\n**Rate limit:** 5 per hour (blocked 1 h)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Doctor",
+      "description": "Clinic profile, license verification and the doctor’s patient list. Until an admin approves the license, a doctor can only use the `me/clinic` and `me/verification` routes.",
+      "item": [
+        {
+          "name": "Get my verification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/me/verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "me",
+                "verification"
+              ]
+            },
+            "description": "Works while the account is not approved yet.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit license for review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "licenseNumber",
+                  "value": "EG-OPH-20431",
+                  "type": "text"
+                },
+                {
+                  "key": "documents",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/me/verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "me",
+                "verification"
+              ]
+            },
+            "description": "Uploads the license number and 1–3 documents; replaces any earlier submission and sets the status back to pending. Admins are notified. Refused with 409 once the account is approved.\n\n**Roles:** doctor\n\n**Rate limit:** 20 per minute (blocked 5 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "View my license document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/me/verification/documents/{{documentIndex}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "me",
+                "verification",
+                "documents",
+                "{{documentIndex}}"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Get my clinic",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/me/clinic",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "me",
+                "clinic"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Update my clinic",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clinicName\": \"Nile Eye Clinic\",\n  \"clinicAddress\": \"12 Tahrir St, Cairo\",\n  \"specialty\": \"Ophthalmology\",\n  \"yearsOfExperience\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/me/clinic",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "me",
+                "clinic"
+              ]
+            },
+            "description": "Creates the clinic profile if it does not exist (clinicName and clinicAddress are then required).\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Create clinic patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data._id; if (value !== undefined && value !== null) pm.collectionVariables.set('patientId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Hassan\",\n  \"email\": \"ahmed@example.com\",\n  \"city\": \"Cairo\",\n  \"phone\": \"+20 100 123 4567\",\n  \"dateOfBirth\": \"1970-05-01\",\n  \"gender\": \"male\",\n  \"diabetesSince\": 2012\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctor/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "patients"
+              ]
+            },
+            "description": "Creates a patient locally from the clinic and assigns them to you. The patient is notified.\n\n**Roles:** doctor\n\n**Rate limit:** 30 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "Search patients to assign",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('patientId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/patients/search?search=ahmed&page=1&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "patients",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "ahmed",
+                  "description": "Name, email or medical record number (at least 3 characters)",
+                  "disabled": false
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Page size",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "**Roles:** doctor\n\n**Rate limit:** 60 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/patients/{{patientId}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "patients",
+                "{{patientId}}",
+                "assign"
+              ]
+            },
+            "description": "201 when a new assignment was created, 200 when it already existed (an ended assignment is reactivated). The patient is notified.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign patient",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctor/patients/{{patientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctor",
+                "patients",
+                "{{patientId}}"
+              ]
+            },
+            "description": "Ends the assignment (the patient record is kept). The patient is notified.\n\n**Roles:** doctor"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Admin only. Review doctor licenses (approve or reject, the admin has the final decision) and enable or disable accounts. The first admin is created at startup from ADMIN_EMAIL and ADMIN_PASSWORD.",
+      "item": [
+        {
+          "name": "List doctors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('adminDoctorId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors?status=pending&submitted=true&page=1&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "doctors"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Verification status",
+                  "disabled": false
+                },
+                {
+                  "key": "submitted",
+                  "value": "true",
+                  "description": "true: only doctors who uploaded license documents",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Name, email, license number or clinic",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Page size",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "The review queue is `status=pending&submitted=true`.\n\n**Roles:** admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Get doctor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{adminDoctorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "doctors",
+                "{{adminDoctorId}}"
+              ]
+            },
+            "description": "**Roles:** admin"
+          },
+          "response": []
+        },
+        {
+          "name": "View license document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{adminDoctorId}}/documents/{{documentIndex}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "doctors",
+                "{{adminDoctorId}}",
+                "documents",
+                "{{documentIndex}}"
+              ]
+            },
+            "description": "**Roles:** admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{adminDoctorId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "doctors",
+                "{{adminDoctorId}}",
+                "approve"
+              ]
+            },
+            "description": "Gives the doctor access to analyses, reports, patients, appointments and chat. Works on pending or rejected doctors; needs a license number. The doctor is notified.\n\n**Roles:** admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The license number does not match the uploaded document\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{adminDoctorId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "doctors",
+                "{{adminDoctorId}}",
+                "reject"
+              ]
+            },
+            "description": "Also revokes an approved doctor. The doctor is notified with the reason and can submit again.\n\n**Roles:** admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Enable or disable user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "status"
+              ]
+            },
+            "description": "Disabling signs the user out everywhere. You cannot disable your own account.\n\n**Roles:** admin"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Appointment",
+      "description": "Doctors publish availability as slots; patients book one appointment per day. Cancelling or rescheduling is a request the doctor approves or rejects.",
+      "item": [
+        {
+          "name": "Create availability",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data[0] && data[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('slotId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startAt\": \"2026-11-20T08:00:00.000Z\",\n  \"endAt\": \"2026-11-20T12:00:00.000Z\",\n  \"slotMinutes\": 20,\n  \"breakMinutes\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointment/availability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "availability"
+              ]
+            },
+            "description": "**Roles:** doctor\n\n**Rate limit:** 30 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "List my slots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointment/availability/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "availability",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "",
+                  "description": "Start of the range",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "",
+                  "description": "End of the range",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete slot",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointment/availability/{{slotId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "availability",
+                "{{slotId}}"
+              ]
+            },
+            "description": "Booked slots cannot be deleted.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "List free slots of a doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data[0] && data[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('slotId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointment/doctors/{{doctorId}}/slots?date=2026-11-20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "doctors",
+                "{{doctorId}}",
+                "slots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-11-20",
+                  "description": "Day in the clinic time zone (YYYY-MM-DD)",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Only for doctors assigned to you. Past slots are left out.\n\n**Roles:** patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Book appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data._id; if (value !== undefined && value !== null) pm.collectionVariables.set('appointmentId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slotId\": \"{{slotId}}\",\n  \"reason\": \"Annual diabetic eye check\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment"
+              ]
+            },
+            "description": "Confirmed immediately. A patient can have only one appointment per day. The doctor is notified.\n\n**Roles:** patient\n\n**Rate limit:** 30 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "List my appointments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('appointmentId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointment/me?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status",
+                  "disabled": true
+                },
+                {
+                  "key": "pendingRequest",
+                  "value": "",
+                  "description": "Only appointments with a pending cancel/reschedule request",
+                  "disabled": true
+                },
+                {
+                  "key": "from",
+                  "value": "",
+                  "description": "Scheduled from",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "",
+                  "description": "Scheduled until",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Page size",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Get appointment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointment/{{appointmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "{{appointmentId}}"
+              ]
+            },
+            "description": "**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Request cancellation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"I will be travelling that week\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointment/{{appointmentId}}/cancel-request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "{{appointmentId}}",
+                "cancel-request"
+              ]
+            },
+            "description": "The doctor reviews the reason and approves or rejects it.\n\n**Roles:** patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Request reschedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slotId\": \"{{slotId}}\",\n  \"reason\": \"patient_request\",\n  \"note\": \"Exam at work that morning\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointment/{{appointmentId}}/reschedule-request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "{{appointmentId}}",
+                "reschedule-request"
+              ]
+            },
+            "description": "Holds the new slot until the doctor decides. At most 3 patient reschedules per appointment.\n\n**Roles:** patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw request",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointment/{{appointmentId}}/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "{{appointmentId}}",
+                "request"
+              ]
+            },
+            "description": "**Roles:** patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Approved, see you then\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointment/{{appointmentId}}/request/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "{{appointmentId}}",
+                "request",
+                "approve"
+              ]
+            },
+            "description": "Cancels or moves the appointment. The patient is notified.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Approved, see you then\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointment/{{appointmentId}}/request/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointment",
+                "{{appointmentId}}",
+                "request",
+                "reject"
+              ]
+            },
+            "description": "Releases a held slot. The patient is notified.\n\n**Roles:** doctor"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "description": "REST endpoints for history and attachments.\n\n### Real-time chat (socket.io)\n\nNamespace `/chat`. Send the access token in the handshake:\n\n```js\nconst socket = io('http://localhost:9090/chat', { auth: { token: accessToken } });\n```\n\nOnly active doctors and patients with an assignment can chat. Every event is authenticated; failures arrive as an `exception` event (or the ack): `{ status: 'error', statusCode, message, event }`.\n\n**Client → server** (all acknowledged)\n\n| Event | Payload | Ack |\n|---|---|---|\n| `join_conversation` | `{ conversationId }` | `{ status: 'ok', conversationId }` |\n| `leave_conversation` | `{ conversationId }` | `{ status: 'ok', conversationId }` |\n| `send_message` | `{ conversationId, message?, attachments?: [{ name?, data }], clientId? }` — `data` is base64 or bytes; JPEG, PNG, WEBP or PDF, 5 MB each, at most 4 | `{ status: 'ok', message: ChatMessage }` |\n| `typing` | `{ conversationId, isTyping }` | `{ status: 'ok' }` |\n| `read` | `{ conversationId, messageId? }` | `{ status: 'ok', count, upTo }` |\n\n**Server → client**\n\n| Event | Payload |\n|---|---|\n| `new_message` | `ChatMessage` (to both participants) |\n| `typing` | `{ conversationId, userId, isTyping }` (to the other participant in the room) |\n| `read` | `{ conversationId, userId, upTo, count }` |\n\nA push notification is sent when the recipient is not in the conversation room.",
+      "item": [
+        {
+          "name": "List conversations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data[0] && data[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('conversationId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/chat/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chat",
+                "conversations"
+              ]
+            },
+            "description": "**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Start conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data._id; if (value !== undefined && value !== null) pm.collectionVariables.set('conversationId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantId\": \"{{doctorId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chat/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chat",
+                "conversations"
+              ]
+            },
+            "description": "Requires an active doctor–patient assignment. 201 when created, 200 when it already existed.\n\n**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "List messages",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('messageId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/chat/conversations/{{conversationId}}/messages?limit=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chat",
+                "conversations",
+                "{{conversationId}}",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "before",
+                  "value": "",
+                  "description": "Load messages older than this (use nextBefore)",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "30",
+                  "description": "Messages per page",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Download attachment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/chat/attachments/{{messageId}}/{{attachmentIndex}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chat",
+                "attachments",
+                "{{messageId}}",
+                "{{attachmentIndex}}"
+              ]
+            },
+            "description": "**Roles:** doctor, patient"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analysis",
+      "description": "AI screening of fundus images in two stages: **stage 1** detects diabetic retinopathy (available now), **stage 2** grades its severity 0–4 (shown as unavailable until the grading model is deployed).\n\nFlow: upload → `pending` → `processing` → `completed` / `failed` (retry) → doctor review → report.",
+      "item": [
+        {
+          "name": "AI service status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "health"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload fundus image for analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data._id; if (value !== undefined && value !== null) pm.collectionVariables.set('analysisId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "patientId",
+                  "value": "{{patientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "eye",
+                  "value": "left",
+                  "type": "text"
+                },
+                {
+                  "key": "notes",
+                  "value": "Routine screening",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "capturedAt",
+                  "value": "2026-11-17T09:00:00.000Z",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis"
+              ]
+            },
+            "description": "Stores the image and queues it for the AI model; the response is `pending`. Poll GET /analysis/{id} (or wait for the `analysis` notification) until it is `completed` or `failed`.\n\n**Roles:** doctor\n\n**Rate limit:** 10 per minute (blocked 5 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "List analyses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('analysisId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Page size",
+                  "disabled": false
+                },
+                {
+                  "key": "patientId",
+                  "value": "",
+                  "description": "Patient profile id",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter by status",
+                  "disabled": true
+                },
+                {
+                  "key": "hasDR",
+                  "value": "",
+                  "description": "Filter by stage-1 result",
+                  "disabled": true
+                },
+                {
+                  "key": "reviewed",
+                  "value": "",
+                  "description": "Only reviewed / not reviewed",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Your own analyses, newest first.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Get analysis",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Retry failed analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}/retry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}",
+                "retry"
+              ]
+            },
+            "description": "**Roles:** doctor\n\n**Rate limit:** 10 per minute (blocked 5 min)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete analysis",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}"
+              ]
+            },
+            "description": "Also deletes the image, heatmap and review. Refused while processing or while a report exists.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Get fundus image",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}",
+                "image"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Grad-CAM heatmap",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}/grad-cam",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}",
+                "grad-cam"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Get my review",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}",
+                "review"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Review analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aiResultConfirmed\": true,\n  \"confirmedLevel\": 2,\n  \"notes\": \"Scattered microaneurysms and dot haemorrhages.\",\n  \"recommendations\": \"Re-screen in 6 months; control HbA1c.\",\n  \"followUpDate\": \"2027-05-17T09:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}",
+                "review"
+              ]
+            },
+            "description": "Only completed analyses. One review per analysis.\n\n**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Update review",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Scattered microaneurysms and dot haemorrhages in both arcades.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analysis/{{analysisId}}/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analysis",
+                "{{analysisId}}",
+                "review"
+              ]
+            },
+            "description": "Locked once the report was sent.\n\n**Roles:** doctor"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Report",
+      "description": "PDF reports. A report needs a completed analysis, the doctor’s review and a note. Drafts can be edited; sending locks the report and notifies the patient, who can then download it.",
+      "item": [
+        {
+          "name": "Generate report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data._id; if (value !== undefined && value !== null) pm.collectionVariables.set('reportId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"analysisId\": \"{{analysisId}}\",\n  \"title\": \"Retina screening report\",\n  \"content\": \"Moderate NPDR, no macular oedema seen.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report"
+              ]
+            },
+            "description": "Creates a draft and its PDF. Requires a completed analysis, your review, and a note (review notes or report content). One report per analysis.\n\n**Roles:** doctor\n\n**Rate limit:** 10 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "List reports",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('reportId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/report?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Page size",
+                  "disabled": false
+                },
+                {
+                  "key": "patientId",
+                  "value": "",
+                  "description": "Doctors: patient profile id",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Doctors: filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Doctors see the reports they wrote; patients see the reports sent to them.\n\n**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Get report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/report/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report",
+                "{{reportId}}"
+              ]
+            },
+            "description": "Patients get 404 for drafts.\n\n**Roles:** doctor, patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Update draft report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Retina screening report (updated)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/report/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report",
+                "{{reportId}}"
+              ]
+            },
+            "description": "Regenerates the PDF.\n\n**Roles:** doctor\n\n**Rate limit:** 10 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "Regenerate PDF",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/report/{{reportId}}/regenerate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report",
+                "{{reportId}}",
+                "regenerate"
+              ]
+            },
+            "description": "Rebuilds the draft PDF, e.g. after the review changed.\n\n**Roles:** doctor\n\n**Rate limit:** 10 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "Send report to patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/report/{{reportId}}/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report",
+                "{{reportId}}",
+                "send"
+              ]
+            },
+            "description": "Renders the final PDF, marks the report sent and notifies the patient. The report and review are locked afterwards.\n\n**Roles:** doctor\n\n**Rate limit:** 10 per minute"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete draft report",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/report/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report",
+                "{{reportId}}"
+              ]
+            },
+            "description": "**Roles:** doctor"
+          },
+          "response": []
+        },
+        {
+          "name": "Download report PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/report/{{reportId}}/download",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "report",
+                "{{reportId}}",
+                "download"
+              ]
+            },
+            "description": "Sent as an attachment. The first patient download sets viewedAt.\n\n**Roles:** doctor, patient"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notification",
+      "description": "In-app notification inbox (also pushed through FCM to registered devices).",
+      "item": [
+        {
+          "name": "List notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const data = body && body.data;",
+                  "  { const value = data.docs[0] && data.docs[0]._id; if (value !== undefined && value !== null) pm.collectionVariables.set('notificationId', value); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification?page=1&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification"
+              ],
+              "query": [
+                {
+                  "key": "unread",
+                  "value": "",
+                  "description": "Only unread",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Page size",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unread count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "unread-count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark all read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "read-all"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification/{{notificationId}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "{{notificationId}}",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-language",
+                "value": "{{language}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification/{{notificationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "{{notificationId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

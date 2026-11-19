@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
+import type { IPatient } from '../../dependencies/interface/index.js';
+import { Patient } from '../model/index.js';
 import { DatabaseRepository } from './base.repository.js';
-import { Patient } from '../model/patient.model.js';
-import { IPatient } from '../../dependency/interface/database-schema.interface.js';
 
 @Injectable()
 export class PatientRepository extends DatabaseRepository<IPatient> {
-  constructor(
-    @InjectModel(Patient.name)
-    readonly typedModel: Model<IPatient>,
-  ) {
-    super(typedModel);
+  constructor(@InjectModel(Patient.name) private readonly patientModel: Model<IPatient>) {
+    super(patientModel);
   }
 }

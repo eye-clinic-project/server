@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
+  AggregateOptions,
   HydratedDocument,
   CreateOptions,
   DeleteResult,
   InsertManyOptions,
   Model,
+  PipelineStage,
   PopulateOptions,
   ProjectionType,
   QueryFilter,
@@ -89,6 +91,10 @@ export abstract class DatabaseRepository<T> {
     }
 
     return query.exec();
+  }
+
+  async aggregate<R>({ pipeline, options }: { pipeline: PipelineStage[]; options?: AggregateOptions }): Promise<R[]> {
+    return this.model.aggregate<R>(pipeline, options).exec();
   }
 
   async paginate({
@@ -195,7 +201,7 @@ export abstract class DatabaseRepository<T> {
           },
         },
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true,
           ...options,
         },
@@ -216,7 +222,7 @@ export abstract class DatabaseRepository<T> {
           },
         },
         {
-          new: true,
+          returnDocument: 'after',
           runValidators: true,
           ...options,
         },

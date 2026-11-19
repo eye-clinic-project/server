@@ -1,0 +1,510 @@
+RetinaCare — Class Diagrams
+===========================
+
+Notation : Mermaid classDiagram (paste a block into https://mermaid.live to see it drawn).
+Sections : 1. Domain model (the Mongoose schema classes in source/database/model)
+           2. Enumerations
+           3. Data-access layer (repositories)
+           4. Application layer (controllers, services, CQRS, policies, shared services)
+
+Visibility : + public, - private, # protected.   Multiplicity is written on each association.
+
+
+1. Domain model
+---------------
+
+Each class is a `@Schema` class. Every class also has _id, __v, createdAt and updatedAt (not repeated
+below). `Types.ObjectId` references are drawn as associations rather than as attributes.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class User {
+        +string name
+        +string email
+        -string passwordHash
+        +string city
+        +string phone
+        +string avatarKey
+        +string avatarUrl
+        +SystemRoleEnum role
+        +AuthProviderEnum provider
+        -string googleId
+        +Date emailVerifiedAt
+        +Date consentAcceptedAt
+        +boolean isActive
+        +string language
+    }
+
+    class Patient {
+        +string medicalRecordNumber
+        +Date dateOfBirth
+        +GenderEnum gender
+        +string emergencyContact
+        +number diabetesSince
+        +string medicalNotes
+    }
+
+    class Doctor {
+        +string clinicName
+        +string clinicAddress
+        +string specialty
+        +string licenseNumber
+        +string bio
+        +number yearsOfExperience
+        +DoctorVerificationStatus verificationStatus
+        +Date verificationSubmittedAt
+        +Date verifiedAt
+        +string rejectionReason
+    }
+
+    class DoctorPatient {
+        +AssignmentStatus status
+        +Date assignedAt
+        +Date endedAt
+        +string notes
+    }
+
+    class FundusImage {
+        +EyeSide eye
+        +ImageSource source
+        -string storageKey
+        +string mimeType
+        +number size
+        +string sha256
+        +string originalName
+        +string notes
+        +Date capturedAt
+    }
+
+    class Analysis {
+        +AnalysisStatus status
+        +boolean hasDR
+        +number stage1Confidence
+        +DRLevel predictedLevel
+        +number confidence
+        +number[] probabilities
+        -string gradCamKey
+        +string modelVersion
+        +boolean isMock
+        +string error
+        +number attempts
+        +number processingMs
+        +Date completedAt
+    }
+
+    class AnalysisFinding {
+        <<embedded>>
+        +string code
+        +string name
+        +number probability
+        +number threshold
+        +boolean detected
+    }
+
+    class AnalysisHistoryEntry {
+        <<embedded>>
+        +AnalysisStatus status
+        +string message
+        +Date at
+    }
+
+    class DoctorReview {
+        +boolean aiResultConfirmed
+        +DRLevel confirmedLevel
+        +string notes
+        +string recommendations
+        +Date followUpDate
+    }
+
+    class Report {
+        +string title
+        +string content
+        +string recommendations
+        +ReportStatus status
+        +Date sentAt
+        +Date viewedAt
+    }
+
+    class DoctorAvailability {
+        +Date startAt
+        +Date endAt
+        +boolean isBooked
+    }
+
+    class Appointment {
+        +Date scheduledAt
+        +Date endAt
+        +AppointmentStatus status
+        +string reason
+        +string notes
+        +string cancelReason
+    }
+
+    class Conversation {
+        +Date lastMessageAt
+    }
+
+    class Message {
+        +string message
+        +string[] attachments
+        +Date editedAt
+        +Date deletedAt
+    }
+
+    class Notification {
+        +string title
+        +string body
+        +boolean read
+        +Date readAt
+        +NotificationType type
+        +string link
+        +ObjectId resourceId
+        +Date emailedAt
+    }
+
+    User "1" -- "0..1" Patient : user
+    User "1" -- "0..1" Doctor : user
+    User "1" <-- "0..*" Patient : createdBy
+    User "1" <-- "0..*" Doctor : verifiedBy (admin)
+
+    User "1" <-- "0..*" DoctorPatient : doctor
+    User "1" <-- "0..*" DoctorPatient : patient
+    User "1" <-- "0..*" DoctorPatient : assignedBy
+
+    User "1" <-- "0..*" FundusImage : patient
+    User "1" <-- "0..*" FundusImage : uploadedBy
+
+    FundusImage "1" <-- "0..*" Analysis : image
+    User "1" <-- "0..*" Analysis : doctor / patient
+    Analysis "1" *-- "0..*" AnalysisFinding : findings
+    Analysis "1" *-- "0..*" AnalysisHistoryEntry : history
+    AnalysisHistoryEntry "0..*" --> "0..1" User : by
+
+    Analysis "1" <-- "0..*" DoctorReview : analysis
+    User "1" <-- "0..*" DoctorReview : doctor / patient
+
+    Analysis "1" <-- "0..*" Report : analysis
+    DoctorReview "0..1" <-- "0..1" Report : review
+    User "1" <-- "0..*" Report : doctor / patient
+
+    User "1" <-- "0..*" DoctorAvailability : doctor
+    DoctorAvailability "0..1" -- "0..1" Appointment : slot / appointment
+    User "1" <-- "0..*" Appointment : doctor / patient / cancelledBy
+
+    Conversation "0..*" --> "2" User : participants
+    Conversation "1" *-- "0..*" Message : conversation
+    Conversation "0..1" --> "0..1" Message : lastMessage
+    Message "0..*" --> "1" User : sender
+    Message "0..*" --> "0..*" User : deliveredTo / readBy
+
+    User "1" <-- "0..*" Notification : recipient
+```
+
+Rules carried by the model:
+  - A User has role admin, doctor or patient. Doctors and patients get one profile document
+    (Doctor / Patient). Admins have no profile.
+  - A Doctor can use the doctor panel only when verificationStatus = approved.
+  - Analysis runs in two stages: stage 1 decides DR / no DR (hasDR, stage1Confidence, findings);
+    stage 2 grades the level (predictedLevel 0..4, confidence, probabilities).
+  - DoctorReview is a doctor's confirmation or correction of an Analysis (at most one per doctor
+    per analysis). A Report is the document that is sent to the patient.
+  - There is exactly one Conversation per doctor–patient pair.
+
+
+2. Enumerations
+---------------
+
+```mermaid
+classDiagram
+    class SystemRoleEnum {
+        <<enumeration>>
+        admin
+        doctor
+        patient
+    }
+    class SignUpRoleEnum {
+        <<enumeration>>
+        doctor
+        patient
+    }
+    class AuthProviderEnum {
+        <<enumeration>>
+        system
+        google
+    }
+    class LogoutTypeEnum {
+        <<enumeration>>
+        single
+        all
+    }
+    class GenderEnum {
+        <<enumeration>>
+        male
+        female
+    }
+    class DoctorVerificationStatus {
+        <<enumeration>>
+        pending
+        approved
+        rejected
+    }
+    class AssignmentStatus {
+        <<enumeration>>
+        pending
+        active
+        ended
+    }
+    class EyeSide {
+        <<enumeration>>
+        left
+        right
+        unknown
+    }
+    class ImageSource {
+        <<enumeration>>
+        upload
+    }
+    class AnalysisStatus {
+        <<enumeration>>
+        pending
+        processing
+        completed
+        failed
+    }
+    class DRLevel {
+        <<enumeration>>
+        0_NoDR
+        1_Mild
+        2_Moderate
+        3_Severe
+        4_Proliferative
+    }
+    class ReportStatus {
+        <<enumeration>>
+        draft
+        sent
+    }
+    class AppointmentStatus {
+        <<enumeration>>
+        pending
+        confirmed
+        cancelled
+        completed
+    }
+    class NotificationType {
+        <<enumeration>>
+        appointment
+        analysis
+        report
+        message
+        system
+        note
+        follow_up
+    }
+    class OtpPurpose {
+        <<enumeration>>
+        email-verification
+        password-reset
+    }
+```
+
+
+3. Data-access layer
+--------------------
+
+All repositories live in source/database/repository/main.repository.ts and add nothing to the
+base class. Handlers express their queries through the base methods only (filter / projection /
+options objects).
+
+```mermaid
+classDiagram
+    class DatabaseRepository~T~ {
+        <<abstract>>
+        #Model~T~ model
+        +create(data, options) HydratedDocument~T~
+        +createMany(data, options)
+        +findById(_id, projection, options)
+        +findOne(filter, projection, options)
+        +find(filter, projection, options)
+        +paginate(filter, projection, options, page, size)
+        +updateOne(filter, update, options) UpdateResult
+        +updateMany(filter, update, options) UpdateResult
+        +findOneAndUpdate(filter, update, options)
+        +findByIdAndUpdate(_id, update, options)
+        +deleteOne(filter) DeleteResult
+        +deleteMany(filter) DeleteResult
+        +findOneAndDelete(filter)
+        +findByIdAndDelete(_id)
+    }
+    note for DatabaseRepository "Every update* / findOneAnd* / findByIdAndUpdate\nadds $inc __v and runValidators: true"
+
+    DatabaseRepository <|-- UserRepository
+    DatabaseRepository <|-- PatientRepository
+    DatabaseRepository <|-- DoctorRepository
+    DatabaseRepository <|-- DoctorPatientRepository
+    DatabaseRepository <|-- FundusImageRepository
+    DatabaseRepository <|-- AnalysisRepository
+    DatabaseRepository <|-- DoctorReviewRepository
+    DatabaseRepository <|-- ReportRepository
+    DatabaseRepository <|-- DoctorAvailabilityRepository
+    DatabaseRepository <|-- AppointmentRepository
+    DatabaseRepository <|-- ConversationRepository
+    DatabaseRepository <|-- MessageRepository
+    DatabaseRepository <|-- NotificationRepository
+
+    class DatabaseModule {
+        <<module>>
+        MongooseModule.forFeature(13 schemas)
+        providers / exports: 13 repositories
+    }
+    DatabaseModule ..> UserRepository : provides
+```
+
+
+4. Application layer (implemented today)
+----------------------------------------
+
+```mermaid
+classDiagram
+    direction TB
+
+    class AuthenticationController {
+        +signUp(SignUpDto) AuthenticationEntity
+        +signIn(SignInDto) TokenPair
+        +refresh(RefreshTokenDto) TokenPair
+        +logout(user, LogoutDto) void
+        +sendVerifyEmail(EmailDto) void
+        +verifyEmail(VerifyEmailDto) void
+        +forgotPassword(ForgotPasswordDto) void
+        +resetPassword(ResetPasswordDto) void
+        +google(GoogleSignInDto) TokenPair
+    }
+
+    class AuthenticationService {
+        -QueryBus queryBus
+        -CommandBus commandBus
+        -PasswordHasher passwordHasher
+        -TokenService tokenService
+        -OtpService otpService
+        -MailService mailService
+        -GoogleIdentityService googleIdentityService
+        +signUp(dto) AuthenticationEntity
+        +signIn(dto) TokenPair
+        +logout(userId, dto) void
+        +sendVerifyEmail(dto) void
+        +verifyEmail(dto) void
+        +forgotPassword(dto) void
+        +resetPassword(dto) void
+        +googleSignIn(dto) TokenPair
+        -resolveGoogleUser(profile, city) HUserDocument
+        -sendOtp(purpose, email) void
+    }
+
+    class UserController {
+        +getMe(user) UserEntity
+        +updateMe(user, UpdateUserDto) UserEntity
+        +setAvatar(user, file) UserEntity
+        +removeAvatar(user) UserEntity
+    }
+
+    class PhotosController {
+        +avatar(userId, file) string
+    }
+
+    class UserService {
+        -QueryBus queryBus
+        -CommandBus commandBus
+        -Disk photos
+        +getMe(user) UserEntity
+        +updateMe(user, dto) UserEntity
+        +setAvatar(user, file) UserEntity
+        +removeAvatar(user) UserEntity
+    }
+
+    class UserPolicy {
+        <<policy>>
+        +viewOwnProfile(user) boolean
+        +updateOwnProfile(user) boolean
+    }
+
+    class AuthenticationCqrs {
+        <<cqrs>>
+        FindUserByEmailQuery -> FindUserByEmailHandler
+        FindUserByGoogleIdQuery -> FindUserByGoogleIdHandler
+        CreateUserCommand -> CreateUserHandler
+        UpdateUserCommand -> UpdateUserHandler
+    }
+
+    class UserCqrs {
+        <<cqrs>>
+        GetUserByIdQuery -> GetUserByIdHandler
+        UpdateUserProfileCommand -> UpdateUserProfileHandler
+        SetUserAvatarCommand -> SetUserAvatarHandler
+        RemoveUserAvatarCommand -> RemoveUserAvatarHandler
+    }
+
+    class OtpService {
+        -Cache cache
+        +number ttlMs = 600000
+        +issue(purpose, email) string
+        +verify(purpose, email, code) boolean
+        -key(purpose, email) string
+        -hash(purpose, email, code) string
+    }
+
+    class MailService {
+        -Mailer mailer
+        +sendOtp(to, OtpMailData) void
+    }
+
+    class OtpMail {
+        <<Mailable>>
+        +render(OtpMailData) subject_html
+    }
+
+    class GoogleIdentityService {
+        -JwksClient jwks
+        -Map verifiers
+        +verify(idToken) GoogleProfile
+    }
+
+    class JwtAuth {
+        <<JwtBearerProvider>>
+        +validate(claims) HUserDocument
+    }
+
+    class ImageInterceptor {
+        <<mixin interceptor>>
+        -Storage storage
+        +intercept(ctx, next) StreamableFile
+    }
+
+    class HttpCacheInterceptor {
+        <<global interceptor>>
+        #trackBy(ctx) string
+    }
+
+    AuthenticationController --> AuthenticationService
+    AuthenticationService --> AuthenticationCqrs : CommandBus / QueryBus
+    AuthenticationService --> OtpService
+    AuthenticationService --> MailService
+    AuthenticationService --> GoogleIdentityService
+    MailService --> OtpMail
+    UserController --> UserService
+    UserController ..> UserPolicy : @Can
+    PhotosController ..> ImageInterceptor : @ServeImage('photos')
+    UserService --> UserCqrs : CommandBus / QueryBus
+    AuthenticationCqrs --> UserRepository
+    UserCqrs --> UserRepository
+    JwtAuth --> UserRepository
+```
+
+Request pipeline for every HTTP call (global; app.module.ts and main.ts):
+  Guards       : ThrottlerGuard, the @nestjs/authentication guard (JwtAuth), @Can policies
+  Interceptors : LoggingInterceptor -> TransformInterceptor (wraps the result as { message, data };
+                 StreamableFile passes through) -> TimeoutInterceptor -> HttpCacheInterceptor
+                 (caches anonymous GET responses only)
+  Pipes        : ValidationPipe { transform, whitelist, forbidNonWhitelisted } on every DTO
+  Handler      : controller method -> service -> CommandBus / QueryBus -> repository

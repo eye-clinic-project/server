@@ -1,176 +1,82 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { InjectDisk, StorageDisk, type StoredUpload } from '@nestjs/storage';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Types } from 'mongoose';
-import type { HUserDocument } from '../../database/model/user.model.js';
-import { UserRepository } from '../../database/repository/user.repository.js';
-import { DoctorRepository } from '../../database/repository/doctor.repository.js';
-import { PatientRepository } from '../../database/repository/patient.repository.js';
-import { DoctorPatientRepository } from '../../database/repository/doctor-patient.repository.js';
-import { NotificationRepository } from '../../database/repository/notification.repository.js';
-import { FundusImageRepository } from '../../database/repository/fundus-image.repository.js';
-import { AnalysisRepository } from '../../database/repository/analysis.repository.js';
-import { ReportRepository } from '../../database/repository/report.repository.js';
-import { DoctorAvailabilityRepository } from '../../database/repository/doctor-availability.repository.js';
-import { DoctorReviewRepository } from '../../database/repository/doctor-review.repository.js';
-import { AuthProviderEnum, SystemRoleEnum } from '../../dependency/enum/security.enum.js';
-import { AssignmentStatus, DoctorVerificationStatus } from '../../dependency/enum/database.enum.js';
-import type { IDoctor } from '../../dependency/interface/database-schema.interface.js';
-import { presentUser } from '../../dependency/presenter.js';
-import { SecurityService } from '../../dependency/service/security.service.js';
-import { StorageService, extensionForMime } from '../../dependency/service/storage.service.js';
-import { TokenService } from '../../dependency/service/token.service.js';
-import { AccessService } from '../../dependency/service/access.service.js';
-import { DeleteAccountDto, UpdateUserDto } from './dto/user.dto.js';
+
+import type { IUser } from '../../dependencies/interface/index.js';
+import { LoggerService, NotificationService } from '../../dependencies/service/index.js';
+import { RemoveUserAvatarCommand, SetUserAvatarCommand, UpdateUserProfileCommand } from './cqrs/command/index.js';
+import { GetUserByIdQuery } from './cqrs/query/index.js';
+import { DeviceTokenDto, RegisterDeviceDto, UpdateUserDto } from './dto/index.js';
+import { toUserEntity, UserEntity } from './entity/index.js';
+import { USER_AVATAR_CHANGED_EVENT, USER_AVATAR_REMOVED_EVENT, UserAvatarChangedEvent, UserAvatarRemovedEvent } from './event/index.js';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly users: UserRepository,
-    private readonly doctors: DoctorRepository,
-    private readonly patients: PatientRepository,
-    private readonly assignments: DoctorPatientRepository,
-    private readonly notifications: NotificationRepository,
-    private readonly images: FundusImageRepository,
-    private readonly analyses: AnalysisRepository,
-    private readonly reports: ReportRepository,
-    private readonly slots: DoctorAvailabilityRepository,
-    private readonly reviews: DoctorReviewRepository,
-    private readonly security: SecurityService,
-    private readonly storage: StorageService,
-    private readonly tokens: TokenService,
-    private readonly access: AccessService,
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
+    private readonly loggerService: LoggerService,
+    private readonly notificationService: NotificationService,
+    private readonly eventEmitter: EventEmitter2,
+    @InjectDisk('photos') private readonly photos: StorageDisk,
   ) {}
 
-  async profileOf(user: { _id: Types.ObjectId; role: SystemRoleEnum }) {
-    if (user.role === SystemRoleEnum.DOCTOR) {
-      return this.doctors.findOne({ filter: { user: user._id }, options: { lean: true } });
-    }
-    if (user.role === SystemRoleEnum.PATIENT) {
-      return this.patients.findOne({ filter: { user: user._id }, options: { lean: true } });
-    }
-    return null;
+  async getMe(user: IUser): Promise<UserEntity> {
+    const found = await this.queryBus.execute(new GetUserByIdQuery(userId(user)));
+    if (!found) throw new NotFoundException('User not found');
+    return toUserEntity(found);
   }
 
-  /** Current user with role profile; tells the client which dashboard to open (FR1.2). */
-  async getMe(user: HUserDocument) {
-    const profile = await this.profileOf(user);
-    const isDoctor = user.role === SystemRoleEnum.DOCTOR;
-    const doctor = isDoctor ? (profile as IDoctor | null) : null;
-    // Doctors wait on /doctor/pending until an admin approves their license.
-    const verification = isDoctor
-      ? {
-          status: doctor ? (doctor.verificationStatus ?? DoctorVerificationStatus.PENDING) : null,
-          licenseNumber: doctor?.licenseNumber ?? null,
-          submittedAt: doctor?.verificationSubmittedAt ?? doctor?.createdAt ?? null,
-          reviewedAt: doctor?.verifiedAt ?? null,
-          rejectionReason: doctor?.rejectionReason ?? null,
-        }
-      : null;
-    const approved = !isDoctor || verification?.status === DoctorVerificationStatus.APPROVED;
-    return {
-      ...presentUser(user),
-      consentAcceptedAt: user.consentAcceptedAt ?? null,
-      lang: user.lang ?? null,
-      profile,
-      profileComplete: !isDoctor || !!profile,
-      verification,
-      dashboard: approved ? `/${user.role}` : '/doctor/pending',
-    };
+  async updateMe(user: IUser, { name, city, language }: UpdateUserDto): Promise<UserEntity> {
+    const profile = { ...(name !== undefined && { name }), ...(city !== undefined && { city }), ...(language !== undefined && { language }) };
+    if (Object.keys(profile).length === 0) return this.getMe(user);
+
+    const updated = await this.commandBus.execute(new UpdateUserProfileCommand(userId(user), profile));
+    if (!updated) throw new NotFoundException('User not found');
+    return toUserEntity(updated);
   }
 
-  async updateMe(user: HUserDocument, dto: UpdateUserDto) {
-    const updated = await this.users.updateUserProfile(user._id, dto);
-    if (!updated) throw new NotFoundException('Account not found');
-    return this.getMe(updated);
-  }
-
-  async updateAvatar(user: HUserDocument, file: Express.Multer.File) {
-    const key = await this.storage.save('avatars', file.buffer, extensionForMime(file.mimetype));
-    const previous = user.avatarKey;
-    const updated = await this.users.updateUserProfile(user._id, { avatarKey: key });
-    await this.storage.remove(previous);
-    return this.getMe(updated!);
-  }
-
-  async removeAvatar(user: HUserDocument) {
-    await this.storage.remove(user.avatarKey);
-    const updated = await this.users.findByIdAndUpdate({
-      _id: user._id,
-      update: { $set: { avatarKey: null } },
+  async setAvatar(user: IUser, file: StoredUpload): Promise<UserEntity> {
+    const updated = await this.commandBus.execute(new SetUserAvatarCommand(userId(user), this.photos.url(file.key))).catch(async (error: unknown) => {
+      await this.deleteFile(file.key);
+      throw error;
     });
-    return this.getMe(updated!);
-  }
-
-  async avatarFile(userId: Types.ObjectId) {
-    const user = await this.users.findById({ _id: userId });
-    if (!user?.avatarKey) throw new NotFoundException('Avatar not found');
-    return { data: await this.storage.read(user.avatarKey), mimeType: user.avatarKey.includes('.png.') ? 'image/png' : 'image/jpeg' };
-  }
-
-  async getUser(viewer: HUserDocument, userId: Types.ObjectId) {
-    const user = await this.users.findById({ _id: userId });
-    if (!user) throw new NotFoundException('User not found');
-
-    if (!viewer._id.equals(userId) && !this.access.isAdmin(viewer)) {
-      if (user.role === SystemRoleEnum.PATIENT) {
-        await this.access.assertCanAccessPatient(viewer, userId);
-      } else if (user.role !== SystemRoleEnum.DOCTOR) {
-        throw new ForbiddenException('You do not have access to this user');
-      }
+    if (!updated) {
+      await this.deleteFile(file.key);
+      throw new NotFoundException('User not found');
     }
-    return { ...presentUser(user), profile: await this.profileOf(user) };
+
+    this.eventEmitter.emit(USER_AVATAR_CHANGED_EVENT, new UserAvatarChangedEvent(userId(user).toString(), this.storedAvatarKey(user.avatarUrl), file.key));
+    return toUserEntity(updated);
   }
 
-  async deleteMe(user: HUserDocument, dto: DeleteAccountDto) {
-    if (user.provider === AuthProviderEnum.SYSTEM) {
-      const account = await this.users.findByEmail(user.email);
-      if (account?.passwordHash) {
-        if (!dto.password) throw new BadRequestException('Password is required');
-        if (!(await this.security.compare(dto.password, account.passwordHash))) {
-          throw new UnauthorizedException('Password is incorrect');
-        }
-      }
-    }
-    await this.deleteAccount(user._id);
-    return { deleted: true };
+  async removeAvatar(user: IUser): Promise<UserEntity> {
+    if (!user.avatarUrl) throw new NotFoundException('Avatar not found');
+    const updated = await this.commandBus.execute(new RemoveUserAvatarCommand(userId(user)));
+    if (!updated) throw new NotFoundException('User not found');
+    this.eventEmitter.emit(USER_AVATAR_REMOVED_EVENT, new UserAvatarRemovedEvent(userId(user).toString(), this.storedAvatarKey(user.avatarUrl)));
+    return toUserEntity(updated);
   }
 
-  async deleteAccount(userId: Types.ObjectId) {
-    const user = await this.users.findById({ _id: userId });
-    if (!user) throw new NotFoundException('User not found');
+  async registerDevice(user: IUser, { token }: RegisterDeviceDto): Promise<void> {
+    await this.notificationService.registerDevice(userId(user).toString(), token);
+  }
 
-    if (user.role === SystemRoleEnum.PATIENT) {
-      const images = await this.images.find({
-        filter: { patient: userId },
-        projection: { storageKey: 1 },
-        options: { lean: true },
-      });
-      const analyses = await this.analyses.find({
-        filter: { patient: userId },
-        projection: { gradCamKey: 1 },
-        options: { lean: true },
-      });
-      await Promise.all([...images.map((img: any) => this.storage.remove(img.storageKey)), ...analyses.map((a: any) => this.storage.remove(a.gradCamKey))]);
-      await Promise.all([
-        this.images.deleteMany({ filter: { patient: userId } }),
-        this.analyses.deleteMany({ filter: { patient: userId } }),
-        this.reports.deleteMany({ filter: { patient: userId } }),
-        this.reviews.deleteMany({ filter: { patient: userId } }),
-        this.patients.deleteOne({ filter: { user: userId } }),
-        this.assignments.deleteMany({ filter: { patient: userId } }),
-      ]);
-    } else if (user.role === SystemRoleEnum.DOCTOR) {
-      await Promise.all([
-        this.doctors.deleteOne({ filter: { user: userId } }),
-        this.assignments.updateMany({
-          filter: { doctor: userId },
-          update: { $set: { status: AssignmentStatus.ENDED, endedAt: new Date() } },
-        }),
-        this.slots.deleteMany({ filter: { doctor: userId, isBooked: false } }),
-      ]);
-    }
-    await this.storage.remove(user.avatarKey);
-    await this.notifications.deleteMany({ filter: { recipient: userId } });
-    await this.users.deleteOne({ filter: { _id: userId } });
-    await this.tokens.logout(userId);
+  async unregisterDevice(user: IUser, { token }: DeviceTokenDto): Promise<void> {
+    const removed = await this.notificationService.unregisterDevice(userId(user).toString(), token);
+    if (!removed) throw new NotFoundException('Device not registered');
+  }
+
+  private storedAvatarKey(avatarUrl?: string | null): string | null {
+    const prefix = this.photos.url('avatars/_').slice(0, -1);
+    return avatarUrl?.startsWith(prefix) ? `avatars/${avatarUrl.slice(prefix.length)}` : null;
+  }
+
+  private async deleteFile(key: string): Promise<void> {
+    await this.photos.delete(key).catch((error: unknown) => this.loggerService.warn(error));
   }
 }
+
+const userId = (user: IUser): Types.ObjectId => new Types.ObjectId(user._id);

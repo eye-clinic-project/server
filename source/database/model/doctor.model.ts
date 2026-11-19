@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { DoctorVerificationStatus } from '../../dependency/enum/database.enum.js';
-import { IDoctor } from '../../dependency/interface/database-schema.interface.js';
+import { DoctorVerificationStatus } from '../../dependencies/enum/index.js';
+import { IDoctor, ILicenseDocument } from '../../dependencies/interface/index.js';
 
 export type HDoctorDocument = HydratedDocument<IDoctor>;
 
@@ -29,7 +29,6 @@ export class Doctor {
   @Prop({ type: Number, min: 0 })
   yearsOfExperience?: number;
 
-  /** New doctors start pending; an admin checks the license before they can use the doctor panel. */
   @Prop({
     type: String,
     enum: Object.values(DoctorVerificationStatus),
@@ -38,7 +37,7 @@ export class Doctor {
   })
   verificationStatus: DoctorVerificationStatus;
 
-  @Prop({ type: Date, default: () => new Date() })
+  @Prop({ type: Date, default: null })
   verificationSubmittedAt?: Date | null;
 
   @Prop({ type: Date, default: null })
@@ -49,6 +48,21 @@ export class Doctor {
 
   @Prop({ type: String, trim: true, default: null })
   rejectionReason?: string | null;
+
+  @Prop({
+    type: [
+      {
+        _id: false,
+        key: { type: String, required: true },
+        originalName: { type: String, required: true },
+        mimeType: { type: String, required: true },
+        size: { type: Number, required: true },
+        uploadedAt: { type: Date, required: true },
+      },
+    ],
+    default: [],
+  })
+  licenseDocuments: ILicenseDocument[];
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

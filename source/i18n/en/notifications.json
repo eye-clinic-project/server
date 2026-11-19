@@ -1,0 +1,103 @@
+{
+  "analysisCompleted": {
+    "title": "Analysis ready for review",
+    "body": "The AI analysis of {patient}'s fundus image is complete and waiting for your review."
+  },
+  "analysisFailed": {
+    "title": "Analysis failed",
+    "body": "The AI analysis of {patient}'s fundus image failed: {reason}"
+  },
+  "analysisFailedPatient": {
+    "title": "Image could not be analysed",
+    "body": "Your fundus image could not be analysed: {reason}"
+  },
+  "reportReady": {
+    "title": "Your report is ready",
+    "body": "Dr. {doctor} sent you your retina screening report."
+  },
+  "appointmentRequested": {
+    "title": "New appointment request",
+    "body": "{patient} requested an appointment on {date}."
+  },
+  "appointmentBooked": {
+    "title": "New appointment",
+    "body": "Dr. {doctor} booked an appointment for you on {date}."
+  },
+  "appointmentConfirmed": {
+    "title": "Appointment confirmed",
+    "body": "Dr. {doctor} confirmed your appointment on {date}."
+  },
+  "appointmentRescheduled": {
+    "title": "Appointment moved",
+    "body": "{by} moved your appointment to {date}. Reason: {reason}."
+  },
+  "appointmentCancelled": {
+    "title": "Appointment cancelled",
+    "body": "{by} cancelled the appointment on {date}: {reason}"
+  },
+  "newMessage": {
+    "title": "{sender}",
+    "body": "{preview}"
+  },
+  "assignmentRequested": {
+    "title": "New patient request",
+    "body": "{patient} asked you to be their doctor."
+  },
+  "assignmentAccepted": {
+    "title": "Request accepted",
+    "body": "Dr. {doctor} accepted you as their patient."
+  },
+  "doctorApproved": {
+    "title": "Account approved",
+    "body": "Your doctor account was verified. Patients can now find you."
+  },
+  "doctorRejected": {
+    "title": "Verification declined",
+    "body": "Your doctor verification was declined: {reason}"
+  },
+  "rescheduleReasons": {
+    "patient_request": "patient request",
+    "patient_emergency": "patient emergency",
+    "doctor_unavailable": "doctor unavailable",
+    "medical_follow_up": "medical follow-up",
+    "other": "other"
+  },
+  "doctorName": "Dr. {name}",
+  "patientAssigned": {
+    "title": "New doctor",
+    "body": "Dr. {doctor} added you as their patient."
+  },
+  "assignmentEnded": {
+    "title": "Doctor unassigned",
+    "body": "Dr. {doctor} is no longer your assigned doctor."
+  },
+  "appointmentBookedByPatient": {
+    "title": "New appointment",
+    "body": "{patient} booked an appointment on {date}."
+  },
+  "cancelRequested": {
+    "title": "Cancellation request",
+    "body": "{patient} asked to cancel the appointment on {date}. Reason: {reason}"
+  },
+  "rescheduleRequested": {
+    "title": "Reschedule request",
+    "body": "{patient} asked to move the appointment on {date} to {newDate}. Reason: {reason}"
+  },
+  "requestWithdrawn": {
+    "title": "Request withdrawn",
+    "body": "{patient} withdrew their request for the appointment on {date}."
+  },
+  "cancelRejected": {
+    "title": "Cancellation declined",
+    "body": "Dr. {doctor} declined your request to cancel the appointment on {date}. {note}"
+  },
+  "rescheduleRejected": {
+    "title": "Reschedule declined",
+    "body": "Dr. {doctor} declined your request to move the appointment on {date}. {note}"
+  },
+  "attachmentPreview": "Sent an attachment",
+  "doctorVerificationSubmitted": {
+    "title": "Doctor verification",
+    "body": "Dr. {doctor} submitted a license for review."
+  }
+}

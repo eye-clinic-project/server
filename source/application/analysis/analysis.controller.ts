@@ -1,113 +1,110 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, StreamableFile } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Types } from 'mongoose';
-import { Auth } from '../../dependency/decorator/auth.decorator.js';
-import { User } from '../../dependency/decorator/user.decorator.js';
-import { RequestTimeout } from '../../dependency/decorator/timeout.decorator.js';
-import type { HUserDocument } from '../../database/model/user.model.js';
-import { SystemRoleEnum } from '../../dependency/enum/security.enum.js';
-import { ParseObjectIdPipe } from '../../dependency/pipe/object-id.pipe.js';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { serveFile, uploadToDisk, type StoredUpload } from '@nestjs/storage';
+import type { Request, Response } from 'express';
+import type { Types } from 'mongoose';
+import { randomUUID } from 'node:crypto';
+
+import type { IUser } from '../../dependencies/interface/index.js';
+import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import type { AiHealth } from './ai.service.js';
 import { AnalysisService } from './analysis.service.js';
-import { AnalysisQueryDto, CreateAnalysisDto } from './dto/analysis.dto.js';
-import { RateLimit } from '../../dependency/decorator/rate-limit.decorator.js';
+import { CreateAnalysisDto, CreateReviewDto, ListAnalysesDto, UpdateReviewDto } from './dto/index.js';
+import type { AnalysisEntity, Page, ReviewEntity } from './entity/index.js';
+import { Auth, User } from '../../dependencies/decorator/index.js';
+import { SystemRoleEnum } from '../../dependencies/enum/index.js';
 
-@ApiTags('Analyses (AI)')
-@Controller('api/v1/analyses')
-@Auth()
+const { DOCTOR } = SystemRoleEnum;
+
+const FUNDUS_MAX_BYTES = 10 * 1024 * 1024;
+const FUNDUS_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+@Controller('analysis')
+@Auth({ roles: [DOCTOR] })
 export class AnalysisController {
-  constructor(private readonly service: AnalysisService) {}
+  constructor(private readonly analysisService: AnalysisService) {}
 
-  @RateLimit.create()
+  @Get('health')
+  health(): Promise<AiHealth> {
+    return this.analysisService.health();
+  }
+
   @Post()
-  @Auth([SystemRoleEnum.DOCTOR])
-  @ApiOperation({
-    summary: 'Create an analysis',
-    description: 'Assigned doctor only. Creates a pending analysis for an uploaded image. Call POST /analyses/{id}/predict to run it.',
-  })
-  create(@User() user: HUserDocument, @Body() dto: CreateAnalysisDto) {
-    return this.service.create(user, new Types.ObjectId(dto.imageId));
-  }
-
-  @RateLimit.aiInference()
-  @Post(':analysisId/predict')
-  @Auth([SystemRoleEnum.DOCTOR])
-  @RequestTimeout(60_000)
-  @ApiOperation({
-    summary: 'Run the AI prediction',
-    description:
-      "Assigned doctor only (FR3.2 – FR3.7). Sends the original image to the AI service: preprocessing, Stage-1 DR detection, Stage-2 grading (0 No DR, 1 Mild, 2 Moderate, 3 Severe, 4 Proliferative), TTA and Grad-CAM. The result is saved to the patient's history and the patient is notified in the app and by email. If the AI service fails, the analysis is returned with status failed and an error message and can be retried. Already completed analyses return 409.",
-  })
-  predict(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.service.run(user, id);
-  }
-
-  @RateLimit.aiInference()
-  @Post(':analysisId/retry')
-  @Auth([SystemRoleEnum.DOCTOR])
-  @RequestTimeout(60_000)
-  @ApiOperation({
-    summary: 'Retry a failed analysis',
-    description: 'Assigned doctor only. Runs the prediction again for an analysis with status failed (for example, when the AI service was not available).',
-  })
-  retry(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.service.retry(user, id);
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: uploadToDisk({ disk: 'private', contentTypes: FUNDUS_TYPES, key: (file) => `fundus/${randomUUID()}${file.extension}` }),
+      limits: { fileSize: FUNDUS_MAX_BYTES, files: 1 },
+    }),
+  )
+  create(@User() user: IUser, @UploadedFile() file: StoredUpload | undefined, @Body() body: CreateAnalysisDto): Promise<AnalysisEntity> {
+    if (!file) throw new BadRequestException('Image file is required');
+    return this.analysisService.create(user, file, body);
   }
 
   @Get()
-  @ApiOperation({
-    summary: 'List analyses',
-    description: 'Patient: their own (FR4.1). Doctor: their assigned patients. Admin: all. Filter by patientId, imageId and status. Newest first (FR4.2).',
-  })
-  list(@User() user: HUserDocument, @Query() query: AnalysisQueryDto) {
-    return this.service.list(user, query);
+  list(@User() user: IUser, @Query() query: ListAnalysesDto): Promise<Page<AnalysisEntity>> {
+    return this.analysisService.list(user, query);
   }
 
-  @Get(':analysisId')
-  @ApiOperation({
-    summary: 'Get an analysis',
-    description:
-      'The patient, an assigned doctor or an admin. Status, result (DR status, grade in plain language, confidence, class probabilities, signed Grad-CAM URL), the image, doctor reviews and the decision-support disclaimer (NFR14, NFR19).',
-  })
-  findOne(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.service.findOne(user, id);
+  @Get(':id')
+  get(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId): Promise<AnalysisEntity> {
+    return this.analysisService.get(user, id);
   }
 
-  @Get(':analysisId/result')
-  @ApiOperation({
-    summary: 'Get only the prediction result',
-    description: 'The patient, an assigned doctor or an admin. ready = false while the analysis is pending, processing or failed.',
-  })
-  result(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.service.result(user, id);
+  @Post(':id/retry')
+  @HttpCode(HttpStatus.ACCEPTED)
+  retry(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId): Promise<AnalysisEntity> {
+    return this.analysisService.retry(user, id);
   }
 
-  @RateLimit.aiInference()
-  @Get(':analysisId/grad-cam')
-  @ApiOperation({
-    summary: 'Download the Grad-CAM heatmap',
-    description: 'The patient, an assigned doctor or an admin (FR3.5). Returns the overlay image. 404 when the AI service did not return a heatmap.',
-  })
-  async gradCam(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    const file = await this.service.gradCam(user, id);
-    return new StreamableFile(file.data, { type: file.mimeType, disposition: 'inline' });
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId): Promise<void> {
+    return this.analysisService.remove(user, id);
   }
 
-  @Get(':analysisId/history')
-  @ApiOperation({
-    summary: 'Get the analysis history',
-    description: 'The patient, an assigned doctor or an admin. Every status change (pending, processing, completed, failed) with time and message.',
-  })
-  history(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.service.history(user, id);
+  @Get(':id/image')
+  async image(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const key = await this.analysisService.imageKey(user, id);
+    return serveFile(this.analysisService.storage, key, { req, res, disposition: 'inline', cacheControl: 'private, max-age=3600' });
   }
 
-  @Delete(':analysisId')
-  @Auth([SystemRoleEnum.DOCTOR, SystemRoleEnum.ADMIN])
-  @ApiOperation({
-    summary: 'Delete an analysis',
-    description: 'Assigned doctor or admin. Delete reports generated from it first (409 otherwise). Its reviews and heatmap are removed too.',
-  })
-  remove(@User() user: HUserDocument, @Param('analysisId', ParseObjectIdPipe) id: Types.ObjectId) {
-    return this.service.remove(user, id);
+  @Get(':id/grad-cam')
+  async gradCam(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const key = await this.analysisService.gradCamKey(user, id);
+    return serveFile(this.analysisService.storage, key, { req, res, disposition: 'inline', cacheControl: 'private, max-age=3600' });
+  }
+
+  @Get(':id/review')
+  getReview(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId): Promise<ReviewEntity> {
+    return this.analysisService.getReview(user, id);
+  }
+
+  @Post(':id/review')
+  @HttpCode(HttpStatus.CREATED)
+  createReview(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Body() body: CreateReviewDto): Promise<ReviewEntity> {
+    return this.analysisService.createReview(user, id, body);
+  }
+
+  @Patch(':id/review')
+  updateReview(@User() user: IUser, @Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Body() body: UpdateReviewDto): Promise<ReviewEntity> {
+    return this.analysisService.updateReview(user, id, body);
   }
 }
