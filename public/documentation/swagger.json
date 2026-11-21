@@ -7323,6 +7323,59 @@
                 "description": "Confidence in the yes/no decision",
                 "nullable": true
               },
+              "drProbability": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "example": 0.83,
+                "description": "Ensemble probability of the D class",
+                "nullable": true
+              },
+              "threshold": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "example": 0.575,
+                "description": "Threshold drProbability was compared against",
+                "nullable": true
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "DETECTED",
+                  "SUSPECTED"
+                ],
+                "description": "DETECTED when any class passed its threshold; SUSPECTED otherwise",
+                "nullable": true
+              },
+              "detected": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "D"
+                },
+                "description": "Codes of the findings that passed their threshold"
+              },
+              "shown": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "D"
+                },
+                "description": "Codes to display: the detected ones, or the top suspected ones"
+              },
+              "top": {
+                "type": "string",
+                "example": "D",
+                "description": "Highest-probability finding code",
+                "nullable": true
+              },
+              "gradCamClass": {
+                "type": "string",
+                "example": "D",
+                "description": "Finding code the Grad-CAM heatmap explains",
+                "nullable": true
+              },
               "findings": {
                 "type": "array",
                 "items": {
@@ -7330,7 +7383,7 @@
                 }
               }
             },
-            "description": "Stage 1: is diabetic retinopathy present (multi-label EfficientNet-B3, 8 classes)"
+            "description": "Stage 1: is diabetic retinopathy present (multi-label EfficientNet ensemble, 8 classes)"
           },
           "stage2": {
             "type": "object",
@@ -7374,7 +7427,7 @@
           },
           "modelVersion": {
             "type": "string",
-            "example": "effnet-b3-stage1-ens1",
+            "example": "effnet-b5-stage1-ens3",
             "nullable": true
           },
           "isMock": {

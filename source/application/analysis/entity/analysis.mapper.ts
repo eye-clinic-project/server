@@ -19,13 +19,25 @@ const toAnalysisImageEntity = (image: AnalysisView['image']): AnalysisImageEntit
 
 export const toAnalysisEntity = (analysis: AnalysisView): AnalysisEntity => {
   const level = analysis.predictedLevel ?? null;
+  const findings = analysis.findings ?? [];
   return new AnalysisEntity(
     analysis._id,
     analysis.doctor,
     toUserRefEntity(analysis.patient),
     toAnalysisImageEntity(analysis.image),
     analysis.status,
-    { hasDR: analysis.hasDR ?? null, confidence: analysis.stage1Confidence ?? null, findings: analysis.findings ?? [] },
+    {
+      hasDR: analysis.hasDR ?? null,
+      confidence: analysis.stage1Confidence ?? null,
+      drProbability: analysis.drProbability ?? null,
+      threshold: analysis.drThreshold ?? null,
+      status: analysis.stage1Status ?? null,
+      detected: findings.filter((finding) => finding.detected).map((finding) => finding.code),
+      shown: analysis.shownFindings ?? [],
+      top: analysis.topFinding ?? null,
+      gradCamClass: analysis.gradCamClass ?? null,
+      findings,
+    },
     {
       available: level !== null,
       predictedLevel: level,

@@ -12,6 +12,7 @@ import type {
   ImageSource,
   NotificationType,
   ReportStatus,
+  Stage1Status,
   RescheduleReason,
   AuthProviderEnum,
   SystemRoleEnum,
@@ -178,6 +179,12 @@ export interface IAnalysis extends Timestamps {
   status: AnalysisStatus;
   hasDR?: boolean | null;
   stage1Confidence?: number | null;
+  drProbability?: number | null;
+  drThreshold?: number | null;
+  stage1Status?: Stage1Status | null;
+  shownFindings?: string[];
+  topFinding?: string | null;
+  gradCamClass?: string | null;
   predictedLevel?: DRLevel | null;
   confidence?: number | null;
   probabilities?: number[];

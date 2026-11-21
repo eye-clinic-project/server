@@ -45,13 +45,13 @@ export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
   @Get('me/verification')
-  @Auth({ roles: [DOCTOR] })
+  @Auth({ roles: [DOCTOR], allowPending: true })
   getVerification(@User() user: IUser): Promise<VerificationEntity> {
     return this.doctorService.getVerification(user);
   }
 
   @Put('me/verification')
-  @Auth({ roles: [DOCTOR] })
+  @Auth({ roles: [DOCTOR], allowPending: true })
   @UseInterceptors(
     FilesInterceptor('documents', LICENSE_MAX_FILES, {
       storage: uploadToDisk({ disk: 'private', contentTypes: LICENSE_TYPES, key: (file) => `licenses/${randomUUID()}${file.extension}` }),
@@ -64,20 +64,20 @@ export class DoctorController {
   }
 
   @Get('me/verification/documents/:index')
-  @Auth({ roles: [DOCTOR] })
+  @Auth({ roles: [DOCTOR], allowPending: true })
   async licenseDocument(@User() user: IUser, @Param('index', ParseIntPipe) index: number, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { key, filename } = await this.doctorService.licenseDocumentKey(user, index);
     return serveFile(this.doctorService.storage, key, { req, res, disposition: 'inline', filename, cacheControl: 'private, no-store' });
   }
 
   @Get('me/clinic')
-  @Auth({ roles: [DOCTOR] })
+  @Auth({ roles: [DOCTOR], allowPending: true })
   getClinic(@User() user: IUser): Promise<DoctorClinicEntity> {
     return this.doctorService.getClinic(user);
   }
 
   @Patch('me/clinic')
-  @Auth({ roles: [DOCTOR] })
+  @Auth({ roles: [DOCTOR], allowPending: true })
   updateClinic(@User() user: IUser, @Body() body: UpdateClinicDto): Promise<DoctorClinicEntity> {
     return this.doctorService.updateClinic(user, body);
   }

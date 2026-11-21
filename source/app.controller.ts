@@ -1,10 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service.js';
 import { Auth } from './dependencies/decorator/index.js';
+import { NotificationService } from './dependencies/service/index.js';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService ,
+    private readonly notificationService : NotificationService 
+  ) {}
 
   @Get()
   @Auth({ optional: true })
@@ -17,4 +21,6 @@ export class AppController {
   ping(): { message: string } {
     return { message: 'pong' };
   }
+
+
 }

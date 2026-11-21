@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { AnalysisStatus, DRLevel, EyeSide } from '../../../dependencies/enum/index.js';
+import type { AnalysisStatus, DRLevel, EyeSide, Stage1Status } from '../../../dependencies/enum/index.js';
 import type { IAnalysisFinding, IAnalysisHistoryEntry } from '../../../dependencies/interface/index.js';
 import type { UserRefEntity } from './analysis.type.js';
 
@@ -14,7 +14,18 @@ export type AnalysisImageEntity = {
   size: number;
 } | null;
 
-export type AnalysisStage1Entity = { hasDR: boolean | null; confidence: number | null; findings: IAnalysisFinding[] };
+export type AnalysisStage1Entity = {
+  hasDR: boolean | null;
+  confidence: number | null;
+  drProbability: number | null;
+  threshold: number | null;
+  status: Stage1Status | null;
+  detected: string[];
+  shown: string[];
+  top: string | null;
+  gradCamClass: string | null;
+  findings: IAnalysisFinding[];
+};
 
 export type AnalysisStage2Entity = {
   available: boolean;

@@ -3,7 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
 import { FundusImage } from './fundus-image.model.js';
 import { IAnalysis } from '../../dependencies/interface/index.js';
-import { AnalysisStatus, DR_LEVEL_VALUES } from '../../dependencies/enum/index.js';
+import { AnalysisStatus, DR_LEVEL_VALUES, Stage1Status } from '../../dependencies/enum/index.js';
 
 export type HAnalysisDocument = HydratedDocument<IAnalysis>;
 
@@ -67,6 +67,28 @@ export class Analysis {
   @Prop({ type: Number, min: 0, max: 1, default: null })
   stage1Confidence?: number | null;
 
+  /** Stage-1 ensemble probability for the D (diabetic retinopathy) class. */
+  @Prop({ type: Number, min: 0, max: 1, default: null })
+  drProbability?: number | null;
+
+  /** Threshold the D probability was compared against. */
+  @Prop({ type: Number, min: 0, max: 1, default: null })
+  drThreshold?: number | null;
+
+  @Prop({ type: String, enum: [...Object.values(Stage1Status), null], default: null })
+  stage1Status?: Stage1Status | null;
+
+  /** Finding codes to display: the detected ones, or the top suspected ones when nothing passed its threshold. */
+  @Prop({ type: [String], default: [] })
+  shownFindings?: string[];
+
+  @Prop({ type: String, default: null })
+  topFinding?: string | null;
+
+  /** Finding code the Grad-CAM heatmap was computed for. */
+  @Prop({ type: String, default: null })
+  gradCamClass?: string | null;
+
   /** Stage-2 output: one of the five grades (FR3.4). */
   @Prop({ type: Number, enum: [...DR_LEVEL_VALUES, null], default: null })
   predictedLevel?: number | null;
@@ -79,9 +101,6 @@ export class Analysis {
 
   @Prop({ type: [AnalysisFindingSchema], default: [] })
   findings?: AnalysisFinding[];
-
-  @Prop({ type: String, default: null, select: false })
-  gradCamKey?: string | null;
 
   @Prop({ type: String, default: null })
   modelVersion?: string | null;

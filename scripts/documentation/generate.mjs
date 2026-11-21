@@ -214,9 +214,20 @@ const schemas = {
     image: nullable(obj({ _id: oid(), eye: oneOf(['left', 'right', 'unknown']), originalName: nullable(str()), notes: nullable(str()), capturedAt: nullable(date()), mimeType: oneOf(['image/jpeg', 'image/png']), size: int() })),
     status: oneOf(ANALYSIS_STATUS),
     stage1: obj(
-      { hasDR: nullable(bool()), confidence: nullable(num({ minimum: 0, maximum: 1, description: 'Confidence in the yes/no decision' })), findings: arr(ref('AnalysisFinding')) },
+      {
+        hasDR: nullable(bool()),
+        confidence: nullable(num({ minimum: 0, maximum: 1, description: 'Confidence in the yes/no decision' })),
+        drProbability: nullable(num({ minimum: 0, maximum: 1, example: 0.83, description: 'Ensemble probability of the D class' })),
+        threshold: nullable(num({ minimum: 0, maximum: 1, example: 0.575, description: 'Threshold drProbability was compared against' })),
+        status: nullable(oneOf(['DETECTED', 'SUSPECTED'], { description: 'DETECTED when any class passed its threshold; SUSPECTED otherwise' })),
+        detected: arr(str({ example: 'D' }), { description: 'Codes of the findings that passed their threshold' }),
+        shown: arr(str({ example: 'D' }), { description: 'Codes to display: the detected ones, or the top suspected ones' }),
+        top: nullable(str({ example: 'D', description: 'Highest-probability finding code' })),
+        gradCamClass: nullable(str({ example: 'D', description: 'Finding code the Grad-CAM heatmap explains' })),
+        findings: arr(ref('AnalysisFinding')),
+      },
       [],
-      { description: 'Stage 1: is diabetic retinopathy present (multi-label EfficientNet-B3, 8 classes)' },
+      { description: 'Stage 1: is diabetic retinopathy present (multi-label EfficientNet ensemble, 8 classes)' },
     ),
     stage2: obj(
       {
@@ -230,7 +241,7 @@ const schemas = {
       { description: 'Stage 2: DR severity level' },
     ),
     hasGradCam: bool(),
-    modelVersion: nullable(str({ example: 'effnet-b3-stage1-ens1' })),
+    modelVersion: nullable(str({ example: 'effnet-b5-stage1-ens3' })),
     isMock: bool(),
     error: nullable(str({ description: 'Why the analysis failed (translated)' })),
     attempts: int(),

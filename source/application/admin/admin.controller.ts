@@ -26,6 +26,7 @@ export class AdminController {
   @Get('doctors/:id')
   getDoctor(@Param('id', ParseObjectIdPipe) id: Types.ObjectId): Promise<AdminDoctorEntity> {
     return this.adminService.getDoctor(id);
+    
   }
 
   @Get('doctors/:id/documents/:index')

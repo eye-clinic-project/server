@@ -43,6 +43,12 @@ export enum AnalysisStatus {
   FAILED = 'failed',
 }
 
+/** Stage 1 outcome: DETECTED when a class passes its threshold, SUSPECTED otherwise (top classes are shown instead). */
+export enum Stage1Status {
+  DETECTED = 'DETECTED',
+  SUSPECTED = 'SUSPECTED',
+}
+
 export enum DRLevel {
   NO_DR = 0,
   MILD = 1,

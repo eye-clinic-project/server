@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 
-import { DR_LEVEL_VALUES, type DRLevel } from '../../dependencies/enum/index.js';
+import { DR_LEVEL_VALUES, type DRLevel, Stage1Status } from '../../dependencies/enum/index.js';
 import type { IAnalysisFinding } from '../../dependencies/interface/index.js';
 
 export const sha256 = (data: Buffer): string => createHash('sha256').update(data).digest('hex');
@@ -13,6 +13,10 @@ export interface AiPrediction {
   hasDR: boolean;
   stage1Confidence: number;
   drProbability: number;
+  drThreshold: number | null;
+  stage1Status: Stage1Status;
+  shownFindings: string[];
+  topFinding: string | null;
   findings: IAnalysisFinding[];
   predictedLevel: DRLevel | null;
   confidence: number | null;
@@ -51,7 +55,18 @@ interface RemoteFinding {
 
 interface RemotePrediction {
   model_version: string;
-  stage1: { has_dr: boolean; confidence: number; dr_probability: number; findings: RemoteFinding[] };
+  stage1: {
+    has_dr: boolean;
+    confidence: number;
+    dr_probability: number;
+    threshold?: number;
+    status?: string;
+    detected?: string[];
+    shown?: string[];
+    top?: string;
+    findings: RemoteFinding[];
+    trigger_stage2?: boolean;
+  };
   stage2: { level?: number; grade?: number; confidence?: number; probabilities?: number[] } | null;
   grad_cam_class?: string | null;
   grad_cam_png_base64?: string | null;
@@ -158,11 +173,19 @@ export class AiService {
     const level = body.stage2 ? (body.stage2.level ?? body.stage2.grade) : null;
     if (level !== null && level !== undefined && !DR_LEVEL_VALUES.includes(level as DRLevel)) throw new AiError('AI service returned an invalid grade', true);
 
+    const findings = (stage1.findings ?? []).map(({ code, name, probability, threshold, detected }) => ({ code, name, probability, threshold, detected }));
+    const detected = findings.filter((finding) => finding.detected).map((finding) => finding.code);
+    const status = stage1.status === Stage1Status.SUSPECTED || stage1.status === Stage1Status.DETECTED ? stage1.status : detected.length ? Stage1Status.DETECTED : Stage1Status.SUSPECTED;
+
     return {
       hasDR: stage1.has_dr,
       stage1Confidence: stage1.confidence,
       drProbability: stage1.dr_probability,
-      findings: (stage1.findings ?? []).map(({ code, name, probability, threshold, detected }) => ({ code, name, probability, threshold, detected })),
+      drThreshold: stage1.threshold ?? findings.find((finding) => finding.code === 'D')?.threshold ?? null,
+      stage1Status: status,
+      shownFindings: stage1.shown ?? detected,
+      topFinding: stage1.top ?? null,
+      findings,
       predictedLevel: (level ?? null) as DRLevel | null,
       confidence: body.stage2?.confidence ?? null,
       probabilities: body.stage2?.probabilities ?? [],
@@ -182,10 +205,16 @@ export class AiService {
       return { code, name, probability, threshold: 0.5, detected: probability >= 0.5 };
     });
     const hasDR = drProbability >= 0.5;
+    const detected = findings.filter((finding) => finding.detected).map((finding) => finding.code);
+    const ranked = [...findings].sort((a, b) => b.probability - a.probability);
     return {
       hasDR,
       stage1Confidence: round(hasDR ? drProbability : 1 - drProbability),
       drProbability,
+      drThreshold: 0.5,
+      stage1Status: detected.length ? Stage1Status.DETECTED : Stage1Status.SUSPECTED,
+      shownFindings: detected.length ? detected : ranked.slice(0, 3).filter((finding) => finding.probability >= 0.15).map((finding) => finding.code),
+      topFinding: ranked[0]?.code ?? null,
       findings,
       predictedLevel: null,
       confidence: null,
