@@ -4,22 +4,27 @@ import { Types } from 'mongoose';
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
-import { LoggerService } from '../../dependencies/service/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
-import { PATIENT_CREATED_EVENT, PatientCreatedEvent } from './event/index.js';
-import {
-  BackfillPatientRecordsCommand,
-  CreatePatientCommand,
-  DeletePatientCommand,
-  EnsurePatientRecordCommand,
-  type PatientAccountUpdate,
-  type PatientProfileData,
-  UpdatePatientCommand,
-} from './cqrs/command/index.js';
-import { FindPatientByIdQuery, FindPatientByUserQuery, IsPatientAssignedQuery, ListAssignedDoctorsQuery, ListPatientsQuery } from './cqrs/query/index.js';
-import { CreatePatientDto, ListPatientsDto, UpdatePatientDto } from './dto/index.js';
-import { AssignedDoctorEntity, PatientEntity, type PatientListEntity, PatientView, toAssignedDoctorEntity, toPatientEntity } from './entity/index.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
+import { LoggerService } from '../../dependencies/service/logger.service.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { PATIENT_CREATED_EVENT, PatientCreatedEvent } from './event/patient-created.event.js';
+import { BackfillPatientRecordsCommand } from './cqrs/command/backfill-patient-records.command.js';
+import { CreatePatientCommand } from './cqrs/command/create-patient.command.js';
+import { DeletePatientCommand } from './cqrs/command/delete-patient.command.js';
+import { EnsurePatientRecordCommand } from './cqrs/command/ensure-patient-record.command.js';
+import { type PatientAccountUpdate, UpdatePatientCommand } from './cqrs/command/update-patient.command.js';
+import type { PatientProfileData } from './cqrs/command/patient.type.js';
+import { FindPatientByIdQuery } from './cqrs/query/find-patient-by-id.query.js';
+import { FindPatientByUserQuery } from './cqrs/query/find-patient-by-user.query.js';
+import { IsPatientAssignedQuery } from './cqrs/query/is-patient-assigned.query.js';
+import { ListAssignedDoctorsQuery } from './cqrs/query/list-assigned-doctors.query.js';
+import { ListPatientsQuery } from './cqrs/query/list-patients.query.js';
+import { CreatePatientDto } from './dto/create-patient.dto.js';
+import { ListPatientsDto } from './dto/list-patients.dto.js';
+import { UpdatePatientDto } from './dto/update-patient.dto.js';
+import { AssignedDoctorEntity, toAssignedDoctorEntity } from './entity/assigned-doctor.entity.js';
+import { PatientEntity, PatientView, toPatientEntity } from './entity/patient.entity.js';
+import type { PatientListEntity } from './entity/patient.type.js';
 
 @Injectable()
 export class PatientService implements OnApplicationBootstrap {

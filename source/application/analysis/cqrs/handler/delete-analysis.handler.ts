@@ -1,9 +1,11 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
 
-import type { IAnalysis } from '../../../../dependencies/interface/index.js';
-import { AnalysisRepository, DoctorReviewRepository, FundusImageRepository } from '../../../../database/repository/index.js';
-import { DeleteAnalysisCommand } from '../command/index.js';
+import type { IAnalysis } from '../../../../dependencies/interface/database.interface.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
+import { DoctorReviewRepository } from '../../../../database/repository/doctor-review.repository.js';
+import { FundusImageRepository } from '../../../../database/repository/fundus-image.repository.js';
+import { DeleteAnalysisCommand } from '../command/delete-analysis.command.js';
 
 @CommandHandler(DeleteAnalysisCommand)
 export class DeleteAnalysisHandler implements ICommandHandler<DeleteAnalysisCommand> {

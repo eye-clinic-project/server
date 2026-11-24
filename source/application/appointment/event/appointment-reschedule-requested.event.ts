@@ -1,5 +1,5 @@
-import type { AppointmentView } from '../entity/index.js';
-import type { RescheduleReason } from '../../../dependencies/enum/index.js';
+import type { AppointmentView } from '../entity/appointment.type.js';
+import type { RescheduleReason } from '../../../dependencies/enum/database.enum.js';
 
 export const APPOINTMENT_RESCHEDULE_REQUESTED_EVENT = 'appointment.reschedule-requested';
 

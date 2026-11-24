@@ -1,8 +1,8 @@
 import { QueryHandler, type IQueryHandler } from '@nestjs/cqrs';
 
-import type { HUserDocument } from '../../../../database/model/index.js';
-import { UserRepository } from '../../../../database/repository/index.js';
-import { GetUserByIdQuery } from '../query/index.js';
+import type { HUserDocument } from '../../../../database/model/user.model.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { GetUserByIdQuery } from '../query/get-user-by-id.query.js';
 
 @QueryHandler(GetUserByIdQuery)
 export class GetUserByIdHandler implements IQueryHandler<GetUserByIdQuery> {

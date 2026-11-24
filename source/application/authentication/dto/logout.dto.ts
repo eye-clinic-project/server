@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
-import { LogoutTypeEnum } from '../../../dependencies/enum/index.js';
+import { LogoutTypeEnum } from '../../../dependencies/enum/security.enum.js';
 
 export class LogoutDto {
   @IsEnum(LogoutTypeEnum)

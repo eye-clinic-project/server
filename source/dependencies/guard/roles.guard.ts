@@ -1,8 +1,10 @@
 import { ForbiddenException, Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { AllowPendingDoctor, AllowRoles, resolveUser } from '../decorator/index.js';
-import { DoctorVerificationStatus, SystemRoleEnum } from '../enum/index.js';
+import { AllowPendingDoctor, AllowRoles } from '../decorator/role.decorator.js';
+import { resolveUser } from '../decorator/user.decorator.js';
+import { DoctorVerificationStatus } from '../enum/database.enum.js';
+import { SystemRoleEnum } from '../enum/security.enum.js';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

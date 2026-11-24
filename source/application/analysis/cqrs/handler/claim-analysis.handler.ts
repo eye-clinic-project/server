@@ -1,9 +1,9 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import type { AnalysisView } from '../../entity/index.js';
-import { ClaimAnalysisCommand } from '../command/index.js';
+import type { AnalysisView } from '../../entity/analysis.type.js';
+import { ClaimAnalysisCommand } from '../command/claim-analysis.command.js';
 import { ANALYSIS_POPULATE } from './analysis.helper.js';
-import { AnalysisRepository } from '../../../../database/repository/index.js';
-import { AnalysisStatus } from '../../../../dependencies/enum/index.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
+import { AnalysisStatus } from '../../../../dependencies/enum/database.enum.js';
 
 @CommandHandler(ClaimAnalysisCommand)
 export class ClaimAnalysisHandler implements ICommandHandler<ClaimAnalysisCommand> {

@@ -14,14 +14,20 @@ import { WsAuthenticator } from '@nestjs/authentication';
 import { Types } from 'mongoose';
 import type { Namespace, Socket } from 'socket.io';
 
-import { DoctorVerificationStatus, SystemRoleEnum } from '../../dependencies/enum/index.js';
-import { WsExceptionsFilter } from '../../dependencies/exception/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
+import { DoctorVerificationStatus } from '../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
+import { WsExceptionsFilter } from '../../dependencies/exception/ws-exceptions.filter.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ChatPresence, conversationRoom, userRoom } from './chat.presence.js';
 import { ChatService } from './chat.service.js';
-import { ConversationRoomDto, MAX_ATTACHMENTS, ReadDto, SendMessageDto, TypingDto } from './dto/index.js';
-import type { ConversationView, MessageEntity } from './entity/index.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
+import { ConversationRoomDto } from './dto/conversation-room.dto.js';
+import { MAX_ATTACHMENTS, SendMessageDto } from './dto/send-message.dto.js';
+import { ReadDto } from './dto/read.dto.js';
+import { TypingDto } from './dto/typing.dto.js';
+import type { ConversationView } from './entity/chat.type.js';
+import type { MessageEntity } from './entity/message.entity.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
 
 const { DOCTOR, PATIENT } = SystemRoleEnum;
 

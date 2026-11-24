@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-import { AuthProviderEnum, SystemRoleEnum, DoctorVerificationStatus } from '../../dependencies/enum/index.js';
-import { IUser } from '../../dependencies/interface/index.js';
+import { AuthProviderEnum, SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
+import { DoctorVerificationStatus } from '../../dependencies/enum/database.enum.js';
+import { IUser } from '../../dependencies/interface/database.interface.js';
 
 export type HUserDocument = HydratedDocument<IUser>;
 

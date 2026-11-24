@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { ReportRepository } from '../../../../database/repository/index.js';
-import { SetReportPdfCommand } from '../command/index.js';
+import { ReportRepository } from '../../../../database/repository/report.repository.js';
+import { SetReportPdfCommand } from '../command/set-report-pdf.command.js';
 
 @CommandHandler(SetReportPdfCommand)
 export class SetReportPdfHandler implements ICommandHandler<SetReportPdfCommand> {

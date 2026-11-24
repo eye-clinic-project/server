@@ -8,8 +8,9 @@ import { cert, getApp, getApps, initializeApp, type App, type ServiceAccount } f
 import { getMessaging, type Messaging } from 'firebase-admin/messaging';
 import { Types } from 'mongoose';
 
-import { NotificationRepository, UserRepository } from '../../database/repository/index.js';
-import type { NotificationType } from '../enum/index.js';
+import { NotificationRepository } from '../../database/repository/notification.repository.js';
+import { UserRepository } from '../../database/repository/user.repository.js';
+import type { NotificationType } from '../enum/database.enum.js';
 
 const deviceTokensKey = (userId: string): string => `notification:devices:${userId}`;
 

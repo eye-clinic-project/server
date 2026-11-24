@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { IDoctor, IUser } from '../../../dependencies/interface/index.js';
+import type { IDoctor, IUser } from '../../../dependencies/interface/database.interface.js';
 import { PatientSearchEntity } from './patient-search.entity.js';
 
 export type DoctorClinicView = IDoctor & { _id: Types.ObjectId };

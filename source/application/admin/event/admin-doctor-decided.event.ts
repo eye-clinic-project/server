@@ -1,4 +1,4 @@
-import { DoctorVerificationStatus } from '../../../dependencies/enum/index.js';
+import { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
 
 export const ADMIN_DOCTOR_DECIDED_EVENT = 'admin.doctor-decided';
 

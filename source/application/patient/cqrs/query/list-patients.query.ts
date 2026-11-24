@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import { PatientView } from '../../entity/index.js';
+import { PatientView } from '../../entity/patient.entity.js';
 
 export interface PatientPage {
   docs: PatientView[];

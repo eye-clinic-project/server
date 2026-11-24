@@ -1,7 +1,7 @@
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-import { DoctorVerificationStatus } from '../../../dependencies/enum/index.js';
+import { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 

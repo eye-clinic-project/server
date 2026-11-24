@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { AppointmentView } from '../../entity/index.js';
-import { FindAppointmentQuery } from '../query/index.js';
-import { AppointmentRepository } from '../../../../database/repository/index.js';
+import type { AppointmentView } from '../../entity/appointment.type.js';
+import { FindAppointmentQuery } from '../query/find-appointment.query.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
 import { populateParticipants } from './appointment.helper.js';
 
 @QueryHandler(FindAppointmentQuery)

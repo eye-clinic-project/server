@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import type { ReportView } from '../../entity/index.js';
-import { DeleteReportCommand } from '../command/index.js';
-import { ReportRepository } from '../../../../database/repository/index.js';
-import { ReportStatus } from '../../../../dependencies/enum/index.js';
+import type { ReportView } from '../../entity/analysis.type.js';
+import { DeleteReportCommand } from '../command/delete-report.command.js';
+import { ReportRepository } from '../../../../database/repository/report.repository.js';
+import { ReportStatus } from '../../../../dependencies/enum/database.enum.js';
 
 @CommandHandler(DeleteReportCommand)
 export class DeleteReportHandler implements ICommandHandler<DeleteReportCommand> {

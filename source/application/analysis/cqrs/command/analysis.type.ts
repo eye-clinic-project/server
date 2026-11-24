@@ -1,4 +1,4 @@
-import type { DRLevel } from '../../../../dependencies/enum/index.js';
+import type { DRLevel } from '../../../../dependencies/enum/database.enum.js';
 
 export interface ReviewData {
   aiResultConfirmed?: boolean;

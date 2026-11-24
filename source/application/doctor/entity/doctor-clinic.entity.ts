@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 
-import type { DoctorVerificationStatus } from '../../../dependencies/enum/index.js';
+import type { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
+import type { DoctorClinicView } from './doctor.type.js';
 
 export class DoctorClinicEntity {
   constructor(
@@ -17,3 +18,18 @@ export class DoctorClinicEntity {
     public readonly updatedAt?: Date,
   ) {}
 }
+
+export const toDoctorClinicEntity = (doctor: DoctorClinicView): DoctorClinicEntity =>
+  new DoctorClinicEntity(
+    doctor._id,
+    doctor.user,
+    doctor.clinicName,
+    doctor.clinicAddress,
+    doctor.specialty ?? null,
+    doctor.licenseNumber ?? null,
+    doctor.bio ?? null,
+    doctor.yearsOfExperience ?? null,
+    doctor.verificationStatus ?? null,
+    doctor.createdAt,
+    doctor.updatedAt,
+  );

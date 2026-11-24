@@ -1,8 +1,9 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 
-import { PatientRepository, UserRepository } from '../../../../database/repository/index.js';
-import { UpdatePatientCommand } from '../command/index.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { UpdatePatientCommand } from '../command/update-patient.command.js';
 
 @CommandHandler(UpdatePatientCommand)
 export class UpdatePatientHandler implements ICommandHandler<UpdatePatientCommand> {

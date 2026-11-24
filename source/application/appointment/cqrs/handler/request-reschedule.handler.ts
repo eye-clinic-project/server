@@ -1,8 +1,9 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { AppointmentRepository, DoctorAvailabilityRepository } from '../../../../database/repository/index.js';
-import { AppointmentRequestStatus, AppointmentRequestType } from '../../../../dependencies/enum/index.js';
-import { RequestRescheduleCommand } from '../command/index.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
+import { DoctorAvailabilityRepository } from '../../../../database/repository/doctor-availability.repository.js';
+import { AppointmentRequestStatus, AppointmentRequestType } from '../../../../dependencies/enum/database.enum.js';
+import { RequestRescheduleCommand } from '../command/request-reschedule.command.js';
 import { openWithoutPendingRequest } from './appointment.helper.js';
 
 @CommandHandler(RequestRescheduleCommand)

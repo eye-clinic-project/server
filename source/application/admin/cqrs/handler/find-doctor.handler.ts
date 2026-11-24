@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { AdminDoctorView } from '../../entity/index.js';
-import { FindDoctorQuery } from '../query/index.js';
-import { DoctorRepository } from '../../../../database/repository/index.js';
+import type { AdminDoctorView } from '../../entity/admin.type.js';
+import { FindDoctorQuery } from '../query/find-doctor.query.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
 
 const USER_FIELDS = 'name email city phone avatarUrl isActive emailVerifiedAt createdAt';
 

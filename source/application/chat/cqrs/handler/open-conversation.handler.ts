@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
-import { ConversationRepository } from '../../../../database/repository/index.js';
-import { OpenConversationCommand } from '../command/index.js';
+import { ConversationRepository } from '../../../../database/repository/conversation.repository.js';
+import { OpenConversationCommand } from '../command/open-conversation.command.js';
 
 @CommandHandler(OpenConversationCommand)
 export class OpenConversationHandler implements ICommandHandler<OpenConversationCommand> {

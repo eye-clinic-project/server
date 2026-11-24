@@ -1,10 +1,11 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { QueryFilter, Types } from 'mongoose';
-import type { AdminDoctorView } from '../../entity/index.js';
-import { ListDoctorsQuery } from '../query/index.js';
-import type { IDoctor } from '../../../../dependencies/interface/index.js';
-import { DoctorRepository, UserRepository } from '../../../../database/repository/index.js';
-import { SystemRoleEnum } from '../../../../dependencies/enum/index.js';
+import type { AdminDoctorView } from '../../entity/admin.type.js';
+import { ListDoctorsQuery } from '../query/list-doctors.query.js';
+import type { IDoctor } from '../../../../dependencies/interface/database.interface.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
 
 const USER_FIELDS = 'name email city phone avatarUrl isActive emailVerifiedAt createdAt';
 

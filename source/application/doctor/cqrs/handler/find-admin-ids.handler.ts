@@ -1,8 +1,8 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import { FindAdminIdsQuery } from '../query/index.js';
-import { SystemRoleEnum } from '../../../../dependencies/enum/index.js';
-import { UserRepository } from '../../../../database/repository/index.js';
+import { FindAdminIdsQuery } from '../query/find-admin-ids.query.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
 
 @QueryHandler(FindAdminIdsQuery)
 export class FindAdminIdsHandler implements IQueryHandler<FindAdminIdsQuery> {

@@ -3,9 +3,9 @@ import { InjectQueue } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
 
-import { LoggerService } from '../../../dependencies/service/index.js';
+import { LoggerService } from '../../../dependencies/service/logger.service.js';
 import { PATIENT_CREATED_EVENT, PatientCreatedEvent } from './patient-created.event.js';
-import { type NotifyPatientAssignedJob, PATIENT_QUEUE, PatientJob } from '../queue/index.js';
+import { type NotifyPatientAssignedJob, PATIENT_QUEUE, PatientJob } from '../queue/patient.queue.js';
 
 @Injectable()
 export class PatientListener {

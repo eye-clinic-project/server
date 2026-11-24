@@ -1,22 +1,23 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import type { Types } from 'mongoose';
 
-import type { IUser } from '../../dependencies/interface/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { AppointmentService } from './appointment.service.js';
-import {
-  AvailabilityRangeDto,
-  BookAppointmentDto,
-  CancelRequestDto,
-  CreateAvailabilityDto,
-  DaySlotsDto,
-  DecideRequestDto,
-  ListAppointmentsDto,
-  RescheduleRequestDto,
-} from './dto/index.js';
-import { AppointmentEntity, type AppointmentPage, SlotEntity } from './entity/index.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
+import { AvailabilityRangeDto } from './dto/availability-range.dto.js';
+import { BookAppointmentDto } from './dto/book-appointment.dto.js';
+import { CancelRequestDto } from './dto/cancel-request.dto.js';
+import { CreateAvailabilityDto } from './dto/create-availability.dto.js';
+import { DaySlotsDto } from './dto/day-slots.dto.js';
+import { DecideRequestDto } from './dto/decide-request.dto.js';
+import { ListAppointmentsDto } from './dto/list-appointments.dto.js';
+import { RescheduleRequestDto } from './dto/reschedule-request.dto.js';
+import { AppointmentEntity } from './entity/appointment.entity.js';
+import type { AppointmentPage } from './entity/appointment.type.js';
+import { SlotEntity } from './entity/slot.entity.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 const { DOCTOR, PATIENT } = SystemRoleEnum;
 

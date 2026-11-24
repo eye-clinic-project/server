@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import type { NotificationView } from '../../entity/index.js';
-import { MarkNotificationReadCommand } from '../command/index.js';
-import { NotificationRepository } from '../../../../database/repository/index.js';
+import type { NotificationView } from '../../entity/notification.type.js';
+import { MarkNotificationReadCommand } from '../command/mark-notification-read.command.js';
+import { NotificationRepository } from '../../../../database/repository/notification.repository.js';
 
 @CommandHandler(MarkNotificationReadCommand)
 export class MarkNotificationReadHandler implements ICommandHandler<MarkNotificationReadCommand> {

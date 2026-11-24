@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { IDoctor, IUser } from '../../../dependencies/interface/index.js';
+import type { IDoctor, IUser } from '../../../dependencies/interface/database.interface.js';
 import { PatientEntity } from './patient.entity.js';
 
 export const PATIENT_USER_FIELDS = 'name email city phone avatarUrl emailVerifiedAt isActive';

@@ -3,13 +3,17 @@ import { serveFile } from '@nestjs/storage';
 import type { Request, Response } from 'express';
 import type { Types } from 'mongoose';
 
-import type { IUser } from '../../dependencies/interface/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { AdminService } from './admin.service.js';
-import { ListDoctorsDto, RejectDoctorDto, UpdateUserStatusDto } from './dto/index.js';
-import type { AdminDoctorEntity, AdminDoctorPage } from './entity/index.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
+import { ListDoctorsDto } from './dto/list-doctors.dto.js';
+import { RejectDoctorDto } from './dto/reject-doctor.dto.js';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto.js';
+import type { AdminDoctorEntity } from './entity/admin-doctor.entity.js';
+import type { AdminDoctorPage } from './entity/admin.type.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 const { ADMIN } = SystemRoleEnum;
 
@@ -26,7 +30,6 @@ export class AdminController {
   @Get('doctors/:id')
   getDoctor(@Param('id', ParseObjectIdPipe) id: Types.ObjectId): Promise<AdminDoctorEntity> {
     return this.adminService.getDoctor(id);
-    
   }
 
   @Get('doctors/:id/documents/:index')

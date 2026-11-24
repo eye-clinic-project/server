@@ -1,11 +1,14 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { QueryFilter, Types } from 'mongoose';
 
-import type { IPatient } from '../../../../dependencies/interface/index.js';
-import type { PatientSearchView } from '../../entity/index.js';
-import { SearchPatientsForAssignmentQuery } from '../query/index.js';
-import { AssignmentStatus, SystemRoleEnum } from '../../../../dependencies/enum/index.js';
-import { DoctorPatientRepository, PatientRepository, UserRepository } from '../../../../database/repository/index.js';
+import type { IPatient } from '../../../../dependencies/interface/database.interface.js';
+import type { PatientSearchView } from '../../entity/doctor.type.js';
+import { SearchPatientsForAssignmentQuery } from '../query/search-patients-for-assignment.query.js';
+import { AssignmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
+import { DoctorPatientRepository } from '../../../../database/repository/doctor-patient.repository.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

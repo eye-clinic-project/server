@@ -1,6 +1,7 @@
-import { AuthProviderEnum, SystemRoleEnum } from '../../../dependencies/enum/index.js';
+import { AuthProviderEnum, SystemRoleEnum } from '../../../dependencies/enum/security.enum.js';
 import type { Types } from 'mongoose';
-import type { IUser } from '../../../dependencies/interface/index.js';
+import type { IUser } from '../../../dependencies/interface/database.interface.js';
+import type { HUserDocument } from '../../../database/model/user.model.js';
 
 export type AuthenticationUser = Omit<IUser, 'passwordHash' | 'googleId' | 'language'>;
 
@@ -21,3 +22,22 @@ export class AuthenticationEntity implements AuthenticationUser {
     public readonly updatedAt?: Date,
   ) {}
 }
+
+export const toAuthenticationEntity = (document: HUserDocument): AuthenticationEntity => {
+  const user = document.toObject<IUser & { _id: Types.ObjectId }>();
+  return new AuthenticationEntity(
+    user._id,
+    user.role,
+    user.name,
+    user.email,
+    user.city,
+    user.phone,
+    user.avatarUrl,
+    user.provider,
+    user.emailVerifiedAt ?? null,
+    user.consentAcceptedAt ?? null,
+    user.isActive,
+    user.createdAt,
+    user.updatedAt,
+  );
+};

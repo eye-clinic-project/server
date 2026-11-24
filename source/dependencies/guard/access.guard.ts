@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
 
-import { resolveUser } from '../decorator/index.js';
+import { resolveUser } from '../decorator/user.decorator.js';
 
 @Injectable()
 export class AccessGuard implements CanActivate {

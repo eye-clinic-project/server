@@ -1,5 +1,6 @@
-import type { DoctorVerificationStatus } from '../../../dependencies/enum/index.js';
-import { LicenseDocumentEntity } from './license-document.entity.js';
+import type { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
+import { LicenseDocumentEntity, toLicenseDocumentEntity } from './license-document.entity.js';
+import type { DoctorClinicView } from './doctor.type.js';
 
 export class VerificationEntity {
   constructor(
@@ -11,3 +12,13 @@ export class VerificationEntity {
     public readonly documents: LicenseDocumentEntity[],
   ) {}
 }
+
+export const toVerificationEntity = (doctor: DoctorClinicView): VerificationEntity =>
+  new VerificationEntity(
+    doctor.verificationStatus ?? null,
+    doctor.licenseNumber ?? null,
+    doctor.verificationSubmittedAt ?? null,
+    doctor.verifiedAt ?? null,
+    doctor.rejectionReason ?? null,
+    (doctor.licenseDocuments ?? []).map(toLicenseDocumentEntity),
+  );

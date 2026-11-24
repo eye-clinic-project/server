@@ -9,31 +9,27 @@ import { StorageModule } from '@nestjs/storage';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import {
-  AdminModule,
-  AnalysisModule,
-  AppointmentModule,
-  AuthenticationModule as AuthModule,
-  ChatModule,
-  DoctorModule,
-  NotificationModule,
-  PatientModule,
-  UserModule,
-} from './application/index.js';
-import {
-  appConfiguration,
-  createAuthenticationOptions,
-  createCacheOptions,
-  createMailOptions,
-  createMongooseOptions,
-  createStorageOptions,
-  createQueueOptions,
-  createThrottlerOptions,
-  i18nOptions,
-  eventOptions,
-} from './configuration/index.js';
-import { ServiceModule } from './dependencies/module/index.js';
-import { Localize } from './dependencies/language/index.js';
+import { AdminModule } from './application/admin/admin.module.js';
+import { AnalysisModule } from './application/analysis/analysis.module.js';
+import { AppointmentModule } from './application/appointment/appointment.module.js';
+import { AuthenticationModule as AuthModule } from './application/authentication/authentication.module.js';
+import { ChatModule } from './application/chat/chat.module.js';
+import { DoctorModule } from './application/doctor/doctor.module.js';
+import { NotificationModule } from './application/notification/notification.module.js';
+import { PatientModule } from './application/patient/patient.module.js';
+import { UserModule } from './application/user/user.module.js';
+import { appConfiguration } from './configuration/app.configuration.js';
+import { createAuthenticationOptions } from './configuration/authentication.configuration.js';
+import { createCacheOptions } from './configuration/cache.configuration.js';
+import { createMailOptions } from './configuration/mail.configuration.js';
+import { createMongooseOptions } from './configuration/database.configuration.js';
+import { createStorageOptions } from './configuration/storage.configuration.js';
+import { createQueueOptions } from './configuration/queue.configuration.js';
+import { createThrottlerOptions } from './configuration/throttler.configuration.js';
+import { i18nOptions } from './configuration/i18n.configuration.js';
+import { eventOptions } from './configuration/event.configuration.js';
+import { ServiceModule } from './dependencies/module/service.module.js';
+import { Localize } from './dependencies/language/localize.js';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { BullModule } from '@nestjs/bullmq';
 

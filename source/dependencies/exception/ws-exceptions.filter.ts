@@ -2,7 +2,7 @@ import { Catch, HttpException, Logger, type ArgumentsHost } from '@nestjs/common
 import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
 import type { Socket } from 'socket.io';
 
-import { Localize } from '../language/index.js';
+import { Localize } from '../language/localize.js';
 
 export interface WsErrorPayload {
   status: 'error';

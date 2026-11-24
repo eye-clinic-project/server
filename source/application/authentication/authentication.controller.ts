@@ -6,15 +6,23 @@ import { hours, minutes } from '@nestjs/throttler';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { RateLimit } from '../../dependencies/decorator/rate-limit.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';
-import { EmailDto, ForgotPasswordDto, GoogleSignInDto, LogoutDto, RefreshTokenDto, ResetPasswordDto, SignInDto, SignUpDto, VerifyEmailDto } from './dto/index.js';
+import { EmailDto } from './dto/email.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { GoogleSignInDto } from './dto/google-sign-in.dto.js';
+import { LogoutDto } from './dto/logout.dto.js';
+import { RefreshTokenDto } from './dto/refresh-token.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { SignInDto } from './dto/sign-in.dto.js';
+import { SignUpDto } from './dto/sign-up.dto.js';
+import { VerifyEmailDto } from './dto/verify-email.dto.js';
 import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { AuthenticationEntity } from './entity/authentication.entity.js';
 import { DecodedToken, JwtTokenService } from '../../dependencies/service/token.service.js';
 
-
 @Controller('authentication')
 export class AuthenticationController {
-  constructor(private readonly authenticationService: AuthenticationService,
+  constructor(
+    private readonly authenticationService: AuthenticationService,
     private readonly tokenService: TokenService,
     private readonly jwtTokenService: JwtTokenService,
   ) {}

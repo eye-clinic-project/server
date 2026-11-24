@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import type { AnalysisView } from '../../entity/index.js';
+import type { AnalysisView } from '../../entity/analysis.type.js';
 import type { ReportData } from './analysis.type.js';
 
 export class CreateReportCommand extends Command<Types.ObjectId> {

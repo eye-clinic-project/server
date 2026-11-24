@@ -1,4 +1,5 @@
-import type { Types } from 'mongoose';
+import { Types } from 'mongoose';
+import { HUserDocument } from '../../../database/model/user.model.js';
 
 export class PatientAccountEntity {
   constructor(
@@ -12,3 +13,7 @@ export class PatientAccountEntity {
     public readonly avatarUrl: string | null = null,
   ) {}
 }
+
+export const toPatientAccountEntity = (user: PatientUserView): PatientAccountEntity =>
+  new PatientAccountEntity(user._id, user.name, user.email, user.city, !!user.emailVerifiedAt, user.isActive !== false, user.phone, user.avatarUrl ?? null);
+export type PatientUserView = Pick<HUserDocument, 'name' | 'email' | 'city' | 'phone' | 'avatarUrl' | 'emailVerifiedAt' | 'isActive'> & { _id: Types.ObjectId };

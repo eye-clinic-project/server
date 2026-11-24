@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { IDoctor, IUser } from '../../../dependencies/interface/index.js';
+import type { IDoctor, IUser } from '../../../dependencies/interface/database.interface.js';
 import { AdminDoctorEntity } from './admin-doctor.entity.js';
 
 export type AdminDoctorView = IDoctor & {

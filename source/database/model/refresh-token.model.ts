@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
-import type { IRefreshToken, IRefreshTokenRevocation } from '../../dependencies/interface/index.js';
+import type { IRefreshToken, IRefreshTokenRevocation } from '../../dependencies/interface/database.interface.js';
 
 export type HRefreshTokenDocument = HydratedDocument<IRefreshToken>;
 export type HRefreshTokenRevocationDocument = HydratedDocument<IRefreshTokenRevocation>;

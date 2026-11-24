@@ -14,9 +14,8 @@ import type {
   ReportStatus,
   Stage1Status,
   RescheduleReason,
-  AuthProviderEnum,
-  SystemRoleEnum,
-} from '../enum/index.js';
+} from '../enum/database.enum.js';
+import type { AuthProviderEnum, SystemRoleEnum } from '../enum/security.enum.js';
 
 export type WithId<T> = T & { _id: Types.ObjectId };
 

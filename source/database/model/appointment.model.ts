@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IAppointment } from '../../dependencies/interface/index.js';
-import { AppointmentRequestStatus, AppointmentRequestType, AppointmentStatus, RescheduleReason, SystemRoleEnum } from '../../dependencies/enum/index.js';
-import type { IAppointmentChangeRequest, IRescheduleEntry } from '../../dependencies/interface/index.js';
+import { IAppointment, type IAppointmentChangeRequest, type IRescheduleEntry } from '../../dependencies/interface/database.interface.js';
+import { AppointmentRequestStatus, AppointmentRequestType, AppointmentStatus, RescheduleReason } from '../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 export type HAppointmentDocument = HydratedDocument<IAppointment>;
 

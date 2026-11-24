@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 import { Query } from '@nestjs/cqrs';
-import type { Page, ReportView } from '../../entity/index.js';
-import type { ReportStatus } from '../../../../dependencies/enum/index.js';
+import type { Page, ReportView } from '../../entity/analysis.type.js';
+import type { ReportStatus } from '../../../../dependencies/enum/database.enum.js';
 
 export interface ReportFilter {
   doctorId?: Types.ObjectId;

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER, type Cache } from '@nestjs/cache-manager';
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 
-import { OtpPurpose } from '../enum/index.js';
+import { OtpPurpose } from '../enum/security.enum.js';
 import { MailService } from './mail.service.js';
 
 const otpKey = (purpose: OtpPurpose, email: string): string => `auth:otp:${purpose}:${email.trim().toLowerCase()}`;

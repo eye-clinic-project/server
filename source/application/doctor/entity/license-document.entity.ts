@@ -1,3 +1,5 @@
+import type { ILicenseDocument } from '../../../dependencies/interface/database.interface.js';
+
 export class LicenseDocumentEntity {
   constructor(
     public readonly index: number,
@@ -7,3 +9,6 @@ export class LicenseDocumentEntity {
     public readonly uploadedAt: Date,
   ) {}
 }
+
+export const toLicenseDocumentEntity = (document: ILicenseDocument, index: number): LicenseDocumentEntity =>
+  new LicenseDocumentEntity(index, document.originalName, document.mimeType, document.size, document.uploadedAt);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Mailer, html, type Mailable } from '@nestjs/mail';
-import { OtpPurpose } from '../enum/index.js';
+import { OtpPurpose } from '../enum/security.enum.js';
 
 export interface OtpMailData {
   purpose: OtpPurpose;

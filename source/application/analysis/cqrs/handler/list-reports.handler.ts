@@ -1,11 +1,11 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { QueryFilter } from 'mongoose';
 
-import type { IReport } from '../../../../dependencies/interface/index.js';
-import type { Page, ReportView } from '../../entity/index.js';
-import { ListReportsQuery } from '../query/index.js';
+import type { IReport } from '../../../../dependencies/interface/database.interface.js';
+import type { Page, ReportView } from '../../entity/analysis.type.js';
+import { ListReportsQuery } from '../query/list-reports.query.js';
 import { REPORT_POPULATE } from './analysis.helper.js';
-import { ReportRepository } from '../../../../database/repository/index.js';
+import { ReportRepository } from '../../../../database/repository/report.repository.js';
 
 @QueryHandler(ListReportsQuery)
 export class ListReportsHandler implements IQueryHandler<ListReportsQuery> {

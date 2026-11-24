@@ -1,4 +1,5 @@
 import type { Types } from 'mongoose';
+import type { PatientSearchView } from './doctor.type.js';
 
 export class PatientSearchEntity {
   constructor(
@@ -11,3 +12,14 @@ export class PatientSearchEntity {
     public readonly assigned: boolean,
   ) {}
 }
+
+export const toPatientSearchEntity = (patient: PatientSearchView): PatientSearchEntity =>
+  new PatientSearchEntity(
+    patient._id,
+    patient.medicalRecordNumber,
+    patient.user.name,
+    patient.user.email,
+    patient.user.city,
+    patient.user.avatarUrl ?? null,
+    patient.assigned,
+  );

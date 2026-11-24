@@ -4,9 +4,9 @@ import type { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { ADMIN_DOCTOR_DECIDED_EVENT, AdminDoctorDecidedEvent } from './admin-doctor-decided.event.js';
-import { ADMIN_QUEUE, AdminJob, type NotifyDoctorDecisionJob } from '../queue/index.js';
-import { DoctorVerificationStatus } from '../../../dependencies/enum/index.js';
-import { LoggerService } from '../../../dependencies/service/index.js';
+import { ADMIN_QUEUE, AdminJob, type NotifyDoctorDecisionJob } from '../queue/admin.queue.js';
+import { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
+import { LoggerService } from '../../../dependencies/service/logger.service.js';
 
 @Injectable()
 export class AdminListener {

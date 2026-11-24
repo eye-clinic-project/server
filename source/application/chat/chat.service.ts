@@ -6,23 +6,26 @@ import { InjectDisk, StorageDisk } from '@nestjs/storage';
 import { randomUUID } from 'node:crypto';
 import { Types } from 'mongoose';
 
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
-import { LoggerService } from '../../dependencies/service/index.js';
-import { IsPatientAssignedQuery } from '../patient/cqrs/query/index.js';
-import { CreateMessageCommand, MarkReadCommand, OpenConversationCommand } from './cqrs/command/index.js';
-import { CountUnreadQuery, FindConversationQuery, FindMessageQuery, ListConversationsQuery, ListMessagesQuery } from './cqrs/query/index.js';
-import { type AttachmentUploadDto, ListMessagesDto, ReadDto, SendMessageDto } from './dto/index.js';
-import {
-  attachmentType,
-  ConversationEntity,
-  type ConversationView,
-  MessageEntity,
-  type MessagePage,
-  toConversationEntity,
-  toMessageEntity,
-} from './entity/index.js';
-import { CHAT_MESSAGE_SENT_EVENT, ChatMessageSentEvent } from './event/index.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { LoggerService } from '../../dependencies/service/logger.service.js';
+import { IsPatientAssignedQuery } from '../patient/cqrs/query/is-patient-assigned.query.js';
+import { CreateMessageCommand } from './cqrs/command/create-message.command.js';
+import { MarkReadCommand } from './cqrs/command/mark-read.command.js';
+import { OpenConversationCommand } from './cqrs/command/open-conversation.command.js';
+import { CountUnreadQuery } from './cqrs/query/count-unread.query.js';
+import { FindConversationQuery } from './cqrs/query/find-conversation.query.js';
+import { FindMessageQuery } from './cqrs/query/find-message.query.js';
+import { ListConversationsQuery } from './cqrs/query/list-conversations.query.js';
+import { ListMessagesQuery } from './cqrs/query/list-messages.query.js';
+import type { AttachmentUploadDto } from './dto/attachment-upload.dto.js';
+import { ListMessagesDto } from './dto/list-messages.dto.js';
+import { ReadDto } from './dto/read.dto.js';
+import { SendMessageDto } from './dto/send-message.dto.js';
+import { attachmentType, type ConversationView, type MessagePage } from './entity/chat.type.js';
+import { ConversationEntity, toConversationEntity } from './entity/conversation.entity.js';
+import { MessageEntity, toMessageEntity } from './entity/message.entity.js';
+import { CHAT_MESSAGE_SENT_EVENT, ChatMessageSentEvent } from './event/chat-message-sent.event.js';
 
 const MAX_ATTACHMENT_MB = 5;
 const MAX_ATTACHMENT_BYTES = MAX_ATTACHMENT_MB * 1024 * 1024;

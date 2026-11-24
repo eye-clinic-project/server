@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import type { AnalysisView, ReviewView } from '../../entity/index.js';
+import type { AnalysisView, ReviewView } from '../../entity/analysis.type.js';
 import type { ReviewData } from './analysis.type.js';
 
 export class CreateReviewCommand extends Command<ReviewView> {

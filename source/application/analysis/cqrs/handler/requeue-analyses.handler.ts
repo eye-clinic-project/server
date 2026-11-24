@@ -1,9 +1,9 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
 
-import { AnalysisRepository } from '../../../../database/repository/index.js';
-import { AnalysisStatus } from '../../../../dependencies/enum/index.js';
-import { RequeueAnalysesCommand } from '../command/index.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
+import { AnalysisStatus } from '../../../../dependencies/enum/database.enum.js';
+import { RequeueAnalysesCommand } from '../command/requeue-analyses.command.js';
 
 @CommandHandler(RequeueAnalysesCommand)
 export class RequeueAnalysesHandler implements ICommandHandler<RequeueAnalysesCommand> {

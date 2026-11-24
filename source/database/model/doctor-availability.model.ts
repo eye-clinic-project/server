@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IDoctorAvailability } from '../../dependencies/interface/index.js';
+import { IDoctorAvailability } from '../../dependencies/interface/database.interface.js';
 
 export type HDoctorAvailabilityDocument = HydratedDocument<IDoctorAvailability>;
 

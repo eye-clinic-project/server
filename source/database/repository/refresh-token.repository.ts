@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import type { IRefreshToken } from '../../dependencies/interface/index.js';
-import { RefreshToken } from '../model/index.js';
+import type { IRefreshToken } from '../../dependencies/interface/database.interface.js';
+import { RefreshToken } from '../model/refresh-token.model.js';
 import { DatabaseRepository } from './base.repository.js';
 
 @Injectable()

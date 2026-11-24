@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { ReviewView } from '../../entity/index.js';
-import { FindReviewQuery } from '../query/index.js';
-import { DoctorReviewRepository } from '../../../../database/repository/index.js';
+import type { ReviewView } from '../../entity/analysis.type.js';
+import { FindReviewQuery } from '../query/find-review.query.js';
+import { DoctorReviewRepository } from '../../../../database/repository/doctor-review.repository.js';
 
 @QueryHandler(FindReviewQuery)
 export class FindReviewHandler implements IQueryHandler<FindReviewQuery> {

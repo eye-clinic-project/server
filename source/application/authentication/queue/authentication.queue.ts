@@ -1,8 +1,8 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
 
-import { OtpService } from '../../../dependencies/service/index.js';
-import { OtpPurpose } from '../../../dependencies/enum/index.js';
+import { OtpService } from '../../../dependencies/service/otp.service.js';
+import { OtpPurpose } from '../../../dependencies/enum/security.enum.js';
 
 export const AUTHENTICATION_QUEUE = 'authentication';
 

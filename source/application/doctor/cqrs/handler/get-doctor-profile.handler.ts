@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { DoctorClinicView } from '../../entity/index.js';
-import { GetDoctorProfileQuery } from '../query/index.js';
-import { DoctorRepository } from '../../../../database/repository/index.js';
+import type { DoctorClinicView } from '../../entity/doctor.type.js';
+import { GetDoctorProfileQuery } from '../query/get-doctor-profile.query.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
 
 @QueryHandler(GetDoctorProfileQuery)
 export class GetDoctorProfileHandler implements IQueryHandler<GetDoctorProfileQuery> {

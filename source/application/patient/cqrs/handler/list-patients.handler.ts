@@ -1,11 +1,14 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { QueryFilter, Types } from 'mongoose';
 
-import type { IPatient } from '../../../../dependencies/interface/index.js';
-import { AssignmentStatus, SystemRoleEnum } from '../../../../dependencies/enum/index.js';
-import { DoctorPatientRepository, PatientRepository, UserRepository } from '../../../../database/repository/index.js';
-import { ListPatientsQuery, type PatientPage } from '../query/index.js';
-import { PATIENT_USER_FIELDS } from '../../entity/index.js';
+import type { IPatient } from '../../../../dependencies/interface/database.interface.js';
+import { AssignmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
+import { DoctorPatientRepository } from '../../../../database/repository/doctor-patient.repository.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { ListPatientsQuery, type PatientPage } from '../query/list-patients.query.js';
+import { PATIENT_USER_FIELDS } from '../../entity/patient.type.js';
 
 const populateUser = [{ path: 'user', select: PATIENT_USER_FIELDS }];
 

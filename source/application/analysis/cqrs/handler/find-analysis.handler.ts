@@ -1,8 +1,8 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { AnalysisView } from '../../entity/index.js';
-import { FindAnalysisQuery } from '../query/index.js';
+import type { AnalysisView } from '../../entity/analysis.type.js';
+import { FindAnalysisQuery } from '../query/find-analysis.query.js';
 import { ANALYSIS_POPULATE } from './analysis.helper.js';
-import { AnalysisRepository } from '../../../../database/repository/index.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
 
 @QueryHandler(FindAnalysisQuery)
 export class FindAnalysisHandler implements IQueryHandler<FindAnalysisQuery> {

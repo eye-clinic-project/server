@@ -6,7 +6,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-
   Param,
   Patch,
   Put,
@@ -66,7 +65,6 @@ export class UserController {
     return this.userService.setAvatar(user, file);
   }
 
-
   @Put('me/devices')
   @HttpCode(HttpStatus.NO_CONTENT)
   registerDevice(@User() user: IUser, @Body() body: RegisterDeviceDto): Promise<void> {
@@ -86,7 +84,6 @@ export class UserController {
   }
 }
 
-
 @Controller('photos')
 @Auth({ public: true })
 export class PhotosController {
@@ -97,4 +94,3 @@ export class PhotosController {
     return `avatars/${userId}/${file}`;
   }
 }
-

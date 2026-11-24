@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { BadRequestException } from '@nestjs/common';
-import type { DoctorClinicView } from '../../entity/index.js';
-import { UpsertClinicCommand } from '../command/index.js';
-import { DoctorRepository } from '../../../../database/repository/index.js';
+import type { DoctorClinicView } from '../../entity/doctor.type.js';
+import { UpsertClinicCommand } from '../command/upsert-clinic.command.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
 
 @CommandHandler(UpsertClinicCommand)
 export class UpsertClinicHandler implements ICommandHandler<UpsertClinicCommand> {

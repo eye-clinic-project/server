@@ -1,10 +1,11 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import type { DoctorClinicView } from '../../entity/index.js';
-import { SubmitLicenseCommand } from '../command/index.js';
-import type { ILicenseDocument } from '../../../../dependencies/interface/index.js';
-import { DoctorRepository, UserRepository } from '../../../../database/repository/index.js';
-import { DoctorVerificationStatus } from '../../../../dependencies/enum/index.js';
+import type { DoctorClinicView } from '../../entity/doctor.type.js';
+import { SubmitLicenseCommand } from '../command/submit-license.command.js';
+import type { ILicenseDocument } from '../../../../dependencies/interface/database.interface.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { DoctorVerificationStatus } from '../../../../dependencies/enum/database.enum.js';
 
 @CommandHandler(SubmitLicenseCommand)
 export class SubmitLicenseHandler implements ICommandHandler<SubmitLicenseCommand> {

@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import type { AppointmentView } from '../../entity/index.js';
+import type { AppointmentView } from '../../entity/appointment.type.js';
 
 export class DecideRequestCommand extends Command<boolean> {
   constructor(

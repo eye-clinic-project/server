@@ -23,15 +23,20 @@ import { randomUUID } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { Types } from 'mongoose';
 
-import type { IUser } from '../../dependencies/interface/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
-import { CreatePatientDto } from '../patient/dto/index.js';
-import { PatientEntity } from '../patient/entity/index.js';
-import { SearchPatientsDto, SubmitLicenseDto, UpdateClinicDto } from './dto/index.js';
-import { DoctorClinicEntity, type PatientSearchPage, VerificationEntity } from './entity/index.js';
+import { CreatePatientDto } from '../patient/dto/create-patient.dto.js';
+import { PatientEntity } from '../patient/entity/patient.entity.js';
+import { SearchPatientsDto } from './dto/search-patients.dto.js';
+import { SubmitLicenseDto } from './dto/submit-license.dto.js';
+import { UpdateClinicDto } from './dto/update-clinic.dto.js';
+import { DoctorClinicEntity } from './entity/doctor-clinic.entity.js';
+import type { PatientSearchPage } from './entity/doctor.type.js';
+import { VerificationEntity } from './entity/verification.entity.js';
 import { DoctorService } from './doctor.service.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 const { DOCTOR } = SystemRoleEnum;
 

@@ -4,13 +4,19 @@ import { InjectDisk, StorageDisk, type StoredUpload } from '@nestjs/storage';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Types } from 'mongoose';
 
-import type { IUser } from '../../dependencies/interface/index.js';
-import { LoggerService, NotificationService } from '../../dependencies/service/index.js';
-import { RemoveUserAvatarCommand, SetUserAvatarCommand, UpdateUserProfileCommand } from './cqrs/command/index.js';
-import { GetUserByIdQuery } from './cqrs/query/index.js';
-import { DeviceTokenDto, RegisterDeviceDto, UpdateUserDto } from './dto/index.js';
-import { toUserEntity, UserEntity } from './entity/index.js';
-import { USER_AVATAR_CHANGED_EVENT, USER_AVATAR_REMOVED_EVENT, UserAvatarChangedEvent, UserAvatarRemovedEvent } from './event/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { LoggerService } from '../../dependencies/service/logger.service.js';
+import { NotificationService } from '../../dependencies/service/notification.service.js';
+import { RemoveUserAvatarCommand } from './cqrs/command/remove-user-avatar.command.js';
+import { SetUserAvatarCommand } from './cqrs/command/set-user-avatar.command.js';
+import { UpdateUserProfileCommand } from './cqrs/command/update-user-profile.command.js';
+import { GetUserByIdQuery } from './cqrs/query/get-user-by-id.query.js';
+import { DeviceTokenDto } from './dto/device-token.dto.js';
+import { RegisterDeviceDto } from './dto/register-device.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { toUserEntity, UserEntity } from './entity/user.entity.js';
+import { USER_AVATAR_CHANGED_EVENT, UserAvatarChangedEvent } from './event/user-avatar-changed.event.js';
+import { USER_AVATAR_REMOVED_EVENT, UserAvatarRemovedEvent } from './event/user-avatar-removed.event.js';
 
 @Injectable()
 export class UserService {

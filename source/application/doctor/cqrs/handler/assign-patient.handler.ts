@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { AssignPatientCommand } from '../command/index.js';
-import { AssignmentStatus } from '../../../../dependencies/enum/index.js';
-import { DoctorPatientRepository } from '../../../../database/repository/index.js';
+import { AssignPatientCommand } from '../command/assign-patient.command.js';
+import { AssignmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { DoctorPatientRepository } from '../../../../database/repository/doctor-patient.repository.js';
 
 @CommandHandler(AssignPatientCommand)
 export class AssignPatientHandler implements ICommandHandler<AssignPatientCommand> {

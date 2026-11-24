@@ -3,8 +3,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 
-import { LoggerService } from '../../../dependencies/service/index.js';
-import { type DeleteAvatarFileJob, USER_QUEUE, UserJob } from '../queue/index.js';
+import { LoggerService } from '../../../dependencies/service/logger.service.js';
+import { type DeleteAvatarFileJob, USER_QUEUE, UserJob } from '../queue/user.queue.js';
 import { USER_AVATAR_CHANGED_EVENT, UserAvatarChangedEvent } from './user-avatar-changed.event.js';
 import { USER_AVATAR_REMOVED_EVENT, UserAvatarRemovedEvent } from './user-avatar-removed.event.js';
 

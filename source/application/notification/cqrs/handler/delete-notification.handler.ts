@@ -1,6 +1,6 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { DeleteNotificationCommand } from '../command/index.js';
-import { NotificationRepository } from '../../../../database/repository/index.js';
+import { DeleteNotificationCommand } from '../command/delete-notification.command.js';
+import { NotificationRepository } from '../../../../database/repository/notification.repository.js';
 
 @CommandHandler(DeleteNotificationCommand)
 export class DeleteNotificationHandler implements ICommandHandler<DeleteNotificationCommand> {

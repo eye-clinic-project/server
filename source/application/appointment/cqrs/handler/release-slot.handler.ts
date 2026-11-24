@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { DoctorAvailabilityRepository } from '../../../../database/repository/index.js';
-import { ReleaseSlotCommand } from '../command/index.js';
+import { DoctorAvailabilityRepository } from '../../../../database/repository/doctor-availability.repository.js';
+import { ReleaseSlotCommand } from '../command/release-slot.command.js';
 
 @CommandHandler(ReleaseSlotCommand)
 export class ReleaseSlotHandler implements ICommandHandler<ReleaseSlotCommand> {

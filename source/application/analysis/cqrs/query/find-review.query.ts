@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import type { ReviewView } from '../../entity/index.js';
+import type { ReviewView } from '../../entity/analysis.type.js';
 
 export class FindReviewQuery extends Query<ReviewView | null> {
   constructor(

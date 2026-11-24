@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { AnalysisRepository } from '../../../../database/repository/index.js';
-import { AnalysisStatus } from '../../../../dependencies/enum/index.js';
-import { FailAnalysisCommand } from '../command/index.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
+import { AnalysisStatus } from '../../../../dependencies/enum/database.enum.js';
+import { FailAnalysisCommand } from '../command/fail-analysis.command.js';
 
 @CommandHandler(FailAnalysisCommand)
 export class FailAnalysisHandler implements ICommandHandler<FailAnalysisCommand> {

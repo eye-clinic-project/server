@@ -1,8 +1,8 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { ReportView } from '../../entity/index.js';
-import { FindReportQuery } from '../query/index.js';
+import type { ReportView } from '../../entity/analysis.type.js';
+import { FindReportQuery } from '../query/find-report.query.js';
 import { REPORT_POPULATE } from './analysis.helper.js';
-import { ReportRepository } from '../../../../database/repository/index.js';
+import { ReportRepository } from '../../../../database/repository/report.repository.js';
 
 @QueryHandler(FindReportQuery)
 export class FindReportHandler implements IQueryHandler<FindReportQuery> {

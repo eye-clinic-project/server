@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import type { IFundusImage } from '../../dependencies/interface/index.js';
-import { FundusImage } from '../model/index.js';
+import type { IFundusImage } from '../../dependencies/interface/database.interface.js';
+import { FundusImage } from '../model/fundus-image.model.js';
 import { DatabaseRepository } from './base.repository.js';
 
 @Injectable()

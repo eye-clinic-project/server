@@ -3,9 +3,9 @@ import { QueryBus } from '@nestjs/cqrs';
 import { InjectDisk, StorageDisk } from '@nestjs/storage';
 import type { Job } from 'bullmq';
 
-import { NotificationType } from '../../../dependencies/enum/index.js';
-import { NotificationService } from '../../../dependencies/service/index.js';
-import { FindAdminIdsQuery } from '../cqrs/query/index.js';
+import { NotificationType } from '../../../dependencies/enum/database.enum.js';
+import { NotificationService } from '../../../dependencies/service/notification.service.js';
+import { FindAdminIdsQuery } from '../cqrs/query/find-admin-ids.query.js';
 
 export const DOCTOR_QUEUE = 'doctor';
 

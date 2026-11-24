@@ -1,7 +1,7 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import type { AdminDoctorView } from '../../entity/index.js';
-import type { DoctorVerificationStatus } from '../../../../dependencies/enum/index.js';
+import type { AdminDoctorView } from '../../entity/admin.type.js';
+import type { DoctorVerificationStatus } from '../../../../dependencies/enum/database.enum.js';
 
 export class DecideDoctorCommand extends Command<AdminDoctorView> {
   constructor(

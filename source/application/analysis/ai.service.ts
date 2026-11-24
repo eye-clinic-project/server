@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 
-import { DR_LEVEL_VALUES, type DRLevel, Stage1Status } from '../../dependencies/enum/index.js';
-import type { IAnalysisFinding } from '../../dependencies/interface/index.js';
+import { DR_LEVEL_VALUES, type DRLevel, Stage1Status } from '../../dependencies/enum/database.enum.js';
+import type { IAnalysisFinding } from '../../dependencies/interface/database.interface.js';
 
 export const sha256 = (data: Buffer): string => createHash('sha256').update(data).digest('hex');
 
@@ -175,7 +175,12 @@ export class AiService {
 
     const findings = (stage1.findings ?? []).map(({ code, name, probability, threshold, detected }) => ({ code, name, probability, threshold, detected }));
     const detected = findings.filter((finding) => finding.detected).map((finding) => finding.code);
-    const status = stage1.status === Stage1Status.SUSPECTED || stage1.status === Stage1Status.DETECTED ? stage1.status : detected.length ? Stage1Status.DETECTED : Stage1Status.SUSPECTED;
+    const status =
+      stage1.status === Stage1Status.SUSPECTED || stage1.status === Stage1Status.DETECTED
+        ? stage1.status
+        : detected.length
+          ? Stage1Status.DETECTED
+          : Stage1Status.SUSPECTED;
 
     return {
       hasDR: stage1.has_dr,
@@ -213,7 +218,12 @@ export class AiService {
       drProbability,
       drThreshold: 0.5,
       stage1Status: detected.length ? Stage1Status.DETECTED : Stage1Status.SUSPECTED,
-      shownFindings: detected.length ? detected : ranked.slice(0, 3).filter((finding) => finding.probability >= 0.15).map((finding) => finding.code),
+      shownFindings: detected.length
+        ? detected
+        : ranked
+            .slice(0, 3)
+            .filter((finding) => finding.probability >= 0.15)
+            .map((finding) => finding.code),
       topFinding: ranked[0]?.code ?? null,
       findings,
       predictedLevel: null,

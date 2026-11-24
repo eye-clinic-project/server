@@ -2,8 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
 import { FundusImage } from './fundus-image.model.js';
-import { IAnalysis } from '../../dependencies/interface/index.js';
-import { AnalysisStatus, DR_LEVEL_VALUES, Stage1Status } from '../../dependencies/enum/index.js';
+import { IAnalysis } from '../../dependencies/interface/database.interface.js';
+import { AnalysisStatus, DR_LEVEL_VALUES, Stage1Status } from '../../dependencies/enum/database.enum.js';
 
 export type HAnalysisDocument = HydratedDocument<IAnalysis>;
 

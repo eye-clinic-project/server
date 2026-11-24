@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import type { NotificationView } from '../../entity/index.js';
+import type { NotificationView } from '../../entity/notification.type.js';
 
 export class ListNotificationsQuery extends Query<{ docs: NotificationView[]; count: number; currentPage: number; size: number; pages: number }> {
   constructor(

@@ -1,4 +1,5 @@
 import type { Types } from 'mongoose';
+import type { SlotView } from './appointment.type.js';
 
 export class SlotEntity {
   constructor(
@@ -10,3 +11,6 @@ export class SlotEntity {
     public readonly appointment: Types.ObjectId | null = null,
   ) {}
 }
+
+export const toSlotEntity = (slot: SlotView): SlotEntity =>
+  new SlotEntity(slot._id, slot.doctor, slot.startAt, slot.endAt, slot.isBooked, slot.appointment ?? null);

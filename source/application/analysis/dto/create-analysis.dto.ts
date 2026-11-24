@@ -2,7 +2,7 @@ import { IsDate, IsEnum, IsMongoId, IsOptional, IsString, MaxDate, MaxLength } f
 import { Transform, Type } from 'class-transformer';
 import { i18nValidationMessage } from '@nestjs/i18n';
 
-import { EyeSide } from '../../../dependencies/enum/index.js';
+import { EyeSide } from '../../../dependencies/enum/database.enum.js';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 

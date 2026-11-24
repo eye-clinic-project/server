@@ -21,14 +21,20 @@ import type { Request, Response } from 'express';
 import type { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 
-import type { IUser } from '../../dependencies/interface/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import type { AiHealth } from './ai.service.js';
 import { AnalysisService } from './analysis.service.js';
-import { CreateAnalysisDto, CreateReviewDto, ListAnalysesDto, UpdateReviewDto } from './dto/index.js';
-import type { AnalysisEntity, Page, ReviewEntity } from './entity/index.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
+import { CreateAnalysisDto } from './dto/create-analysis.dto.js';
+import { CreateReviewDto } from './dto/create-review.dto.js';
+import { ListAnalysesDto } from './dto/list-analyses.dto.js';
+import { UpdateReviewDto } from './dto/update-review.dto.js';
+import type { AnalysisEntity } from './entity/analysis.entity.js';
+import type { Page } from './entity/analysis.type.js';
+import type { ReviewEntity } from './entity/review.entity.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 const { DOCTOR } = SystemRoleEnum;
 

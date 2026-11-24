@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 
-import type { SystemRoleEnum } from '../../../dependencies/enum/index.js';
+import type { SystemRoleEnum } from '../../../dependencies/enum/security.enum.js';
+import type { ChatUser } from './chat.type.js';
 
 export class ChatParticipantEntity {
   constructor(
@@ -10,3 +11,6 @@ export class ChatParticipantEntity {
     public readonly role: SystemRoleEnum,
   ) {}
 }
+
+export const toChatParticipantEntity = (user: ChatUser): ChatParticipantEntity =>
+  new ChatParticipantEntity(user._id, user.name, user.avatarUrl ?? null, user.role);

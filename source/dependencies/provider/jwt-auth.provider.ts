@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AuthenticationRegistry, JwtBearerProvider, type JwtClaims } from '@nestjs/authentication';
 
-import { IUser } from '../interface/index.js';
-import { UserRepository } from '../../database/repository/index.js';
+import { IUser } from '../interface/database.interface.js';
+import { UserRepository } from '../../database/repository/user.repository.js';
 
 @Injectable()
 export class JwtAuth extends JwtBearerProvider<IUser> {

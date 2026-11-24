@@ -1,10 +1,10 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { QueryFilter } from 'mongoose';
-import type { AnalysisView, Page } from '../../entity/index.js';
-import { ListAnalysesQuery } from '../query/index.js';
-import type { IAnalysis } from '../../../../dependencies/interface/index.js';
+import type { AnalysisView, Page } from '../../entity/analysis.type.js';
+import { ListAnalysesQuery } from '../query/list-analyses.query.js';
+import type { IAnalysis } from '../../../../dependencies/interface/database.interface.js';
 import { ANALYSIS_POPULATE } from './analysis.helper.js';
-import { AnalysisRepository } from '../../../../database/repository/index.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
 
 @QueryHandler(ListAnalysesQuery)
 export class ListAnalysesHandler implements IQueryHandler<ListAnalysesQuery> {

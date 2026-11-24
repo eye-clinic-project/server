@@ -1,7 +1,7 @@
 import { IsBoolean, IsEnum, IsMongoId, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-import { AnalysisStatus } from '../../../dependencies/enum/index.js';
+import { AnalysisStatus } from '../../../dependencies/enum/database.enum.js';
 import { PageDto } from './page.dto.js';
 
 const toBoolean = ({ value }: { value: unknown }) => (value === 'true' ? true : value === 'false' ? false : value);

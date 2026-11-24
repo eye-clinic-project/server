@@ -1,9 +1,10 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
 
-import { AnalysisRepository, FundusImageRepository } from '../../../../database/repository/index.js';
-import { AnalysisStatus } from '../../../../dependencies/enum/index.js';
-import { CreateAnalysisCommand } from '../command/index.js';
+import { AnalysisRepository } from '../../../../database/repository/analysis.repository.js';
+import { FundusImageRepository } from '../../../../database/repository/fundus-image.repository.js';
+import { AnalysisStatus } from '../../../../dependencies/enum/database.enum.js';
+import { CreateAnalysisCommand } from '../command/create-analysis.command.js';
 
 const defined = <T extends object>(data: T) => Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined)) as Partial<T>;
 

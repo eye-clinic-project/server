@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IDoctorReview } from '../../dependencies/interface/index.js';
-import { DR_LEVEL_VALUES } from '../../dependencies/enum/index.js';
+import { IDoctorReview } from '../../dependencies/interface/database.interface.js';
+import { DR_LEVEL_VALUES } from '../../dependencies/enum/database.enum.js';
 
 export type HDoctorReviewDocument = HydratedDocument<IDoctorReview>;
 

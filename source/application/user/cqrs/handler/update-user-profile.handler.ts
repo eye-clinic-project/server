@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import type { HUserDocument } from '../../../../database/model/index.js';
-import { UserRepository } from '../../../../database/repository/index.js';
-import { UpdateUserProfileCommand } from '../command/index.js';
+import type { HUserDocument } from '../../../../database/model/user.model.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { UpdateUserProfileCommand } from '../command/update-user-profile.command.js';
 
 @CommandHandler(UpdateUserProfileCommand)
 export class UpdateUserProfileHandler implements ICommandHandler<UpdateUserProfileCommand> {

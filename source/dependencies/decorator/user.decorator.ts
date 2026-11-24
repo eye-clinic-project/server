@@ -1,7 +1,7 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext, type GqlContextType } from '@nestjs/graphql';
 
-import type { IUser } from '../interface/index.js';
+import type { IUser } from '../interface/database.interface.js';
 
 const USER_OF = Symbol.for('nestjs.authentication.userOf');
 

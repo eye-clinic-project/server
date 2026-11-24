@@ -1,6 +1,6 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { MarkReadCommand } from '../command/index.js';
-import { MessageRepository } from '../../../../database/repository/index.js';
+import { MarkReadCommand } from '../command/mark-read.command.js';
+import { MessageRepository } from '../../../../database/repository/message.repository.js';
 
 @CommandHandler(MarkReadCommand)
 export class MarkReadHandler implements ICommandHandler<MarkReadCommand> {

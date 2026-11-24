@@ -1,8 +1,9 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { DoctorRepository, UserRepository } from '../../../../database/repository/index.js';
-import { DoctorVerificationStatus } from '../../../../dependencies/enum/index.js';
-import { CreateDoctorProfileCommand } from '../command/index.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { DoctorVerificationStatus } from '../../../../dependencies/enum/database.enum.js';
+import { CreateDoctorProfileCommand } from '../command/create-doctor-profile.command.js';
 
 @CommandHandler(CreateDoctorProfileCommand)
 export class CreateDoctorProfileHandler implements ICommandHandler<CreateDoctorProfileCommand> {

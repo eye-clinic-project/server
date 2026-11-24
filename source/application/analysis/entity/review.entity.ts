@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 
-import type { DRLevel } from '../../../dependencies/enum/index.js';
+import { type DRLevel, DR_LEVEL_LABELS } from '../../../dependencies/enum/database.enum.js';
+import type { ReviewView } from './analysis.type.js';
 
 export class ReviewEntity {
   constructor(
@@ -18,3 +19,19 @@ export class ReviewEntity {
     public readonly updatedAt?: Date,
   ) {}
 }
+
+export const toReviewEntity = (review: ReviewView): ReviewEntity =>
+  new ReviewEntity(
+    review._id,
+    review.analysis,
+    review.doctor,
+    review.patient,
+    review.aiResultConfirmed,
+    review.confirmedLevel,
+    DR_LEVEL_LABELS[review.confirmedLevel],
+    review.notes ?? null,
+    review.recommendations ?? null,
+    review.followUpDate ?? null,
+    review.createdAt,
+    review.updatedAt,
+  );

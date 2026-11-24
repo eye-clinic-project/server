@@ -5,12 +5,14 @@ import { InjectDisk, StorageDisk, StorageFileNotFoundError } from '@nestjs/stora
 import type { Job, Queue } from 'bullmq';
 import { Types } from 'mongoose';
 
-import { NotificationType } from '../../../dependencies/enum/index.js';
-import { Localize } from '../../../dependencies/language/index.js';
-import { NotificationService } from '../../../dependencies/service/index.js';
+import { NotificationType } from '../../../dependencies/enum/database.enum.js';
+import { Localize } from '../../../dependencies/language/localize.js';
+import { NotificationService } from '../../../dependencies/service/notification.service.js';
 import { AiError, AiService, sha256 } from '../ai.service.js';
-import { ClaimAnalysisCommand, CompleteAnalysisCommand, FailAnalysisCommand } from '../cqrs/command/index.js';
-import type { AnalysisView } from '../entity/index.js';
+import { ClaimAnalysisCommand } from '../cqrs/command/claim-analysis.command.js';
+import { CompleteAnalysisCommand } from '../cqrs/command/complete-analysis.command.js';
+import { FailAnalysisCommand } from '../cqrs/command/fail-analysis.command.js';
+import type { AnalysisView } from '../entity/analysis.type.js';
 
 export const ANALYSIS_QUEUE = 'analysis';
 export const ANALYSIS_TASK_QUEUE = 'analysis-task';

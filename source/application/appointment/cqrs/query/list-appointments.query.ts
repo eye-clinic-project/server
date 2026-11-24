@@ -1,8 +1,8 @@
 import type { Types } from 'mongoose';
 import { Query } from '@nestjs/cqrs';
 
-import type { AppointmentStatus } from '../../../../dependencies/enum/index.js';
-import type { AppointmentView } from '../../entity/index.js';
+import type { AppointmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import type { AppointmentView } from '../../entity/appointment.type.js';
 
 export interface AppointmentFilter {
   doctorId?: Types.ObjectId;

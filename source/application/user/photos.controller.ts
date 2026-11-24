@@ -1,7 +1,7 @@
 import { BadRequestException, Controller, Get, Param } from '@nestjs/common';
 
-import { Auth } from '../../dependencies/decorator/index.js';
-import { ServeImage } from '../../dependencies/interceptor/index.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { ServeImage } from '../../dependencies/interceptor/image.interceptor.js';
 
 @Controller('photos')
 @Auth({ public: true })

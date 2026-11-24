@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose';
 
-import { AttachmentEntity } from './attachment.entity.js';
+import { AttachmentEntity, toAttachmentEntity } from './attachment.entity.js';
+import type { MessageView } from './chat.type.js';
 
 export class MessageEntity {
   constructor(
@@ -14,3 +15,15 @@ export class MessageEntity {
     public readonly clientId?: string,
   ) {}
 }
+
+export const toMessageEntity = (message: MessageView, baseUrl: string, clientId?: string): MessageEntity =>
+  new MessageEntity(
+    message._id,
+    message.conversation,
+    message.sender,
+    message.message,
+    (message.attachments ?? []).map((key, index) => toAttachmentEntity(message._id, key, index, baseUrl)),
+    message.readBy ?? [],
+    message.createdAt,
+    clientId || undefined,
+  );

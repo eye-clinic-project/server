@@ -1,8 +1,8 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
-import { AppointmentRepository } from '../../../../database/repository/index.js';
-import { AppointmentRequestStatus, AppointmentStatus } from '../../../../dependencies/enum/index.js';
-import { CountPatientAppointmentsOnDayQuery } from '../query/index.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
+import { AppointmentRequestStatus, AppointmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { CountPatientAppointmentsOnDayQuery } from '../query/count-patient-appointments-on-day.query.js';
 
 const OPEN_STATUSES = [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED];
 

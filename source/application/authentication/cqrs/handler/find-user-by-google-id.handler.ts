@@ -1,8 +1,8 @@
 import { QueryHandler, type IQueryHandler } from '@nestjs/cqrs';
 
-import type { HUserDocument } from '../../../../database/model/index.js';
-import { UserRepository } from '../../../../database/repository/index.js';
-import { FindUserByGoogleIdQuery } from '../query/index.js';
+import type { HUserDocument } from '../../../../database/model/user.model.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { FindUserByGoogleIdQuery } from '../query/find-user-by-google-id.query.js';
 
 @QueryHandler(FindUserByGoogleIdQuery)
 export class FindUserByGoogleIdHandler implements IQueryHandler<FindUserByGoogleIdQuery> {

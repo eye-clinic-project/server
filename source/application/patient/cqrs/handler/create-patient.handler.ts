@@ -2,9 +2,12 @@ import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 import { ConflictException } from '@nestjs/common';
 
-import { AssignmentStatus, AuthProviderEnum, SystemRoleEnum } from '../../../../dependencies/enum/index.js';
-import { CreatePatientCommand } from '../command/index.js';
-import { DoctorPatientRepository, PatientRepository, UserRepository } from '../../../../database/repository/index.js';
+import { AssignmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { AuthProviderEnum, SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
+import { CreatePatientCommand } from '../command/create-patient.command.js';
+import { DoctorPatientRepository } from '../../../../database/repository/doctor-patient.repository.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
 import { generateMedicalRecordNumber } from './patient.helper.js';
 
 const MRN_ATTEMPTS = 5;

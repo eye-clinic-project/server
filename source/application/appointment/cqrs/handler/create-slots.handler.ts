@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { ConflictException } from '@nestjs/common';
-import type { SlotView } from '../../entity/index.js';
-import { CreateSlotsCommand } from '../command/index.js';
-import { DoctorAvailabilityRepository } from '../../../../database/repository/index.js';
+import type { SlotView } from '../../entity/appointment.type.js';
+import { CreateSlotsCommand } from '../command/create-slots.command.js';
+import { DoctorAvailabilityRepository } from '../../../../database/repository/doctor-availability.repository.js';
 
 @CommandHandler(CreateSlotsCommand)
 export class CreateSlotsHandler implements ICommandHandler<CreateSlotsCommand> {

@@ -1,13 +1,18 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import type { Types } from 'mongoose';
 
-import type { IUser } from '../../dependencies/interface/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
-import { CreatePatientDto, ListPatientsDto, UpdatePatientDto } from './dto/index.js';
-import { AssignedDoctorEntity, PatientEntity, type PatientListEntity } from './entity/index.js';
+import { CreatePatientDto } from './dto/create-patient.dto.js';
+import { ListPatientsDto } from './dto/list-patients.dto.js';
+import { UpdatePatientDto } from './dto/update-patient.dto.js';
+import { AssignedDoctorEntity } from './entity/assigned-doctor.entity.js';
+import { PatientEntity } from './entity/patient.entity.js';
+import type { PatientListEntity } from './entity/patient.type.js';
 import { PatientService } from './patient.service.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 const { ADMIN, DOCTOR, PATIENT } = SystemRoleEnum;
 

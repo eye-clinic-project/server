@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { MessageView } from '../../entity/index.js';
-import { FindMessageQuery } from '../query/index.js';
-import { MessageRepository } from '../../../../database/repository/index.js';
+import type { MessageView } from '../../entity/chat.type.js';
+import { FindMessageQuery } from '../query/find-message.query.js';
+import { MessageRepository } from '../../../../database/repository/message.repository.js';
 
 @QueryHandler(FindMessageQuery)
 export class FindMessageHandler implements IQueryHandler<FindMessageQuery> {

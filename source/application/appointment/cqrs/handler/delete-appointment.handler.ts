@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { AppointmentRepository } from '../../../../database/repository/index.js';
-import { DeleteAppointmentCommand } from '../command/index.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
+import { DeleteAppointmentCommand } from '../command/delete-appointment.command.js';
 
 @CommandHandler(DeleteAppointmentCommand)
 export class DeleteAppointmentHandler implements ICommandHandler<DeleteAppointmentCommand> {

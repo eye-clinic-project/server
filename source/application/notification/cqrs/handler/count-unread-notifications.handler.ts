@@ -1,6 +1,6 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { CountUnreadNotificationsQuery } from '../query/index.js';
-import { NotificationRepository } from '../../../../database/repository/index.js';
+import { CountUnreadNotificationsQuery } from '../query/count-unread-notifications.query.js';
+import { NotificationRepository } from '../../../../database/repository/notification.repository.js';
 
 @QueryHandler(CountUnreadNotificationsQuery)
 export class CountUnreadNotificationsHandler implements IQueryHandler<CountUnreadNotificationsQuery> {

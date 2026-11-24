@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import { CountUnreadQuery } from '../query/index.js';
-import { MessageRepository } from '../../../../database/repository/index.js';
+import { CountUnreadQuery } from '../query/count-unread.query.js';
+import { MessageRepository } from '../../../../database/repository/message.repository.js';
 
 @QueryHandler(CountUnreadQuery)
 export class CountUnreadHandler implements IQueryHandler<CountUnreadQuery> {

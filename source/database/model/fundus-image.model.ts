@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from './user.model.js';
-import { IFundusImage } from '../../dependencies/interface/index.js';
-import { EyeSide, ImageSource } from '../../dependencies/enum/index.js';
+import { IFundusImage } from '../../dependencies/interface/database.interface.js';
+import { EyeSide, ImageSource } from '../../dependencies/enum/database.enum.js';
 
 export type HFundusImageDocument = HydratedDocument<IFundusImage>;
 

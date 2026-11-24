@@ -2,7 +2,7 @@ import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
 import type { PatientProfileData } from './patient.type.js';
-import { HUserDocument } from '../../../../database/model/index.js';
+import { HUserDocument } from '../../../../database/model/user.model.js';
 
 export type PatientAccountUpdate = Partial<Pick<HUserDocument, 'name' | 'city' | 'phone'>>;
 

@@ -1,7 +1,7 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
-import type { EyeSide } from '../../../../dependencies/enum/index.js';
+import type { EyeSide } from '../../../../dependencies/enum/database.enum.js';
 
 export interface NewFundusImage {
   storageKey: string;

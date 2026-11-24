@@ -1,9 +1,10 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import type { AdminDoctorView } from '../../entity/index.js';
-import { DecideDoctorCommand } from '../command/index.js';
-import { DoctorRepository, UserRepository } from '../../../../database/repository/index.js';
-import { DoctorVerificationStatus } from '../../../../dependencies/enum/index.js';
+import type { AdminDoctorView } from '../../entity/admin.type.js';
+import { DecideDoctorCommand } from '../command/decide-doctor.command.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { DoctorVerificationStatus } from '../../../../dependencies/enum/database.enum.js';
 
 const USER_FIELDS = 'name email city phone avatarUrl isActive emailVerifiedAt createdAt';
 

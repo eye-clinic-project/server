@@ -1,10 +1,10 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { QueryFilter } from 'mongoose';
 
-import type { IAppointment } from '../../../../dependencies/interface/index.js';
-import { AppointmentRepository } from '../../../../database/repository/index.js';
-import { AppointmentRequestStatus } from '../../../../dependencies/enum/index.js';
-import { ListAppointmentsQuery } from '../query/index.js';
+import type { IAppointment } from '../../../../dependencies/interface/database.interface.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
+import { AppointmentRequestStatus } from '../../../../dependencies/enum/database.enum.js';
+import { ListAppointmentsQuery } from '../query/list-appointments.query.js';
 import { populateParticipants } from './appointment.helper.js';
 
 @QueryHandler(ListAppointmentsQuery)

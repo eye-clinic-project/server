@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { ConversationView } from '../../entity/index.js';
-import { FindConversationQuery } from '../query/index.js';
-import { ConversationRepository } from '../../../../database/repository/index.js';
+import type { ConversationView } from '../../entity/chat.type.js';
+import { FindConversationQuery } from '../query/find-conversation.query.js';
+import { ConversationRepository } from '../../../../database/repository/conversation.repository.js';
 import { populateConversation } from './chat.helper.js';
 
 @QueryHandler(FindConversationQuery)

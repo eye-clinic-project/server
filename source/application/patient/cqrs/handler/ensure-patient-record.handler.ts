@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 import { ConflictException } from '@nestjs/common';
-import { EnsurePatientRecordCommand } from '../command/index.js';
-import { PatientRepository } from '../../../../database/repository/index.js';
+import { EnsurePatientRecordCommand } from '../command/ensure-patient-record.command.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
 import { generateMedicalRecordNumber } from './patient.helper.js';
 
 const MRN_ATTEMPTS = 5;

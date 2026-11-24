@@ -5,10 +5,10 @@ import type { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { ANALYSIS_DELETED_EVENT, AnalysisDeletedEvent } from './analysis-deleted.event.js';
-import { ANALYSIS_QUEUE, ANALYSIS_TASK_QUEUE, AnalysisJob, AnalysisTaskJob, type AnalysisTaskJobData, type RunAnalysisJob } from '../queue/index.js';
-import { RequeueAnalysesCommand } from '../cqrs/command/index.js';
+import { ANALYSIS_QUEUE, ANALYSIS_TASK_QUEUE, AnalysisJob, AnalysisTaskJob, type AnalysisTaskJobData, type RunAnalysisJob } from '../queue/analysis.queue.js';
+import { RequeueAnalysesCommand } from '../cqrs/command/requeue-analyses.command.js';
 import { ANALYSIS_REQUESTED_EVENT, AnalysisRequestedEvent } from './analysis-requested.event.js';
-import { LoggerService } from '../../../dependencies/service/index.js';
+import { LoggerService } from '../../../dependencies/service/logger.service.js';
 import { REPORT_DELETED_EVENT, ReportDeletedEvent } from './report-deleted.event.js';
 import { REPORT_SENT_EVENT, ReportSentEvent } from './report-sent.event.js';
 

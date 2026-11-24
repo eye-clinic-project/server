@@ -1,9 +1,11 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import { BackfillPatientRecordsCommand, EnsurePatientRecordCommand } from '../command/index.js';
+import { BackfillPatientRecordsCommand } from '../command/backfill-patient-records.command.js';
+import { EnsurePatientRecordCommand } from '../command/ensure-patient-record.command.js';
 import { EnsurePatientRecordHandler } from './ensure-patient-record.handler.js';
-import { PatientRepository, UserRepository } from '../../../../database/repository/index.js';
-import { SystemRoleEnum } from '../../../../dependencies/enum/index.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
 
 @CommandHandler(BackfillPatientRecordsCommand)
 export class BackfillPatientRecordsHandler implements ICommandHandler<BackfillPatientRecordsCommand> {

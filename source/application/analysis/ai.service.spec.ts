@@ -1,6 +1,6 @@
 import type { ConfigService } from '@nestjs/config';
 
-import { Stage1Status } from '../../dependencies/enum/index.js';
+import { Stage1Status } from '../../dependencies/enum/database.enum.js';
 import { AiService } from './ai.service.js';
 
 const config = (values: Record<string, unknown>) => ({ get: (key: string) => values[key] }) as unknown as ConfigService;

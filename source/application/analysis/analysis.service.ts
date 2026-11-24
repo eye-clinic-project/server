@@ -4,15 +4,29 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDisk, StorageDisk, type StoredUpload } from '@nestjs/storage';
 import { Types } from 'mongoose';
 
-import { AnalysisStatus, ReportStatus } from '../../dependencies/enum/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
+import { AnalysisStatus, ReportStatus } from '../../dependencies/enum/database.enum.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { AiService, sha256, type AiHealth } from './ai.service.js';
-import { FindPatientByIdQuery, IsPatientAssignedQuery } from '../patient/cqrs/query/index.js';
-import { CreateAnalysisCommand, CreateReviewCommand, DeleteAnalysisCommand, RetryAnalysisCommand, UpdateReviewCommand } from './cqrs/command/index.js';
-import { FindAnalysisQuery, FindReportByAnalysisQuery, FindReviewQuery, ListAnalysesQuery } from './cqrs/query/index.js';
-import { CreateAnalysisDto, CreateReviewDto, ListAnalysesDto, UpdateReviewDto } from './dto/index.js';
-import { AnalysisEntity, type AnalysisView, type Page, ReviewEntity, toAnalysisEntity, toReviewEntity } from './entity/index.js';
-import { ANALYSIS_DELETED_EVENT, ANALYSIS_REQUESTED_EVENT, AnalysisDeletedEvent, AnalysisRequestedEvent } from './event/index.js';
+import { FindPatientByIdQuery } from '../patient/cqrs/query/find-patient-by-id.query.js';
+import { IsPatientAssignedQuery } from '../patient/cqrs/query/is-patient-assigned.query.js';
+import { CreateAnalysisCommand } from './cqrs/command/create-analysis.command.js';
+import { CreateReviewCommand } from './cqrs/command/create-review.command.js';
+import { DeleteAnalysisCommand } from './cqrs/command/delete-analysis.command.js';
+import { RetryAnalysisCommand } from './cqrs/command/retry-analysis.command.js';
+import { UpdateReviewCommand } from './cqrs/command/update-review.command.js';
+import { FindAnalysisQuery } from './cqrs/query/find-analysis.query.js';
+import { FindReportByAnalysisQuery } from './cqrs/query/find-report-by-analysis.query.js';
+import { FindReviewQuery } from './cqrs/query/find-review.query.js';
+import { ListAnalysesQuery } from './cqrs/query/list-analyses.query.js';
+import { CreateAnalysisDto } from './dto/create-analysis.dto.js';
+import { CreateReviewDto } from './dto/create-review.dto.js';
+import { ListAnalysesDto } from './dto/list-analyses.dto.js';
+import { UpdateReviewDto } from './dto/update-review.dto.js';
+import { AnalysisEntity, toAnalysisEntity } from './entity/analysis.entity.js';
+import type { AnalysisView, Page } from './entity/analysis.type.js';
+import { ReviewEntity, toReviewEntity } from './entity/review.entity.js';
+import { ANALYSIS_DELETED_EVENT, AnalysisDeletedEvent } from './event/analysis-deleted.event.js';
+import { ANALYSIS_REQUESTED_EVENT, AnalysisRequestedEvent } from './event/analysis-requested.event.js';
 
 @Injectable()
 export class AnalysisService {

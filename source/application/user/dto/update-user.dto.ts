@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
-import { SUPPORTED_LOCALES } from '../../../dependencies/language/index.js';
+import { SUPPORTED_LOCALES } from '../../../dependencies/language/i18n.constants.js';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 

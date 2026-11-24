@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { AuthProviderEnum, SystemRoleEnum } from '../../../../dependencies/enum/index.js';
-import { EnsureAdminCommand } from '../command/index.js';
-import { UserRepository } from '../../../../database/repository/index.js';
+import { AuthProviderEnum, SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
+import { EnsureAdminCommand } from '../command/ensure-admin.command.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
 
 @CommandHandler(EnsureAdminCommand)
 export class EnsureAdminHandler implements ICommandHandler<EnsureAdminCommand> {

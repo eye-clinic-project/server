@@ -4,30 +4,27 @@ import { InjectDisk, StorageDisk, type StoredUpload } from '@nestjs/storage';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
 
-import type { ILicenseDocument, IUser } from '../../dependencies/interface/index.js';
-import { CreatePatientCommand } from '../patient/cqrs/command/index.js';
-import { FindPatientByIdQuery } from '../patient/cqrs/query/index.js';
-import { CreatePatientDto } from '../patient/dto/index.js';
-import { PatientEntity, toPatientEntity } from '../patient/entity/index.js';
-import { AssignPatientCommand, type ClinicData, SubmitLicenseCommand, UnassignPatientCommand, UpsertClinicCommand } from './cqrs/command/index.js';
-import { GetDoctorProfileQuery, SearchPatientsForAssignmentQuery } from './cqrs/query/index.js';
-import { SearchPatientsDto, SubmitLicenseDto, UpdateClinicDto } from './dto/index.js';
-import {
-  DoctorClinicEntity,
-  type PatientSearchPage,
-  toDoctorClinicEntity,
-  toPatientSearchEntity,
-  toVerificationEntity,
-  VerificationEntity,
-} from './entity/index.js';
-import {
-  DOCTOR_LICENSE_SUBMITTED_EVENT,
-  DOCTOR_PATIENT_ASSIGNED_EVENT,
-  DOCTOR_PATIENT_UNASSIGNED_EVENT,
-  DoctorLicenseSubmittedEvent,
-  DoctorPatientAssignedEvent,
-  DoctorPatientUnassignedEvent,
-} from './event/index.js';
+import type { ILicenseDocument, IUser } from '../../dependencies/interface/database.interface.js';
+import { CreatePatientCommand } from '../patient/cqrs/command/create-patient.command.js';
+import { FindPatientByIdQuery } from '../patient/cqrs/query/find-patient-by-id.query.js';
+import { CreatePatientDto } from '../patient/dto/create-patient.dto.js';
+import { PatientEntity, toPatientEntity } from '../patient/entity/patient.entity.js';
+import { AssignPatientCommand } from './cqrs/command/assign-patient.command.js';
+import { type ClinicData, UpsertClinicCommand } from './cqrs/command/upsert-clinic.command.js';
+import { SubmitLicenseCommand } from './cqrs/command/submit-license.command.js';
+import { UnassignPatientCommand } from './cqrs/command/unassign-patient.command.js';
+import { GetDoctorProfileQuery } from './cqrs/query/get-doctor-profile.query.js';
+import { SearchPatientsForAssignmentQuery } from './cqrs/query/search-patients-for-assignment.query.js';
+import { SearchPatientsDto } from './dto/search-patients.dto.js';
+import { SubmitLicenseDto } from './dto/submit-license.dto.js';
+import { UpdateClinicDto } from './dto/update-clinic.dto.js';
+import { DoctorClinicEntity, toDoctorClinicEntity } from './entity/doctor-clinic.entity.js';
+import type { PatientSearchPage } from './entity/doctor.type.js';
+import { toPatientSearchEntity } from './entity/patient-search.entity.js';
+import { toVerificationEntity, VerificationEntity } from './entity/verification.entity.js';
+import { DOCTOR_LICENSE_SUBMITTED_EVENT, DoctorLicenseSubmittedEvent } from './event/doctor-license-submitted.event.js';
+import { DOCTOR_PATIENT_ASSIGNED_EVENT, DoctorPatientAssignedEvent } from './event/doctor-patient-assigned.event.js';
+import { DOCTOR_PATIENT_UNASSIGNED_EVENT, DoctorPatientUnassignedEvent } from './event/doctor-patient-unassigned.event.js';
 
 @Injectable()
 export class DoctorService {

@@ -1,8 +1,9 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { AppointmentRepository } from '../../../../database/repository/index.js';
-import { AppointmentRequestStatus, AppointmentRequestType, AppointmentStatus, SystemRoleEnum } from '../../../../dependencies/enum/index.js';
-import { DecideRequestCommand } from '../command/index.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
+import { AppointmentRequestStatus, AppointmentRequestType, AppointmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
+import { DecideRequestCommand } from '../command/decide-request.command.js';
 
 @CommandHandler(DecideRequestCommand)
 export class DecideRequestHandler implements ICommandHandler<DecideRequestCommand> {

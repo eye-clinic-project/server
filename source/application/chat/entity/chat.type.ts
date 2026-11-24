@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { IConversation, IMessage, IUser } from '../../../dependencies/interface/index.js';
+import type { IConversation, IMessage, IUser } from '../../../dependencies/interface/database.interface.js';
 import { MessageEntity } from './message.entity.js';
 
 export const CHAT_USER_FIELDS = 'name avatarUrl role';

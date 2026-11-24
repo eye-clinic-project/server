@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import type { HUserDocument } from '../../../../database/model/index.js';
-import { UserRepository } from '../../../../database/repository/index.js';
-import { RemoveUserAvatarCommand } from '../command/index.js';
+import type { HUserDocument } from '../../../../database/model/user.model.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { RemoveUserAvatarCommand } from '../command/remove-user-avatar.command.js';
 
 @CommandHandler(RemoveUserAvatarCommand)
 export class RemoveUserAvatarHandler implements ICommandHandler<RemoveUserAvatarCommand> {

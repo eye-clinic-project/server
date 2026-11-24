@@ -3,13 +3,17 @@ import { serveFile } from '@nestjs/storage';
 import type { Request, Response } from 'express';
 import type { Types } from 'mongoose';
 
-import type { IUser } from '../../dependencies/interface/index.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
-import { CreateReportDto, ListReportsDto, UpdateReportDto } from './dto/index.js';
-import type { Page, ReportEntity } from './entity/index.js';
+import { CreateReportDto } from './dto/create-report.dto.js';
+import { ListReportsDto } from './dto/list-reports.dto.js';
+import { UpdateReportDto } from './dto/update-report.dto.js';
+import type { Page } from './entity/analysis.type.js';
+import type { ReportEntity } from './entity/report.entity.js';
 import { ReportService } from './report.service.js';
-import { Auth, User } from '../../dependencies/decorator/index.js';
-import { SystemRoleEnum } from '../../dependencies/enum/index.js';
+import { Auth } from '../../dependencies/decorator/auth.decorator.js';
+import { User } from '../../dependencies/decorator/user.decorator.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
 
 const { DOCTOR, PATIENT } = SystemRoleEnum;
 

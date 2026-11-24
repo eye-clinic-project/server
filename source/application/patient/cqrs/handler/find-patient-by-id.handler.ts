@@ -1,7 +1,8 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { FindPatientByIdQuery } from '../query/index.js';
-import { PATIENT_USER_FIELDS, PatientView } from '../../entity/index.js';
-import { PatientRepository } from '../../../../database/repository/index.js';
+import { FindPatientByIdQuery } from '../query/find-patient-by-id.query.js';
+import { PATIENT_USER_FIELDS } from '../../entity/patient.type.js';
+import { PatientView } from '../../entity/patient.entity.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
 
 const populateUser = [{ path: 'user', select: PATIENT_USER_FIELDS }];
 

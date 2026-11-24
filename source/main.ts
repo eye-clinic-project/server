@@ -10,9 +10,13 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { AppModule } from './app.module.js';
-import { AllExceptionsFilter } from './dependencies/exception/index.js';
-import { LoggingInterceptor, TimeoutInterceptor, TransformInterceptor } from './dependencies/interceptor/index.js';
-import { DevPrint, MaintenanceMiddleware, SlowRequestMiddleware } from './dependencies/middleware/index.js';
+import { AllExceptionsFilter } from './dependencies/exception/all-exceptions.filter.js';
+import { LoggingInterceptor } from './dependencies/interceptor/logging.interceptor.js';
+import { TimeoutInterceptor } from './dependencies/interceptor/timeout.interceptor.js';
+import { TransformInterceptor } from './dependencies/interceptor/transform.interceptor.js';
+import { DevPrint } from './dependencies/middleware/dev-print.middleware.js';
+import { MaintenanceMiddleware } from './dependencies/middleware/maintenance-mode.middleware.js';
+import { SlowRequestMiddleware } from './dependencies/middleware/response-time.middleware.js';
 
 const SWAGGER_FILE = join(process.cwd(), 'public', 'documentation', 'swagger.json');
 

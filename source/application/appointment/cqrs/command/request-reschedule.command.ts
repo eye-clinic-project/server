@@ -1,8 +1,8 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
-import type { RescheduleReason } from '../../../../dependencies/enum/index.js';
-import type { SlotView } from '../../entity/index.js';
+import type { RescheduleReason } from '../../../../dependencies/enum/database.enum.js';
+import type { SlotView } from '../../entity/appointment.type.js';
 
 export class RequestRescheduleCommand extends Command<boolean> {
   constructor(

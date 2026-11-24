@@ -1,8 +1,9 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 import { Authenticate, Public, type AuthenticateOptions } from '@nestjs/authentication';
 
-import type { SystemRoleEnum } from '../enum/index.js';
-import { AccessGuard, RolesGuard } from '../guard/index.js';
+import type { SystemRoleEnum } from '../enum/security.enum.js';
+import { AccessGuard } from '../guard/access.guard.js';
+import { RolesGuard } from '../guard/roles.guard.js';
 import { AllowPendingDoctor, AllowRoles } from './role.decorator.js';
 
 export interface AuthOptions extends AuthenticateOptions {

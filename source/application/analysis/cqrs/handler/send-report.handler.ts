@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { ReportRepository } from '../../../../database/repository/index.js';
-import { ReportStatus } from '../../../../dependencies/enum/index.js';
-import { SendReportCommand } from '../command/index.js';
+import { ReportRepository } from '../../../../database/repository/report.repository.js';
+import { ReportStatus } from '../../../../dependencies/enum/database.enum.js';
+import { SendReportCommand } from '../command/send-report.command.js';
 
 @CommandHandler(SendReportCommand)
 export class SendReportHandler implements ICommandHandler<SendReportCommand> {

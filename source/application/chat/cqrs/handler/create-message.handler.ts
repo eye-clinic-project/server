@@ -1,7 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import type { MessageView } from '../../entity/index.js';
-import { CreateMessageCommand } from '../command/index.js';
-import { ConversationRepository, MessageRepository } from '../../../../database/repository/index.js';
+import type { MessageView } from '../../entity/chat.type.js';
+import { CreateMessageCommand } from '../command/create-message.command.js';
+import { ConversationRepository } from '../../../../database/repository/conversation.repository.js';
+import { MessageRepository } from '../../../../database/repository/message.repository.js';
 
 @CommandHandler(CreateMessageCommand)
 export class CreateMessageHandler implements ICommandHandler<CreateMessageCommand> {

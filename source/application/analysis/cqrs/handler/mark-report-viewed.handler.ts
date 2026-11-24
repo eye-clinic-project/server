@@ -1,6 +1,6 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import { MarkReportViewedCommand } from '../command/index.js';
-import { ReportRepository } from '../../../../database/repository/index.js';
+import { MarkReportViewedCommand } from '../command/mark-report-viewed.command.js';
+import { ReportRepository } from '../../../../database/repository/report.repository.js';
 
 @CommandHandler(MarkReportViewedCommand)
 export class MarkReportViewedHandler implements ICommandHandler<MarkReportViewedCommand> {

@@ -1,7 +1,8 @@
-import type { Types } from 'mongoose';
+import { Types } from 'mongoose';
 
-import type { GenderEnum } from '../../../dependencies/enum/index.js';
-import { PatientAccountEntity } from './patient-account.entity.js';
+import type { GenderEnum } from '../../../dependencies/enum/database.enum.js';
+import { PatientAccountEntity, type PatientUserView, toPatientAccountEntity } from './patient-account.entity.js';
+import { HPatientDocument } from '../../../database/model/patient.model.js';
 
 export class PatientEntity {
   constructor(
@@ -18,3 +19,19 @@ export class PatientEntity {
     public readonly updatedAt?: Date,
   ) {}
 }
+
+export type PatientView = Omit<HPatientDocument, 'user'> & { _id: Types.ObjectId; user: PatientUserView };
+export const toPatientEntity = (patient: PatientView): PatientEntity =>
+  new PatientEntity(
+    patient._id,
+    patient.medicalRecordNumber,
+    toPatientAccountEntity(patient.user),
+    patient.dateOfBirth ?? null,
+    (patient.gender as GenderEnum | undefined) ?? null,
+    patient.emergencyContact ?? null,
+    patient.diabetesSince ?? null,
+    patient.medicalNotes ?? null,
+    patient.createdBy ?? null,
+    patient.createdAt,
+    patient.updatedAt,
+  );

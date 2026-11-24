@@ -1,7 +1,7 @@
 import { QueryHandler, type IQueryHandler } from '@nestjs/cqrs';
 
-import { DoctorRepository } from '../../../../database/repository/index.js';
-import { IsLicenseTakenQuery } from '../query/index.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
+import { IsLicenseTakenQuery } from '../query/is-license-taken.query.js';
 
 @QueryHandler(IsLicenseTakenQuery)
 export class IsLicenseTakenHandler implements IQueryHandler<IsLicenseTakenQuery> {

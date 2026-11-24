@@ -1,7 +1,8 @@
 import type { Types } from 'mongoose';
 
-import type { ReportStatus } from '../../../dependencies/enum/index.js';
-import type { UserRefEntity } from './analysis.type.js';
+import { ReportStatus } from '../../../dependencies/enum/database.enum.js';
+import { toUserRefEntity, type UserRefEntity } from './user-ref.entity.js';
+import type { ReportView } from './analysis.type.js';
 
 export class ReportEntity {
   constructor(
@@ -22,3 +23,22 @@ export class ReportEntity {
     public readonly updatedAt?: Date,
   ) {}
 }
+
+export const toReportEntity = (report: ReportView): ReportEntity =>
+  new ReportEntity(
+    report._id,
+    toUserRefEntity(report.doctor),
+    toUserRefEntity(report.patient),
+    report.analysis,
+    report.review ?? null,
+    report.title,
+    report.content ?? null,
+    report.recommendations ?? null,
+    report.status ?? ReportStatus.DRAFT,
+    report.sentAt ?? null,
+    report.viewedAt ?? null,
+    !!report.pdfSize,
+    report.pdfSize ?? null,
+    report.createdAt,
+    report.updatedAt,
+  );

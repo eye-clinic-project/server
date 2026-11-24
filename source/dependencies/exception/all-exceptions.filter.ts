@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, HttpException } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import { Localize } from '../language/index.js';
+import { Localize } from '../language/localize.js';
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {

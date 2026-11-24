@@ -1,8 +1,10 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
-import { DeletePatientCommand } from '../command/index.js';
-import { DoctorPatientRepository, PatientRepository, UserRepository } from '../../../../database/repository/index.js';
-import { SystemRoleEnum } from '../../../../dependencies/enum/index.js';
+import { DeletePatientCommand } from '../command/delete-patient.command.js';
+import { DoctorPatientRepository } from '../../../../database/repository/doctor-patient.repository.js';
+import { PatientRepository } from '../../../../database/repository/patient.repository.js';
+import { UserRepository } from '../../../../database/repository/user.repository.js';
+import { SystemRoleEnum } from '../../../../dependencies/enum/security.enum.js';
 
 @CommandHandler(DeletePatientCommand)
 export class DeletePatientHandler implements ICommandHandler<DeletePatientCommand> {

@@ -1,8 +1,8 @@
 import type { Types } from 'mongoose';
 import { Query } from '@nestjs/cqrs';
 
-import type { AnalysisStatus } from '../../../../dependencies/enum/index.js';
-import type { AnalysisView, Page } from '../../entity/index.js';
+import type { AnalysisStatus } from '../../../../dependencies/enum/database.enum.js';
+import type { AnalysisView, Page } from '../../entity/analysis.type.js';
 
 export interface AnalysisFilter {
   doctorId?: Types.ObjectId;

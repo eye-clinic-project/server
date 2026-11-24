@@ -1,8 +1,8 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
-import { AppointmentRepository } from '../../../../database/repository/index.js';
-import { AppointmentRequestStatus, AppointmentRequestType } from '../../../../dependencies/enum/index.js';
-import { RequestCancelCommand } from '../command/index.js';
+import { AppointmentRepository } from '../../../../database/repository/appointment.repository.js';
+import { AppointmentRequestStatus, AppointmentRequestType } from '../../../../dependencies/enum/database.enum.js';
+import { RequestCancelCommand } from '../command/request-cancel.command.js';
 import { openWithoutPendingRequest } from './appointment.helper.js';
 
 @CommandHandler(RequestCancelCommand)

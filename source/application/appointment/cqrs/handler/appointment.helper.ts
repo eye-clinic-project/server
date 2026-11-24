@@ -1,8 +1,8 @@
 import type { QueryFilter, Types } from 'mongoose';
 
-import type { IAppointment } from '../../../../dependencies/interface/index.js';
-import { AppointmentRequestStatus, AppointmentStatus } from '../../../../dependencies/enum/index.js';
-import { PARTICIPANT_FIELDS } from '../../entity/index.js';
+import type { IAppointment } from '../../../../dependencies/interface/database.interface.js';
+import { AppointmentRequestStatus, AppointmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { PARTICIPANT_FIELDS } from '../../entity/appointment.type.js';
 
 export const OPEN_STATUSES = [AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED];
 

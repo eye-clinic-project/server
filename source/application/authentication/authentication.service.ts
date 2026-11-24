@@ -2,22 +2,32 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { I18nContext } from '@nestjs/i18n';
 import { PasswordHasher, TokenPair, TokenService } from '@nestjs/authentication';
-import { AuthProviderEnum, LogoutTypeEnum, SignUpRoleEnum, SystemRoleEnum, DoctorVerificationStatus, OtpPurpose } from '../../dependencies/enum/index.js';
-import { EmailDto, ForgotPasswordDto, GoogleSignInDto, LogoutDto, ResetPasswordDto, SignInDto, SignUpDto, VerifyEmailDto } from './dto/index.js';
-import { CreateDoctorProfileCommand, CreateUserCommand, UpdateUserCommand } from './cqrs/command/index.js';
-import { FindUserByEmailQuery, FindUserByGoogleIdQuery, IsLicenseTakenQuery } from './cqrs/query/index.js';
-import { AuthenticationEntity, toAuthenticationEntity } from './entity/index.js';
-import {
-  AuthenticateEmailVerificationRequestedEvent,
-  AuthenticatePasswordResetRequestedEvent,
-  AuthenticateRegisteredEvent,
-  EMAIL_VERIFICATION_REQUESTED_EVENT,
-  PASSWORD_RESET_REQUESTED_EVENT,
-  USER_REGISTERED_EVENT,
-} from './event/index.js';
-import { LoggerService, NotificationService, OtpService, GoogleIdentityService, type GoogleProfile } from '../../dependencies/service/index.js';
-import { EnsurePatientRecordCommand } from '../patient/cqrs/command/index.js';
-import type { HUserDocument } from '../../database/model/index.js';
+import { AuthProviderEnum, LogoutTypeEnum, SignUpRoleEnum, SystemRoleEnum, OtpPurpose } from '../../dependencies/enum/security.enum.js';
+import { DoctorVerificationStatus } from '../../dependencies/enum/database.enum.js';
+import { EmailDto } from './dto/email.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { GoogleSignInDto } from './dto/google-sign-in.dto.js';
+import { LogoutDto } from './dto/logout.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { SignInDto } from './dto/sign-in.dto.js';
+import { SignUpDto } from './dto/sign-up.dto.js';
+import { VerifyEmailDto } from './dto/verify-email.dto.js';
+import { CreateDoctorProfileCommand } from './cqrs/command/create-doctor-profile.command.js';
+import { CreateUserCommand } from './cqrs/command/create-user.command.js';
+import { UpdateUserCommand } from './cqrs/command/update-user.command.js';
+import { FindUserByEmailQuery } from './cqrs/query/find-user-by-email.query.js';
+import { FindUserByGoogleIdQuery } from './cqrs/query/find-user-by-google-id.query.js';
+import { IsLicenseTakenQuery } from './cqrs/query/is-license-taken.query.js';
+import { AuthenticationEntity, toAuthenticationEntity } from './entity/authentication.entity.js';
+import { AuthenticateEmailVerificationRequestedEvent, EMAIL_VERIFICATION_REQUESTED_EVENT } from './event/email-verification-requested.event.js';
+import { AuthenticatePasswordResetRequestedEvent, PASSWORD_RESET_REQUESTED_EVENT } from './event/password-reset-requested.event.js';
+import { AuthenticateRegisteredEvent, USER_REGISTERED_EVENT } from './event/user-registered.event.js';
+import { LoggerService } from '../../dependencies/service/logger.service.js';
+import { NotificationService } from '../../dependencies/service/notification.service.js';
+import { OtpService } from '../../dependencies/service/otp.service.js';
+import { GoogleIdentityService, type GoogleProfile } from '../../dependencies/service/google.service.js';
+import { EnsurePatientRecordCommand } from '../patient/cqrs/command/ensure-patient-record.command.js';
+import type { HUserDocument } from '../../database/model/user.model.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()

@@ -1,4 +1,5 @@
 import type { Types } from 'mongoose';
+import type { Participant } from './appointment.type.js';
 
 export class ParticipantEntity {
   constructor(
@@ -8,3 +9,5 @@ export class ParticipantEntity {
     public readonly avatarUrl: string | null = null,
   ) {}
 }
+
+export const toParticipantEntity = (user: Participant): ParticipantEntity => new ParticipantEntity(user._id, user.name, user.email, user.avatarUrl ?? null);

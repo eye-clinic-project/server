@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import type { SlotView } from '../../entity/index.js';
-import { DeleteSlotCommand, type DeleteSlotResult } from '../command/index.js';
-import { DoctorAvailabilityRepository } from '../../../../database/repository/index.js';
+import type { SlotView } from '../../entity/appointment.type.js';
+import { DeleteSlotCommand, type DeleteSlotResult } from '../command/delete-slot.command.js';
+import { DoctorAvailabilityRepository } from '../../../../database/repository/doctor-availability.repository.js';
 
 @CommandHandler(DeleteSlotCommand)
 export class DeleteSlotHandler implements ICommandHandler<DeleteSlotCommand> {

@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
-import type { NotificationView } from '../../entity/index.js';
+import type { NotificationView } from '../../entity/notification.type.js';
 
 export class MarkNotificationReadCommand extends Command<NotificationView | null> {
   constructor(

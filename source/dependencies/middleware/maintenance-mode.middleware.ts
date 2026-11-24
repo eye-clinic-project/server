@@ -1,7 +1,8 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { NextFunction, Request, Response } from 'express';
-import { Localize, SUPPORTED_LOCALES } from '../language/index.js';
+import { Localize } from '../language/localize.js';
+import { SUPPORTED_LOCALES } from '../language/i18n.constants.js';
 
 const supported = (value: unknown): string | undefined => {
   const lang = typeof value === 'string' ? value.trim().slice(0, 2).toLowerCase() : undefined;

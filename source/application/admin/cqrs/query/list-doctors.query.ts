@@ -1,6 +1,6 @@
 import { Query } from '@nestjs/cqrs';
-import type { AdminDoctorView } from '../../entity/index.js';
-import type { DoctorVerificationStatus } from '../../../../dependencies/enum/index.js';
+import type { AdminDoctorView } from '../../entity/admin.type.js';
+import type { DoctorVerificationStatus } from '../../../../dependencies/enum/database.enum.js';
 
 export interface DoctorListFilter {
   status?: DoctorVerificationStatus;

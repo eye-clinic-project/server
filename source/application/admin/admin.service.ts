@@ -6,13 +6,19 @@ import { PasswordHasher, TokenService } from '@nestjs/authentication';
 import { InjectDisk, StorageDisk } from '@nestjs/storage';
 import { Types } from 'mongoose';
 
-import { DoctorVerificationStatus } from '../../dependencies/enum/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
-import { DecideDoctorCommand, EnsureAdminCommand, SetUserActiveCommand } from './cqrs/command/index.js';
-import { FindDoctorQuery, ListDoctorsQuery } from './cqrs/query/index.js';
-import { ListDoctorsDto, RejectDoctorDto, UpdateUserStatusDto } from './dto/index.js';
-import { AdminDoctorEntity, type AdminDoctorPage, type AdminDoctorView, toAdminDoctorEntity } from './entity/index.js';
-import { ADMIN_DOCTOR_DECIDED_EVENT, AdminDoctorDecidedEvent } from './event/index.js';
+import { DoctorVerificationStatus } from '../../dependencies/enum/database.enum.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { DecideDoctorCommand } from './cqrs/command/decide-doctor.command.js';
+import { EnsureAdminCommand } from './cqrs/command/ensure-admin.command.js';
+import { SetUserActiveCommand } from './cqrs/command/set-user-active.command.js';
+import { FindDoctorQuery } from './cqrs/query/find-doctor.query.js';
+import { ListDoctorsQuery } from './cqrs/query/list-doctors.query.js';
+import { ListDoctorsDto } from './dto/list-doctors.dto.js';
+import { RejectDoctorDto } from './dto/reject-doctor.dto.js';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto.js';
+import { AdminDoctorEntity, toAdminDoctorEntity } from './entity/admin-doctor.entity.js';
+import type { AdminDoctorPage, AdminDoctorView } from './entity/admin.type.js';
+import { ADMIN_DOCTOR_DECIDED_EVENT, AdminDoctorDecidedEvent } from './event/admin-doctor-decided.event.js';
 
 @Injectable()
 export class AdminService implements OnApplicationBootstrap {

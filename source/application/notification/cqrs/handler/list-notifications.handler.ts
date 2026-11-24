@@ -1,6 +1,6 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { ListNotificationsQuery } from '../query/index.js';
-import { NotificationRepository } from '../../../../database/repository/index.js';
+import { ListNotificationsQuery } from '../query/list-notifications.query.js';
+import { NotificationRepository } from '../../../../database/repository/notification.repository.js';
 
 @QueryHandler(ListNotificationsQuery)
 export class ListNotificationsHandler implements IQueryHandler<ListNotificationsQuery> {

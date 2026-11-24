@@ -1,8 +1,9 @@
 import type { Types } from 'mongoose';
 
-import type { AppointmentStatus } from '../../../dependencies/enum/index.js';
-import type { IAppointmentChangeRequest, IRescheduleEntry } from '../../../dependencies/interface/index.js';
-import { ParticipantEntity } from './participant.entity.js';
+import type { AppointmentStatus } from '../../../dependencies/enum/database.enum.js';
+import type { IAppointmentChangeRequest, IRescheduleEntry } from '../../../dependencies/interface/database.interface.js';
+import { ParticipantEntity, toParticipantEntity } from './participant.entity.js';
+import type { AppointmentView } from './appointment.type.js';
 
 export class AppointmentEntity {
   constructor(
@@ -22,3 +23,21 @@ export class AppointmentEntity {
     public readonly updatedAt?: Date,
   ) {}
 }
+
+export const toAppointmentEntity = (appointment: AppointmentView): AppointmentEntity =>
+  new AppointmentEntity(
+    appointment._id,
+    appointment.doctor ? toParticipantEntity(appointment.doctor) : null,
+    appointment.patient ? toParticipantEntity(appointment.patient) : null,
+    appointment.slot ?? null,
+    appointment.scheduledAt,
+    appointment.endAt ?? null,
+    appointment.status,
+    appointment.reason ?? null,
+    appointment.cancelledBy ?? null,
+    appointment.cancelReason ?? null,
+    appointment.changeRequest ?? null,
+    appointment.rescheduleHistory ?? [],
+    appointment.createdAt,
+    appointment.updatedAt,
+  );

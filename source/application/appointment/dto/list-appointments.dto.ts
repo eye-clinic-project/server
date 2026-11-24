@@ -1,7 +1,7 @@
 import { IsBoolean, IsDate, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-import { AppointmentStatus } from '../../../dependencies/enum/index.js';
+import { AppointmentStatus } from '../../../dependencies/enum/database.enum.js';
 
 const toBoolean = ({ value }: { value: unknown }) => (value === 'true' ? true : value === 'false' ? false : value);
 

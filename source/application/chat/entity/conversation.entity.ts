@@ -1,7 +1,8 @@
 import type { Types } from 'mongoose';
 
-import { ChatParticipantEntity } from './chat-participant.entity.js';
-import { MessageEntity } from './message.entity.js';
+import { ChatParticipantEntity, toChatParticipantEntity } from './chat-participant.entity.js';
+import { MessageEntity, toMessageEntity } from './message.entity.js';
+import type { ConversationView } from './chat.type.js';
 
 export class ConversationEntity {
   constructor(
@@ -13,3 +14,13 @@ export class ConversationEntity {
     public readonly unreadCount: number,
   ) {}
 }
+
+export const toConversationEntity = (conversation: ConversationView, baseUrl: string, unreadCount = 0): ConversationEntity =>
+  new ConversationEntity(
+    conversation._id,
+    toChatParticipantEntity(conversation.doctor),
+    toChatParticipantEntity(conversation.patient),
+    conversation.lastMessage ? toMessageEntity(conversation.lastMessage, baseUrl) : null,
+    conversation.lastMessageAt ?? null,
+    unreadCount,
+  );

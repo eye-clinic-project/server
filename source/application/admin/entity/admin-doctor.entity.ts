@@ -1,7 +1,8 @@
 import type { Types } from 'mongoose';
 
-import type { DoctorVerificationStatus } from '../../../dependencies/enum/index.js';
-import type { LicenseDocumentEntity } from '../../doctor/entity/index.js';
+import type { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
+import type { AdminDoctorView } from './admin.type.js';
+import { toLicenseDocumentEntity, type LicenseDocumentEntity } from '../../doctor/entity/license-document.entity.js';
 
 export class AdminDoctorEntity {
   constructor(
@@ -28,3 +29,28 @@ export class AdminDoctorEntity {
     public readonly createdAt?: Date,
   ) {}
 }
+
+export const toAdminDoctorEntity = (doctor: AdminDoctorView): AdminDoctorEntity =>
+  new AdminDoctorEntity(
+    doctor._id,
+    doctor.user._id,
+    doctor.user.name,
+    doctor.user.email,
+    doctor.user.city,
+    doctor.user.phone ?? null,
+    doctor.user.avatarUrl ?? null,
+    doctor.user.isActive !== false,
+    !!doctor.user.emailVerifiedAt,
+    doctor.clinicName,
+    doctor.clinicAddress,
+    doctor.specialty ?? null,
+    doctor.licenseNumber ?? null,
+    doctor.yearsOfExperience ?? null,
+    doctor.verificationStatus ?? null,
+    doctor.verificationSubmittedAt ?? null,
+    doctor.verifiedAt ?? null,
+    doctor.verifiedBy ?? null,
+    doctor.rejectionReason ?? null,
+    (doctor.licenseDocuments ?? []).map(toLicenseDocumentEntity),
+    doctor.createdAt,
+  );

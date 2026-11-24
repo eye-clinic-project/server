@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { IAnalysis, IDoctorReview, IFundusImage, IReport, IUser } from '../../../dependencies/interface/index.js';
+import type { IAnalysis, IDoctorReview, IFundusImage, IReport, IUser } from '../../../dependencies/interface/database.interface.js';
 
 export type UserRef = Pick<IUser, 'name' | 'email' | 'avatarUrl'> & { _id: Types.ObjectId };
 
@@ -27,5 +27,3 @@ export interface Page<T> {
   size: number;
   pages: number;
 }
-
-export type UserRefEntity = { _id: Types.ObjectId; name: string; email: string; avatarUrl: string | null } | null;

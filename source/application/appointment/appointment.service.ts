@@ -4,45 +4,41 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Types } from 'mongoose';
 
-import { AppointmentRequestStatus, AppointmentRequestType, AppointmentStatus, RescheduleReason, SystemRoleEnum } from '../../dependencies/enum/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
-import { IsPatientAssignedQuery } from '../patient/cqrs/query/index.js';
-import {
-  ClaimSlotCommand,
-  CreateAppointmentCommand,
-  CreateSlotsCommand,
-  DecideRequestCommand,
-  DeleteAppointmentCommand,
-  DeleteSlotCommand,
-  ReleaseSlotCommand,
-  RequestCancelCommand,
-  RequestRescheduleCommand,
-  WithdrawRequestCommand,
-} from './cqrs/command/index.js';
-import { CountPatientAppointmentsOnDayQuery, FindAppointmentQuery, FindSlotQuery, ListAppointmentsQuery, ListDoctorSlotsQuery } from './cqrs/query/index.js';
-import {
-  AvailabilityRangeDto,
-  BookAppointmentDto,
-  CancelRequestDto,
-  CreateAvailabilityDto,
-  DaySlotsDto,
-  DecideRequestDto,
-  ListAppointmentsDto,
-  RescheduleRequestDto,
-} from './dto/index.js';
-import { AppointmentEntity, type AppointmentPage, type AppointmentView, SlotEntity, toAppointmentEntity, toSlotEntity } from './entity/index.js';
-import {
-  APPOINTMENT_BOOKED_EVENT,
-  APPOINTMENT_CANCEL_REQUESTED_EVENT,
-  APPOINTMENT_REQUEST_DECIDED_EVENT,
-  APPOINTMENT_REQUEST_WITHDRAWN_EVENT,
-  APPOINTMENT_RESCHEDULE_REQUESTED_EVENT,
-  AppointmentBookedEvent,
-  AppointmentCancelRequestedEvent,
-  AppointmentRequestDecidedEvent,
-  AppointmentRequestWithdrawnEvent,
-  AppointmentRescheduleRequestedEvent,
-} from './event/index.js';
+import { AppointmentRequestStatus, AppointmentRequestType, AppointmentStatus, RescheduleReason } from '../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { IsPatientAssignedQuery } from '../patient/cqrs/query/is-patient-assigned.query.js';
+import { ClaimSlotCommand } from './cqrs/command/claim-slot.command.js';
+import { CreateAppointmentCommand } from './cqrs/command/create-appointment.command.js';
+import { CreateSlotsCommand } from './cqrs/command/create-slots.command.js';
+import { DecideRequestCommand } from './cqrs/command/decide-request.command.js';
+import { DeleteAppointmentCommand } from './cqrs/command/delete-appointment.command.js';
+import { DeleteSlotCommand } from './cqrs/command/delete-slot.command.js';
+import { ReleaseSlotCommand } from './cqrs/command/release-slot.command.js';
+import { RequestCancelCommand } from './cqrs/command/request-cancel.command.js';
+import { RequestRescheduleCommand } from './cqrs/command/request-reschedule.command.js';
+import { WithdrawRequestCommand } from './cqrs/command/withdraw-request.command.js';
+import { CountPatientAppointmentsOnDayQuery } from './cqrs/query/count-patient-appointments-on-day.query.js';
+import { FindAppointmentQuery } from './cqrs/query/find-appointment.query.js';
+import { FindSlotQuery } from './cqrs/query/find-slot.query.js';
+import { ListAppointmentsQuery } from './cqrs/query/list-appointments.query.js';
+import { ListDoctorSlotsQuery } from './cqrs/query/list-doctor-slots.query.js';
+import { AvailabilityRangeDto } from './dto/availability-range.dto.js';
+import { BookAppointmentDto } from './dto/book-appointment.dto.js';
+import { CancelRequestDto } from './dto/cancel-request.dto.js';
+import { CreateAvailabilityDto } from './dto/create-availability.dto.js';
+import { DaySlotsDto } from './dto/day-slots.dto.js';
+import { DecideRequestDto } from './dto/decide-request.dto.js';
+import { ListAppointmentsDto } from './dto/list-appointments.dto.js';
+import { RescheduleRequestDto } from './dto/reschedule-request.dto.js';
+import { AppointmentEntity, toAppointmentEntity } from './entity/appointment.entity.js';
+import type { AppointmentPage, AppointmentView } from './entity/appointment.type.js';
+import { SlotEntity, toSlotEntity } from './entity/slot.entity.js';
+import { APPOINTMENT_BOOKED_EVENT, AppointmentBookedEvent } from './event/appointment-booked.event.js';
+import { APPOINTMENT_CANCEL_REQUESTED_EVENT, AppointmentCancelRequestedEvent } from './event/appointment-cancel-requested.event.js';
+import { APPOINTMENT_REQUEST_DECIDED_EVENT, AppointmentRequestDecidedEvent } from './event/appointment-request-decided.event.js';
+import { APPOINTMENT_REQUEST_WITHDRAWN_EVENT, AppointmentRequestWithdrawnEvent } from './event/appointment-request-withdrawn.event.js';
+import { APPOINTMENT_RESCHEDULE_REQUESTED_EVENT, AppointmentRescheduleRequestedEvent } from './event/appointment-reschedule-requested.event.js';
 import { dayRangeFromString, dayRangeOf } from './appointment.time.js';
 
 const MAX_SLOTS_PER_REQUEST = 100;

@@ -1,7 +1,7 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import type { SlotView } from '../../entity/index.js';
-import { FindSlotQuery } from '../query/index.js';
-import { DoctorAvailabilityRepository } from '../../../../database/repository/index.js';
+import type { SlotView } from '../../entity/appointment.type.js';
+import { FindSlotQuery } from '../query/find-slot.query.js';
+import { DoctorAvailabilityRepository } from '../../../../database/repository/doctor-availability.repository.js';
 
 @QueryHandler(FindSlotQuery)
 export class FindSlotHandler implements IQueryHandler<FindSlotQuery> {

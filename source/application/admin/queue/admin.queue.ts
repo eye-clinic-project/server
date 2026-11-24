@@ -1,8 +1,8 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
 
-import { NotificationType } from '../../../dependencies/enum/index.js';
-import { NotificationService } from '../../../dependencies/service/index.js';
+import { NotificationType } from '../../../dependencies/enum/database.enum.js';
+import { NotificationService } from '../../../dependencies/service/notification.service.js';
 
 export const ADMIN_QUEUE = 'admin';
 

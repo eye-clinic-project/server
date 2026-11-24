@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import type { IDoctorAvailability } from '../../dependencies/interface/index.js';
-import { DoctorAvailability } from '../model/index.js';
+import type { IDoctorAvailability } from '../../dependencies/interface/database.interface.js';
+import { DoctorAvailability } from '../model/doctor-availability.model.js';
 import { DatabaseRepository } from './base.repository.js';
 
 @Injectable()

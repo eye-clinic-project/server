@@ -1,7 +1,7 @@
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
-import type { SlotView } from '../../entity/index.js';
-import { ClaimSlotCommand } from '../command/index.js';
-import { DoctorAvailabilityRepository } from '../../../../database/repository/index.js';
+import type { SlotView } from '../../entity/appointment.type.js';
+import { ClaimSlotCommand } from '../command/claim-slot.command.js';
+import { DoctorAvailabilityRepository } from '../../../../database/repository/doctor-availability.repository.js';
 
 @CommandHandler(ClaimSlotCommand)
 export class ClaimSlotHandler implements ICommandHandler<ClaimSlotCommand> {

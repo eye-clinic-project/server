@@ -1,7 +1,7 @@
 import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, MaxLength, MinDate } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-import { DR_LEVEL_VALUES, type DRLevel } from '../../../dependencies/enum/index.js';
+import { DR_LEVEL_VALUES, type DRLevel } from '../../../dependencies/enum/database.enum.js';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 

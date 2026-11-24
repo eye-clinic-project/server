@@ -4,31 +4,30 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDisk, StorageDisk } from '@nestjs/storage';
 import { Types } from 'mongoose';
 
-import {
-  AnalysisStatus,
-  DR_LEVEL_DESCRIPTIONS,
-  DR_LEVEL_LABELS,
-  DR_LEVEL_VALUES,
-  ReportStatus,
-  type DRLevel,
-  SystemRoleEnum,
-} from '../../dependencies/enum/index.js';
-import type { IUser } from '../../dependencies/interface/index.js';
-import { PdfService, type MedicalReportPdf, type PdfImage } from '../../dependencies/service/index.js';
-import { GetDoctorProfileQuery } from '../doctor/cqrs/query/index.js';
-import { FindPatientByIdQuery, FindPatientByUserQuery } from '../patient/cqrs/query/index.js';
-import {
-  CreateReportCommand,
-  DeleteReportCommand,
-  MarkReportViewedCommand,
-  SendReportCommand,
-  SetReportPdfCommand,
-  UpdateReportCommand,
-} from './cqrs/command/index.js';
-import { FindReportByAnalysisQuery, FindReportQuery, FindReviewQuery, ListReportsQuery } from './cqrs/query/index.js';
-import { CreateReportDto, ListReportsDto, UpdateReportDto } from './dto/index.js';
-import { type AnalysisView, type Page, ReportEntity, type ReportView, type ReviewView, toReportEntity } from './entity/index.js';
-import { REPORT_DELETED_EVENT, REPORT_SENT_EVENT, ReportDeletedEvent, ReportSentEvent } from './event/index.js';
+import { AnalysisStatus, DR_LEVEL_DESCRIPTIONS, DR_LEVEL_LABELS, DR_LEVEL_VALUES, ReportStatus, type DRLevel } from '../../dependencies/enum/database.enum.js';
+import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';
+import type { IUser } from '../../dependencies/interface/database.interface.js';
+import { PdfService, type MedicalReportPdf, type PdfImage } from '../../dependencies/service/pdf.service.js';
+import { GetDoctorProfileQuery } from '../doctor/cqrs/query/get-doctor-profile.query.js';
+import { FindPatientByIdQuery } from '../patient/cqrs/query/find-patient-by-id.query.js';
+import { FindPatientByUserQuery } from '../patient/cqrs/query/find-patient-by-user.query.js';
+import { CreateReportCommand } from './cqrs/command/create-report.command.js';
+import { DeleteReportCommand } from './cqrs/command/delete-report.command.js';
+import { MarkReportViewedCommand } from './cqrs/command/mark-report-viewed.command.js';
+import { SendReportCommand } from './cqrs/command/send-report.command.js';
+import { SetReportPdfCommand } from './cqrs/command/set-report-pdf.command.js';
+import { UpdateReportCommand } from './cqrs/command/update-report.command.js';
+import { FindReportByAnalysisQuery } from './cqrs/query/find-report-by-analysis.query.js';
+import { FindReportQuery } from './cqrs/query/find-report.query.js';
+import { FindReviewQuery } from './cqrs/query/find-review.query.js';
+import { ListReportsQuery } from './cqrs/query/list-reports.query.js';
+import { CreateReportDto } from './dto/create-report.dto.js';
+import { ListReportsDto } from './dto/list-reports.dto.js';
+import { UpdateReportDto } from './dto/update-report.dto.js';
+import type { AnalysisView, Page, ReportView, ReviewView } from './entity/analysis.type.js';
+import { ReportEntity, toReportEntity } from './entity/report.entity.js';
+import { REPORT_DELETED_EVENT, ReportDeletedEvent } from './event/report-deleted.event.js';
+import { REPORT_SENT_EVENT, ReportSentEvent } from './event/report-sent.event.js';
 import { AnalysisService, idOf } from './analysis.service.js';
 
 const DISCLAIMER =

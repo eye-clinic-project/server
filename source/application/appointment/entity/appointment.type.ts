@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { IAppointment, IDoctorAvailability, IUser } from '../../../dependencies/interface/index.js';
+import type { IAppointment, IDoctorAvailability, IUser } from '../../../dependencies/interface/database.interface.js';
 import { AppointmentEntity } from './appointment.entity.js';
 
 export const PARTICIPANT_FIELDS = 'name email avatarUrl';

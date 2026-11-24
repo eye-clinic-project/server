@@ -1,11 +1,12 @@
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
-import type { IDoctor } from '../../../../dependencies/interface/index.js';
-import { ASSIGNED_DOCTOR_USER_FIELDS, type AssignedDoctorView } from '../../entity/index.js';
-import { ListAssignedDoctorsQuery } from '../query/index.js';
-import { AssignmentStatus } from '../../../../dependencies/enum/index.js';
-import { DoctorPatientRepository, DoctorRepository } from '../../../../database/repository/index.js';
+import type { IDoctor } from '../../../../dependencies/interface/database.interface.js';
+import { ASSIGNED_DOCTOR_USER_FIELDS, type AssignedDoctorView } from '../../entity/patient.type.js';
+import { ListAssignedDoctorsQuery } from '../query/list-assigned-doctors.query.js';
+import { AssignmentStatus } from '../../../../dependencies/enum/database.enum.js';
+import { DoctorPatientRepository } from '../../../../database/repository/doctor-patient.repository.js';
+import { DoctorRepository } from '../../../../database/repository/doctor.repository.js';
 
 @QueryHandler(ListAssignedDoctorsQuery)
 export class ListAssignedDoctorsHandler implements IQueryHandler<ListAssignedDoctorsQuery> {

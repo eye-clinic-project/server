@@ -3,7 +3,7 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler, StreamableF
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { Localize } from '../language/index.js';
+import { Localize } from '../language/localize.js';
 
 export interface Response<T> {
   message: string;
