@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
@@ -31,6 +31,7 @@ import { AnalysisListener } from './event/analysis.listener.js';
 import { ANALYSIS_QUEUE, ANALYSIS_TASK_QUEUE, AnalysisProcessor, AnalysisTaskProcessor } from './queue/analysis.queue.js';
 import { ReportController } from './report.controller.js';
 import { ReportService } from './report.service.js';
+import { AnalysisMiddleware } from './middleware/analysis.middleware.js';
 
 @Module({
   imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: ANALYSIS_QUEUE }, { name: ANALYSIS_TASK_QUEUE })],
@@ -65,4 +66,8 @@ import { ReportService } from './report.service.js';
     DeleteReportHandler,
   ],
 })
-export class AnalysisModule {}
+export class AnalysisModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AnalysisMiddleware).forRoutes(AnalysisController, ReportController);
+  }
+}

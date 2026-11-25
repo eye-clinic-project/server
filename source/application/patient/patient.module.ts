@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
@@ -17,6 +17,7 @@ import { PatientListener } from './event/patient.listener.js';
 import { PATIENT_QUEUE, PatientProcessor } from './queue/patient.queue.js';
 import { PatientController } from './patient.controller.js';
 import { PatientService } from './patient.service.js';
+import { PatientMiddleware } from './middleware/patient.middleware.js';
 
 @Module({
   imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: PATIENT_QUEUE })],
@@ -37,4 +38,8 @@ import { PatientService } from './patient.service.js';
     BackfillPatientRecordsHandler,
   ],
 })
-export class PatientModule {}
+export class PatientModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(PatientMiddleware).forRoutes(PatientController);
+  }
+}

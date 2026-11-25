@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
@@ -12,6 +12,7 @@ import { ListDoctorsHandler } from './custom/handler/list-doctors.handler.js';
 import { SetUserActiveHandler } from './custom/handler/set-user-active.handler.js';
 import { AdminListener } from './event/admin.listener.js';
 import { ADMIN_QUEUE, AdminProcessor } from './queue/admin.queue.js';
+import { AdminMiddleware } from './middleware/admin.middleware.js';
 
 @Module({
   imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: ADMIN_QUEUE })],
@@ -27,4 +28,8 @@ import { ADMIN_QUEUE, AdminProcessor } from './queue/admin.queue.js';
     EnsureAdminHandler,
   ],
 })
-export class AdminModule {}
+export class AdminModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AdminMiddleware).forRoutes(AdminController);
+  }
+}

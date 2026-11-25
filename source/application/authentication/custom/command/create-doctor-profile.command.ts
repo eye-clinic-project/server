@@ -1,9 +1,7 @@
 import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
-import type { IDoctor } from '../../../../dependencies/interface/database.interface.js';
-
-export type DoctorSignUpData = Pick<IDoctor, 'clinicName' | 'clinicAddress' | 'specialty' | 'licenseNumber'>;
+import type { DoctorSignUpData } from '../../type/authentication.type.js';
 
 export class CreateDoctorProfileCommand extends Command<void> {
   constructor(

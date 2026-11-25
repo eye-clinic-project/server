@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service.js';
 import { AuthenticationController } from './authentication.controller.js';
 import { JwtAuth } from '../../dependencies/provider/jwt-auth.provider.js';
@@ -16,6 +16,7 @@ import { IsLicenseTakenHandler } from './custom/handler/is-license-taken.handler
 import { UpdateUserHandler } from './custom/handler/update-user.handler.js';
 import { GoogleIdentityService } from '../../dependencies/service/google.service.js';
 import { JwtTokenService } from '../../dependencies/service/token.service.js';
+import { AuthenticationMiddleware } from './middleware/authentication.middleware.js';
 
 @Module({
   imports: [ServiceModule, DatabaseModule, CqrsModule.forRoot(), BullModule.registerQueue({ name: AUTHENTICATION_QUEUE })],
@@ -35,4 +36,8 @@ import { JwtTokenService } from '../../dependencies/service/token.service.js';
     CreateDoctorProfileHandler,
   ],
 })
-export class AuthenticationModule {}
+export class AuthenticationModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AuthenticationMiddleware).forRoutes(AuthenticationController);
+  }
+}

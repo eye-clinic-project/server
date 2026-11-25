@@ -3,8 +3,7 @@ import type { Types } from 'mongoose';
 import { AuthProviderEnum, SystemRoleEnum } from '../../../dependencies/enum/security.enum.js';
 import type { IUser } from '../../../dependencies/interface/database.interface.js';
 import type { HUserDocument } from '../../../database/model/user.model.js';
-
-export type UserProfile = Pick<IUser, 'role' | 'name' | 'email' | 'city' | 'phone' | 'provider' | 'createdAt' | 'updatedAt'>;
+import type { UserProfile } from '../type/user.type.js';
 
 export class UserEntity implements UserProfile {
   constructor(

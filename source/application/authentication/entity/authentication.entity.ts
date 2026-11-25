@@ -2,8 +2,7 @@ import { AuthProviderEnum, SystemRoleEnum } from '../../../dependencies/enum/sec
 import type { Types } from 'mongoose';
 import type { IUser } from '../../../dependencies/interface/database.interface.js';
 import type { HUserDocument } from '../../../database/model/user.model.js';
-
-export type AuthenticationUser = Omit<IUser, 'passwordHash' | 'googleId' | 'language'>;
+import type { AuthenticationUser } from '../type/authentication.type.js';
 
 export class AuthenticationEntity implements AuthenticationUser {
   constructor(

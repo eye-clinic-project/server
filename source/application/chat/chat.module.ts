@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
@@ -17,6 +17,7 @@ import { MarkReadHandler } from './custom/handler/mark-read.handler.js';
 import { OpenConversationHandler } from './custom/handler/open-conversation.handler.js';
 import { ChatListener } from './event/chat.listener.js';
 import { CHAT_QUEUE, ChatProcessor } from './queue/chat.queue.js';
+import { ChatMiddleware } from './middleware/chat.middleware.js';
 
 @Module({
   imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: CHAT_QUEUE })],
@@ -37,4 +38,8 @@ import { CHAT_QUEUE, ChatProcessor } from './queue/chat.queue.js';
     MarkReadHandler,
   ],
 })
-export class ChatModule {}
+export class ChatModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(ChatMiddleware).forRoutes(ChatController);
+  }
+}

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
@@ -12,10 +12,15 @@ import { USER_QUEUE, UserProcessor } from './queue/user.queue.js';
 import { PhotosController } from './photos.controller.js';
 import { UserController } from './user.controller.js';
 import { UserService } from './user.service.js';
+import { UserMiddleware } from './middleware/user.middleware.js';
 
 @Module({
   imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: USER_QUEUE })],
   controllers: [UserController, PhotosController],
   providers: [UserService, UserListener, UserProcessor, GetUserByIdHandler, UpdateUserProfileHandler, SetUserAvatarHandler, RemoveUserAvatarHandler],
 })
-export class UserModule {}
+export class UserModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(UserMiddleware).forRoutes(UserController, PhotosController);
+  }
+}

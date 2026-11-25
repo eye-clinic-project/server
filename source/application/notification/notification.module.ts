@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
 import { CountUnreadNotificationsHandler } from './custom/handler/count-unread-notifications.handler.js';
@@ -8,6 +8,7 @@ import { MarkAllNotificationsReadHandler } from './custom/handler/mark-all-notif
 import { MarkNotificationReadHandler } from './custom/handler/mark-notification-read.handler.js';
 import { NotificationController } from './notification.controller.js';
 import { NotificationInboxService } from './notification.service.js';
+import { NotificationMiddleware } from './middleware/notification.middleware.js';
 
 @Module({
   imports: [DatabaseModule],
@@ -21,4 +22,8 @@ import { NotificationInboxService } from './notification.service.js';
     DeleteNotificationHandler,
   ],
 })
-export class NotificationModule {}
+export class NotificationModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(NotificationMiddleware).forRoutes(NotificationController);
+  }
+}

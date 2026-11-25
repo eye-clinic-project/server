@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 
 import { DatabaseModule } from '../../dependencies/module/database.module.js';
@@ -22,6 +22,7 @@ import { RequestRescheduleHandler } from './custom/handler/request-reschedule.ha
 import { WithdrawRequestHandler } from './custom/handler/withdraw-request.handler.js';
 import { AppointmentListener } from './event/appointment.listener.js';
 import { APPOINTMENT_QUEUE, AppointmentProcessor } from './queue/appointment.queue.js';
+import { AppointmentMiddleware } from './middleware/appointment.middleware.js';
 
 @Module({
   imports: [DatabaseModule, ServiceModule, BullModule.registerQueue({ name: APPOINTMENT_QUEUE })],
@@ -47,4 +48,8 @@ import { APPOINTMENT_QUEUE, AppointmentProcessor } from './queue/appointment.que
     DecideRequestHandler,
   ],
 })
-export class AppointmentModule {}
+export class AppointmentModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppointmentMiddleware).forRoutes(AppointmentController);
+  }
+}

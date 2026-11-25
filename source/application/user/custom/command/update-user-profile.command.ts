@@ -2,9 +2,7 @@ import { Command } from '@nestjs/cqrs';
 import type { Types } from 'mongoose';
 
 import type { HUserDocument } from '../../../../database/model/user.model.js';
-import type { IUser } from '../../../../dependencies/interface/database.interface.js';
-
-export type EditableProfile = Partial<Pick<IUser, 'name' | 'city' | 'language'>>;
+import type { EditableProfile } from '../../type/user.type.js';
 
 export class UpdateUserProfileCommand extends Command<HUserDocument | null> {
   constructor(

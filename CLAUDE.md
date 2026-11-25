@@ -38,7 +38,7 @@ The app needs a local MongoDB and a Redis to boot, because the cache factory pin
 ```
 source/
   app.module.ts        root wiring: Config, Throttler, I18n, Cache (memory + Redis), Mongoose, @nestjs/authentication
-  application/<feature>/   feature modules (authentication, user, me): module/controller/service, dto/, entities/, cqrs/
+  application/<feature>/   feature modules (authentication, user, me): module/controller/service, dto/, entity/, custom/ (command, query, handler), event/, queue/
   database/
     model/             @nestjs/mongoose schemas (class + SchemaFactory), typed against the I* interfaces
     repository/        DatabaseRepository<T> base + per-model repositories

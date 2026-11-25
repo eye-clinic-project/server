@@ -56,7 +56,7 @@ async function bootstrap() {
   app.use(middleware(new MaintenanceMiddleware(config)));
   app.use(middleware(new SlowRequestMiddleware()));
   app.useGlobalGuards(app.get(ThrottlerGuard));
-  app.useGlobalInterceptors(/*new LoggingInterceptor(), */ new TransformInterceptor(), new TimeoutInterceptor());
+  app.useGlobalInterceptors(new LoggingInterceptor(),new TransformInterceptor(), new TimeoutInterceptor());
   app.useGlobalPipes(new I18nValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost).httpAdapter));
 
