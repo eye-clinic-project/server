@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import type { Participant } from './appointment.type.js';
+import type { Participant } from '../type/appointment.type.js';
 
 export class ParticipantEntity {
   constructor(

@@ -13,7 +13,7 @@ import { DecideRequestDto } from './dto/decide-request.dto.js';
 import { ListAppointmentsDto } from './dto/list-appointments.dto.js';
 import { RescheduleRequestDto } from './dto/reschedule-request.dto.js';
 import { AppointmentEntity } from './entity/appointment.entity.js';
-import type { AppointmentPage } from './entity/appointment.type.js';
+import type { AppointmentPage } from './type/appointment.type.js';
 import { SlotEntity } from './entity/slot.entity.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';

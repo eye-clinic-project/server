@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 import type { SystemRoleEnum } from '../../../dependencies/enum/security.enum.js';
-import type { ChatUser } from './chat.type.js';
+import type { ChatUser } from '../type/chat.type.js';
 
 export class ChatParticipantEntity {
   constructor(

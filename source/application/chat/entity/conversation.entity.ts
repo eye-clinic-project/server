@@ -2,7 +2,7 @@ import type { Types } from 'mongoose';
 
 import { ChatParticipantEntity, toChatParticipantEntity } from './chat-participant.entity.js';
 import { MessageEntity, toMessageEntity } from './message.entity.js';
-import type { ConversationView } from './chat.type.js';
+import type { ConversationView } from '../type/chat.type.js';
 
 export class ConversationEntity {
   constructor(

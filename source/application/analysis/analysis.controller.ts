@@ -30,7 +30,7 @@ import { CreateReviewDto } from './dto/create-review.dto.js';
 import { ListAnalysesDto } from './dto/list-analyses.dto.js';
 import { UpdateReviewDto } from './dto/update-review.dto.js';
 import type { AnalysisEntity } from './entity/analysis.entity.js';
-import type { Page } from './entity/analysis.type.js';
+import type { Page } from './type/analysis.type.js';
 import type { ReviewEntity } from './entity/review.entity.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';

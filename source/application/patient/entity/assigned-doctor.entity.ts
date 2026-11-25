@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 import type { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
-import type { AssignedDoctorView } from './patient.type.js';
+import type { AssignedDoctorView } from '../type/patient.type.js';
 
 export class AssignedDoctorEntity {
   constructor(

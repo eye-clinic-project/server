@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import type { SlotView } from './appointment.type.js';
+import type { SlotView } from '../type/appointment.type.js';
 
 export class SlotEntity {
   constructor(

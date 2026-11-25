@@ -1,4 +1,4 @@
-import type { AppointmentView } from '../entity/appointment.type.js';
+import type { AppointmentView } from '../type/appointment.type.js';
 
 export const APPOINTMENT_REQUEST_WITHDRAWN_EVENT = 'appointment.request-withdrawn';
 

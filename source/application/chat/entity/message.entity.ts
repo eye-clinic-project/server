@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 import { AttachmentEntity, toAttachmentEntity } from './attachment.entity.js';
-import type { MessageView } from './chat.type.js';
+import type { MessageView } from '../type/chat.type.js';
 
 export class MessageEntity {
   constructor(

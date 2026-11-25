@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import type { PatientSearchView } from './doctor.type.js';
+import type { PatientSearchView } from '../type/doctor.type.js';
 
 export class PatientSearchEntity {
   constructor(

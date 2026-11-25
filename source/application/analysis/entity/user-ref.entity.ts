@@ -1,6 +1,6 @@
 import type { Types } from 'mongoose';
 
-import type { UserRef } from './analysis.type.js';
+import type { UserRef } from '../type/analysis.type.js';
 
 export type UserRefEntity = { _id: Types.ObjectId; name: string; email: string; avatarUrl: string | null } | null;
 

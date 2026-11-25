@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 import { type DRLevel, DR_LEVEL_LABELS } from '../../../dependencies/enum/database.enum.js';
-import type { ReviewView } from './analysis.type.js';
+import type { ReviewView } from '../type/analysis.type.js';
 
 export class ReviewEntity {
   constructor(

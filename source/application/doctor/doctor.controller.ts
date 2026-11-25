@@ -31,7 +31,7 @@ import { SearchPatientsDto } from './dto/search-patients.dto.js';
 import { SubmitLicenseDto } from './dto/submit-license.dto.js';
 import { UpdateClinicDto } from './dto/update-clinic.dto.js';
 import { DoctorClinicEntity } from './entity/doctor-clinic.entity.js';
-import type { PatientSearchPage } from './entity/doctor.type.js';
+import type { PatientSearchPage } from './type/doctor.type.js';
 import { VerificationEntity } from './entity/verification.entity.js';
 import { DoctorService } from './doctor.service.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';

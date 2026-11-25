@@ -3,7 +3,7 @@ import type { Types } from 'mongoose';
 import type { AppointmentStatus } from '../../../dependencies/enum/database.enum.js';
 import type { IAppointmentChangeRequest, IRescheduleEntry } from '../../../dependencies/interface/database.interface.js';
 import { ParticipantEntity, toParticipantEntity } from './participant.entity.js';
-import type { AppointmentView } from './appointment.type.js';
+import type { AppointmentView } from '../type/appointment.type.js';
 
 export class AppointmentEntity {
   constructor(

@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 import type { NotificationType } from '../../../dependencies/enum/database.enum.js';
-import type { NotificationView } from './notification.type.js';
+import type { NotificationView } from '../type/notification.type.js';
 
 export class NotificationEntity {
   constructor(

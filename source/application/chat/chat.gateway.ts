@@ -24,7 +24,7 @@ import { ConversationRoomDto } from './dto/conversation-room.dto.js';
 import { MAX_ATTACHMENTS, SendMessageDto } from './dto/send-message.dto.js';
 import { ReadDto } from './dto/read.dto.js';
 import { TypingDto } from './dto/typing.dto.js';
-import type { ConversationView } from './entity/chat.type.js';
+import type { ConversationView } from './type/chat.type.js';
 import type { MessageEntity } from './entity/message.entity.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';

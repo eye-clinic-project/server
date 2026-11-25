@@ -1,0 +1,9 @@
+import { Query } from '@nestjs/cqrs';
+import type { Types } from 'mongoose';
+import type { ConversationView } from '../../type/chat.type.js';
+
+export class ListConversationsQuery extends Query<ConversationView[]> {
+  constructor(public readonly userId: Types.ObjectId) {
+    super();
+  }
+}

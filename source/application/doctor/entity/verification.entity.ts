@@ -1,6 +1,6 @@
 import type { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
 import { LicenseDocumentEntity, toLicenseDocumentEntity } from './license-document.entity.js';
-import type { DoctorClinicView } from './doctor.type.js';
+import type { DoctorClinicView } from '../type/doctor.type.js';
 
 export class VerificationEntity {
   constructor(

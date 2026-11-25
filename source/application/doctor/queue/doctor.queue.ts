@@ -5,7 +5,7 @@ import type { Job } from 'bullmq';
 
 import { NotificationType } from '../../../dependencies/enum/database.enum.js';
 import { NotificationService } from '../../../dependencies/service/notification.service.js';
-import { FindAdminIdsQuery } from '../cqrs/query/find-admin-ids.query.js';
+import { FindAdminIdsQuery } from '../custom/query/find-admin-ids.query.js';
 
 export const DOCTOR_QUEUE = 'doctor';
 

@@ -8,12 +8,12 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { BullModule } from '@nestjs/bullmq';
 import { AUTHENTICATION_QUEUE, AuthenticationProcessor } from './queue/authentication.queue.js';
 import { AuthenticateListener } from './event/authentication.listener.js';
-import { CreateDoctorProfileHandler } from './cqrs/handler/create-doctor-profile.handler.js';
-import { CreateUserHandler } from './cqrs/handler/create-user.handler.js';
-import { FindUserByEmailHandler } from './cqrs/handler/find-user-by-email.handler.js';
-import { FindUserByGoogleIdHandler } from './cqrs/handler/find-user-by-google-id.handler.js';
-import { IsLicenseTakenHandler } from './cqrs/handler/is-license-taken.handler.js';
-import { UpdateUserHandler } from './cqrs/handler/update-user.handler.js';
+import { CreateDoctorProfileHandler } from './custom/handler/create-doctor-profile.handler.js';
+import { CreateUserHandler } from './custom/handler/create-user.handler.js';
+import { FindUserByEmailHandler } from './custom/handler/find-user-by-email.handler.js';
+import { FindUserByGoogleIdHandler } from './custom/handler/find-user-by-google-id.handler.js';
+import { IsLicenseTakenHandler } from './custom/handler/is-license-taken.handler.js';
+import { UpdateUserHandler } from './custom/handler/update-user.handler.js';
 import { GoogleIdentityService } from '../../dependencies/service/google.service.js';
 import { JwtTokenService } from '../../dependencies/service/token.service.js';
 

@@ -60,6 +60,7 @@ export class UserController {
       limits: { fileSize: AVATAR_MAX_BYTES, files: 1 },
     }),
   )
+  
   setAvatar(@User() user: IUser, @UploadedFile() file: StoredUpload | undefined): Promise<UserEntity> {
     if (!file) throw new BadRequestException('Avatar file is required');
     return this.userService.setAvatar(user, file);

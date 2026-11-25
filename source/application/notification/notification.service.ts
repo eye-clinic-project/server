@@ -3,14 +3,14 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Types } from 'mongoose';
 
 import type { IUser } from '../../dependencies/interface/database.interface.js';
-import { DeleteNotificationCommand } from './cqrs/command/delete-notification.command.js';
-import { MarkAllNotificationsReadCommand } from './cqrs/command/mark-all-notifications-read.command.js';
-import { MarkNotificationReadCommand } from './cqrs/command/mark-notification-read.command.js';
-import { CountUnreadNotificationsQuery } from './cqrs/query/count-unread-notifications.query.js';
-import { ListNotificationsQuery } from './cqrs/query/list-notifications.query.js';
+import { DeleteNotificationCommand } from './custom/command/delete-notification.command.js';
+import { MarkAllNotificationsReadCommand } from './custom/command/mark-all-notifications-read.command.js';
+import { MarkNotificationReadCommand } from './custom/command/mark-notification-read.command.js';
+import { CountUnreadNotificationsQuery } from './custom/query/count-unread-notifications.query.js';
+import { ListNotificationsQuery } from './custom/query/list-notifications.query.js';
 import { ListNotificationsDto } from './dto/list-notifications.dto.js';
 import { NotificationEntity, toNotificationEntity } from './entity/notification.entity.js';
-import type { NotificationPage } from './entity/notification.type.js';
+import type { NotificationPage } from './type/notification.type.js';
 
 @Injectable()
 export class NotificationInboxService {

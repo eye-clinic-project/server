@@ -1,0 +1,17 @@
+import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import type { ConversationView } from '../../type/chat.type.js';
+import { ListConversationsQuery } from '../query/list-conversations.query.js';
+import { ConversationRepository } from '../../../../database/repository/conversation.repository.js';
+import { populateConversation } from '../../type/chat.type.js';
+
+@QueryHandler(ListConversationsQuery)
+export class ListConversationsHandler implements IQueryHandler<ListConversationsQuery> {
+  constructor(private readonly conversationRepository: ConversationRepository) {}
+
+  execute({ userId }: ListConversationsQuery): Promise<ConversationView[]> {
+    return this.conversationRepository.find({
+      filter: { participants: userId },
+      options: { lean: true, populate: populateConversation, sort: { lastMessageAt: -1, updatedAt: -1 }, limit: 200 },
+    });
+  }
+}

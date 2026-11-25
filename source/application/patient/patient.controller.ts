@@ -8,7 +8,7 @@ import { ListPatientsDto } from './dto/list-patients.dto.js';
 import { UpdatePatientDto } from './dto/update-patient.dto.js';
 import { AssignedDoctorEntity } from './entity/assigned-doctor.entity.js';
 import { PatientEntity } from './entity/patient.entity.js';
-import type { PatientListEntity } from './entity/patient.type.js';
+import type { PatientListEntity } from './type/patient.type.js';
 import { PatientService } from './patient.service.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';

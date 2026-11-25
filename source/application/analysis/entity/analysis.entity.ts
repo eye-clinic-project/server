@@ -3,7 +3,7 @@ import type { Types } from 'mongoose';
 import { type AnalysisStatus, type DRLevel, type EyeSide, type Stage1Status, DR_LEVEL_LABELS } from '../../../dependencies/enum/database.enum.js';
 import type { IAnalysisFinding, IAnalysisHistoryEntry } from '../../../dependencies/interface/database.interface.js';
 import { toUserRefEntity, type UserRefEntity } from './user-ref.entity.js';
-import type { AnalysisView } from './analysis.type.js';
+import type { AnalysisView } from '../type/analysis.type.js';
 import { Localize } from '../../../dependencies/language/localize.js';
 
 export type AnalysisImageEntity = {

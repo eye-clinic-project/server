@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import { attachmentType } from './chat.type.js';
+import { attachmentType } from '../type/chat.type.js';
 
 export class AttachmentEntity {
   constructor(

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
-import type { AppointmentView } from '../entity/appointment.type.js';
+import type { AppointmentView } from '../type/appointment.type.js';
 import { APPOINTMENT_QUEUE, AppointmentJob, type NotifyAppointmentJob, toQueuedArgs } from '../queue/appointment.queue.js';
 import type { NotificationArg } from '../../../dependencies/service/notification.service.js';
 import { APPOINTMENT_BOOKED_EVENT, AppointmentBookedEvent } from './appointment-booked.event.js';

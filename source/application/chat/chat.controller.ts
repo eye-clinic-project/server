@@ -9,7 +9,7 @@ import { ChatService } from './chat.service.js';
 import { ListMessagesDto } from './dto/list-messages.dto.js';
 import { StartConversationDto } from './dto/start-conversation.dto.js';
 import type { ConversationEntity } from './entity/conversation.entity.js';
-import type { MessagePage } from './entity/chat.type.js';
+import type { MessagePage } from './type/chat.type.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';
 import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';

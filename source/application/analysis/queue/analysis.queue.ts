@@ -9,10 +9,10 @@ import { NotificationType } from '../../../dependencies/enum/database.enum.js';
 import { Localize } from '../../../dependencies/language/localize.js';
 import { NotificationService } from '../../../dependencies/service/notification.service.js';
 import { AiError, AiService, sha256 } from '../ai.service.js';
-import { ClaimAnalysisCommand } from '../cqrs/command/claim-analysis.command.js';
-import { CompleteAnalysisCommand } from '../cqrs/command/complete-analysis.command.js';
-import { FailAnalysisCommand } from '../cqrs/command/fail-analysis.command.js';
-import type { AnalysisView } from '../entity/analysis.type.js';
+import { ClaimAnalysisCommand } from '../custom/command/claim-analysis.command.js';
+import { CompleteAnalysisCommand } from '../custom/command/complete-analysis.command.js';
+import { FailAnalysisCommand } from '../custom/command/fail-analysis.command.js';
+import type { AnalysisView } from '../type/analysis.type.js';
 
 export const ANALYSIS_QUEUE = 'analysis';
 export const ANALYSIS_TASK_QUEUE = 'analysis-task';

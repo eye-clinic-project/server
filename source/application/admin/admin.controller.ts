@@ -10,7 +10,7 @@ import { ListDoctorsDto } from './dto/list-doctors.dto.js';
 import { RejectDoctorDto } from './dto/reject-doctor.dto.js';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto.js';
 import type { AdminDoctorEntity } from './entity/admin-doctor.entity.js';
-import type { AdminDoctorPage } from './entity/admin.type.js';
+import type { AdminDoctorPage } from './type/admin.type.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';
 import { User } from '../../dependencies/decorator/user.decorator.js';
 import { SystemRoleEnum } from '../../dependencies/enum/security.enum.js';

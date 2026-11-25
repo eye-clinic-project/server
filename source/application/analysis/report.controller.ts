@@ -8,7 +8,7 @@ import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { CreateReportDto } from './dto/create-report.dto.js';
 import { ListReportsDto } from './dto/list-reports.dto.js';
 import { UpdateReportDto } from './dto/update-report.dto.js';
-import type { Page } from './entity/analysis.type.js';
+import type { Page } from './type/analysis.type.js';
 import type { ReportEntity } from './entity/report.entity.js';
 import { ReportService } from './report.service.js';
 import { Auth } from '../../dependencies/decorator/auth.decorator.js';

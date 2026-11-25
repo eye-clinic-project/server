@@ -2,7 +2,7 @@ import type { Types } from 'mongoose';
 
 import { ReportStatus } from '../../../dependencies/enum/database.enum.js';
 import { toUserRefEntity, type UserRefEntity } from './user-ref.entity.js';
-import type { ReportView } from './analysis.type.js';
+import type { ReportView } from '../type/analysis.type.js';
 
 export class ReportEntity {
   constructor(

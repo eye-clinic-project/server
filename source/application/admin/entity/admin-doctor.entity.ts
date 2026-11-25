@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 import type { DoctorVerificationStatus } from '../../../dependencies/enum/database.enum.js';
-import type { AdminDoctorView } from './admin.type.js';
+import type { AdminDoctorView } from '../type/admin.type.js';
 import { toLicenseDocumentEntity, type LicenseDocumentEntity } from '../../doctor/entity/license-document.entity.js';
 
 export class AdminDoctorEntity {
